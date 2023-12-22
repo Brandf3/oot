@@ -3377,6 +3377,13 @@ beginseg
 endseg
 
 beginseg
+    name "ovl_Obj_Chess"
+    compress
+    include "build/src/overlays/actors/ovl_Obj_Chess/z_obj_chess.o"
+    include "build/src/overlays/actors/ovl_Obj_Chess/ovl_Obj_Chess_reloc.o"
+endseg
+
+beginseg
     name "gameplay_keep"
     romalign 0x1000
     include "build/assets/objects/gameplay_keep/gameplay_keep.o"
@@ -6046,6 +6053,21 @@ beginseg
     name "object_zl4"
     romalign 0x1000
     include "build/assets/objects/object_zl4/object_zl4.o"
+    number 6
+endseg
+
+beginseg
+    name "object_chess"
+    compress
+    romalign 0x1000
+    include "build/assets/objects/object_chess/gChessboardDL.o"
+    include "build/assets/objects/object_chess/gChessboardDL_collision.o"
+    include "build/assets/objects/object_chess/gKingDL.o"
+    include "build/assets/objects/object_chess/gQueenDL.o"
+    include "build/assets/objects/object_chess/gRookDL.o"
+    include "build/assets/objects/object_chess/gBishopDL.o"
+    include "build/assets/objects/object_chess/gKnightDL.o"
+    include "build/assets/objects/object_chess/gPawnDL.o"
     number 6
 endseg
 
@@ -10476,4 +10498,20 @@ beginseg
     name "softsprite_matrix_static"
     romalign 0x1000
     include "build/baserom/softsprite_matrix_static.o"
+endseg
+
+beginseg
+    name "my_scene"
+    compress
+    romalign 0x1000
+    include "build/assets/scenes/my_scenes/my_scene/my_scene_scene.o"
+    number 2
+endseg
+
+beginseg
+    name "my_scene_room_0"
+    compress
+    romalign 0x1000
+    include "build/assets/scenes/my_scenes/my_scene/my_scene_room_0.o"
+    number 3
 endseg
