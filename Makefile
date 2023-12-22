@@ -7,13 +7,13 @@ SHELL = /bin/bash
 # Build options can either be changed by modifying the makefile, or by building with 'make SETTING=value'
 
 # If COMPARE is 1, check the output md5sum after building
-COMPARE := 1
+COMPARE := 0
 # If NON_MATCHING is 1, define the NON_MATCHING C flag when building
-NON_MATCHING := 0
+NON_MATCHING := 1
 # If ORIG_COMPILER is 1, compile with QEMU_IRIX and the original compiler
 ORIG_COMPILER := 0
 # If COMPILER is "gcc", compile with GCC instead of IDO.
-COMPILER := ido
+COMPILER := gcc
 
 CFLAGS ?=
 CPPFLAGS ?=
@@ -243,12 +243,16 @@ build/src/%.o: CC := $(CC) -fexec-charset=euc-jp
 endif
 
 #### Main Targets ###
+all:
+	python3 install_mod_assets.py
+	make -j2 build
 
-all: $(ROM)
+build: $(ROM)
 ifeq ($(COMPARE),1)
 	@md5sum $(ROM)
 	@md5sum -c checksum.md5
 endif
+	cp $(ROM) /mnt/c/Users/brand/Documents
 
 clean:
 	$(RM) -r $(ROM) $(ELF) build
