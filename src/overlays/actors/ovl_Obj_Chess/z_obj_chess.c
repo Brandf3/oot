@@ -92,7 +92,7 @@ typedef enum {
 //     {"1q3r1k/3b1pp1/2pbnN2/4p3/1P1p3Q/2PP3P/3r1PP1/1R3RK1"}, // Final position with mate
 // };
 
-// Long puzzle with promotion example
+// Long puzzle with promotion example, can use the same concept for castling
 char puzzle[21][72] = {
     {"7K/P1p1p1p1/2P1P1Pk/6pP/3p2P1/1P6/3P4/8"}, // Starting position
     {"P6K/2p1p1p1/2P1P1Pk/6pP/3p2P1/1P6/3P4/8"}, // First white movement
@@ -277,9 +277,13 @@ void ObjChess_Move(ObjChess* this, PlayState* play) {
         
         if (this->puzzleStep == sizeof(puzzle) / sizeof(puzzle[0])) {
             ObjChess_Win(this, play);
+        } else {
+            Sfx_PlaySfxCentered(NA_SE_SY_CORRECT_CHIME);
         }
-    } else { // Puzzle failed, reset
-        ObjChess_Reset(this, play);
+    } else { 
+        Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+        ObjChess_PopulateBoard(this, play, puzzle[this->puzzleStep - 1]);
+        //ObjChess_Reset(this, play); // If you want to reset puzzle on failure
     }
 }
 
