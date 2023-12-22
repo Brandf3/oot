@@ -1,0 +1,8 @@
+extern Vtx gChessboardDL_gChessboardDL_mesh_layer_Opaque_vtx_cull[8];
+extern Vtx gChessboardDL_gChessboardDL_mesh_layer_Opaque_vtx_0[159];
+extern Gfx gChessboardDL_gChessboardDL_mesh_layer_Opaque_tri_0[];
+extern Vtx gChessboardDL_gChessboardDL_mesh_layer_Opaque_vtx_1[101];
+extern Gfx gChessboardDL_gChessboardDL_mesh_layer_Opaque_tri_1[];
+extern Gfx mat_gChessboardDL_chessboardWhite_layerOpaque[];
+extern Gfx mat_gChessboardDL_chessboardBlack_layerOpaque[];
+extern Gfx gChessboardDL[];
