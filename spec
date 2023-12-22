@@ -3378,7 +3378,6 @@ endseg
 
 beginseg
     name "ovl_Obj_Chess"
-    compress
     include "build/src/overlays/actors/ovl_Obj_Chess/z_obj_chess.o"
     include "build/src/overlays/actors/ovl_Obj_Chess/ovl_Obj_Chess_reloc.o"
 endseg
@@ -6058,7 +6057,6 @@ endseg
 
 beginseg
     name "object_chess"
-    compress
     romalign 0x1000
     include "build/assets/objects/object_chess/gChessboardDL.o"
     include "build/assets/objects/object_chess/gChessboardDL_collision.o"
@@ -10502,7 +10500,6 @@ endseg
 
 beginseg
     name "my_scene"
-    compress
     romalign 0x1000
     include "build/assets/scenes/my_scenes/my_scene/my_scene_scene.o"
     number 2
@@ -10510,7 +10507,6 @@ endseg
 
 beginseg
     name "my_scene_room_0"
-    compress
     romalign 0x1000
     include "build/assets/scenes/my_scenes/my_scene/my_scene_room_0.o"
     number 3

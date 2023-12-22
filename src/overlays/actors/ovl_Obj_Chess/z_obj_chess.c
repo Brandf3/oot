@@ -171,7 +171,7 @@ void ObjChess_DrawPieces(ObjChess* this, PlayState* play) {
     int i;
     int j;
 
-    OPEN_DISPS(play->state.gfxCtx);
+    OPEN_DISPS(play->state.gfxCtx, "../z_obj_chess.c", 174);
     
     for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
@@ -225,7 +225,7 @@ void ObjChess_DrawPieces(ObjChess* this, PlayState* play) {
         }
     }
     
-    CLOSE_DISPS(play->state.gfxCtx);
+    CLOSE_DISPS(play->state.gfxCtx, "../z_obj_chess.c", 228);
 }
 
 void ObjChess_Collision(ObjChess* this, PlayState* play) {
