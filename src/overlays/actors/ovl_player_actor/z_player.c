@@ -3254,8 +3254,6 @@ void Player_UseItem(PlayState* play, Player* this, s32 item) {
                 // Handle Deku Nuts
                 if (AMMO(ITEM_DEKU_NUT) != 0) {
                     func_8083C61C(play, this);
-                    Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_CHESS, this->actor.world.pos.x,
-                                this->actor.world.pos.y, this->actor.world.pos.z, 0, 0, 0, 0);
                 } else {
                     Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
                 }
