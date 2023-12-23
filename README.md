@@ -1,3 +1,6 @@
+# Chess Actor
+Use negative rotation values when placing into your map in blender. E.g. -270 instead of 90.
+
 # The Legend of Zelda: Ocarina of Time
 
 [![Build Status][jenkins-badge]][jenkins] [![Decompilation Progress][progress-badge]][progress] [![Contributors][contributors-badge]][contributors] [![Discord Channel][discord-badge]][discord]
