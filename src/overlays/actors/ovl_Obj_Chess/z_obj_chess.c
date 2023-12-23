@@ -523,14 +523,14 @@ void ObjChess_UnrotateVector(ObjChess* this, PlayState* play, Vec3f* vec) {
     f32 sin;
     f32 cos;
 
-    if (z != 0) {
-        sin = Math_SinS(z);
-        cos = Math_CosS(z);
+    if (x != 0) {
+        sin = Math_SinS(x);
+        cos = Math_CosS(x);
 
-        temp1 = vec->x;
-        temp2 = vec->y;
-        vec->x = temp1 * cos + temp2 * sin;
-        vec->y = temp2 * cos - temp1 * sin;
+        temp1 = vec->y;
+        temp2 = vec->z;
+        vec->y = temp1 * cos + temp2 * sin;
+        vec->z = temp2 * cos - temp1 * sin;
     }
 
     if (y != 0) {
@@ -542,15 +542,15 @@ void ObjChess_UnrotateVector(ObjChess* this, PlayState* play, Vec3f* vec) {
         vec->x = temp1 * cos - temp2 * sin;
         vec->z = temp1 * sin + temp2 * cos;
     }
+    
+    if (z != 0) {
+        sin = Math_SinS(z);
+        cos = Math_CosS(z);
 
-    if (x != 0) {
-        sin = Math_SinS(x);
-        cos = Math_CosS(x);
-
-        temp1 = vec->y;
-        temp2 = vec->z;
-        vec->y = temp1 * cos + temp2 * sin;
-        vec->z = temp2 * cos - temp1 * sin;
+        temp1 = vec->x;
+        temp2 = vec->y;
+        vec->x = temp1 * cos + temp2 * sin;
+        vec->y = temp2 * cos - temp1 * sin;
     }
 }
 

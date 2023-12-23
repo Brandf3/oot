@@ -32,8 +32,8 @@ ActorEntry my_scene_room_0_header00_actorList[LENGTH_MY_SCENE_ROOM_0_HEADER00_AC
     // Custom Actor
     {
         /* Actor ID   */ ACTOR_OBJ_CHESS,
-        /* Position   */ { 400, 200, 300 },
-        /* Rotation   */ { DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000), DEG_TO_BINANG(90.000) },
+        /* Position   */ { 400, 250, 300 },
+        /* Rotation   */ { DEG_TO_BINANG(315.000), DEG_TO_BINANG(0.000), DEG_TO_BINANG(90.000) },
         /* Parameters */ 0x0000
     },
 
