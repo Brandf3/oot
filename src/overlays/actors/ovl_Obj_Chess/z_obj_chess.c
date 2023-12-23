@@ -29,6 +29,7 @@ void ObjChess_Move(ObjChess* this, PlayState* play);
 bool ObjChess_CheckMove(ObjChess* this, PlayState* play);
 void ObjChess_ConvertToFEN(ObjChess* this, PlayState* play);
 void ObjChess_PopulateBoard(ObjChess* this, PlayState* play, char fen[]);
+void ObjChess_RotateVector(ObjChess* this, PlayState* play, Vec3f* vec);
 
 static ColliderQuadInit sQuadInit = {
     {
@@ -128,21 +129,141 @@ void ObjChess_Init(Actor* thisx, PlayState* play) {
     this->pieceToMove = -1;
     this->destination = -1;
 
-    this->vertexA.x = 200.0f + this->dyna.actor.world.pos.x;
-    this->vertexA.y = 0.0f + this->dyna.actor.world.pos.y;
-    this->vertexA.z = 200.0f + this->dyna.actor.world.pos.z;
+    this->vertexA.x = 200.0f;
+    this->vertexA.y = 0.0f;
+    this->vertexA.z = 200.0f;
 
-    this->vertexB.x = 200.0f + this->dyna.actor.world.pos.x;
-    this->vertexB.y = 0.0f + this->dyna.actor.world.pos.y;
-    this->vertexB.z = -200.0f + this->dyna.actor.world.pos.z;
+    this->vertexB.x = 200.0f;
+    this->vertexB.y = 0.0f;
+    this->vertexB.z = -200.0f;
 
-    this->vertexC.x = -200.0f + this->dyna.actor.world.pos.x;
-    this->vertexC.y = 0.0f + this->dyna.actor.world.pos.y;
-    this->vertexC.z = 200.0f + this->dyna.actor.world.pos.z;
+    this->vertexC.x = -200.0f;
+    this->vertexC.y = 0.0f;
+    this->vertexC.z = 200.0f;
 
-    this->vertexD.x = -200.0f + this->dyna.actor.world.pos.x;
-    this->vertexD.y = 0.0f + this->dyna.actor.world.pos.y;
-    this->vertexD.z = -200.0f + this->dyna.actor.world.pos.z;
+    this->vertexD.x = -200.0f;
+    this->vertexD.y = 0.0f;
+    this->vertexD.z = -200.0f;
+
+    // s16 z = this->dyna.actor.shape.rot.z;
+    // s16 y = this->dyna.actor.shape.rot.y;
+    // s16 x = this->dyna.actor.shape.rot.x;
+    // f32 temp1;
+    // f32 temp2;
+    // f32 sin;
+    // f32 cos;
+
+    // if (z != 0) {
+    //     sin = Math_SinS(z);
+    //     cos = Math_CosS(z);
+
+    //     temp1 = this->vertexA.x;
+    //     temp2 = this->vertexA.y;
+    //     this->vertexA.x = temp1 * cos - temp2 * sin;
+    //     this->vertexA.y = temp2 * cos + temp1 * sin;
+
+    //     temp1 = this->vertexB.x;
+    //     temp2 = this->vertexB.y;
+    //     this->vertexB.x = temp1 * cos - temp2 * sin;
+    //     this->vertexB.y = temp2 * cos + temp1 * sin;
+
+    //     temp1 = this->vertexC.x;
+    //     temp2 = this->vertexC.y;
+    //     this->vertexC.x = temp1 * cos - temp2 * sin;
+    //     this->vertexC.y = temp2 * cos + temp1 * sin;
+
+    //     temp1 = this->vertexD.x;
+    //     temp2 = this->vertexD.y;
+    //     this->vertexD.x = temp1 * cos - temp2 * sin;
+    //     this->vertexD.y = temp2 * cos + temp1 * sin;
+    // }
+
+    // if (y != 0) {
+    //     sin = Math_SinS(y);
+    //     cos = Math_CosS(y);
+
+    //     temp1 = this->vertexA.x;
+    //     temp2 = this->vertexA.z;
+    //     this->vertexA.x = temp1 * cos + temp2 * sin;
+    //     this->vertexA.z = temp1 * sin * -1 + temp2 * cos;
+
+    //     temp1 = this->vertexB.x;
+    //     temp2 = this->vertexB.z;
+    //     this->vertexB.x = temp1 * cos + temp2 * sin;
+    //     this->vertexB.z = temp1 * sin * -1 + temp2 * cos;
+
+    //     temp1 = this->vertexC.x;
+    //     temp2 = this->vertexC.z;
+    //     this->vertexC.x = temp1 * cos + temp2 * sin;
+    //     this->vertexC.z = temp1 * sin * -1 + temp2 * cos;
+
+    //     temp1 = this->vertexD.x;
+    //     temp2 = this->vertexD.z;
+    //     this->vertexD.x = temp1 * cos + temp2 * sin;
+    //     this->vertexD.z = temp1 * sin * -1 + temp2 * cos;
+    // }
+
+    // if (x != 0) {
+    //     sin = Math_SinS(x);
+    //     cos = Math_CosS(x);
+
+    //     temp1 = this->vertexA.y;
+    //     temp2 = this->vertexA.z;
+    //     this->vertexA.y = temp1 * cos - temp2 * sin;
+    //     this->vertexA.z = temp2 * cos + temp1 * sin;
+
+    //     temp1 = this->vertexB.y;
+    //     temp2 = this->vertexB.z;
+    //     this->vertexB.y = temp1 * cos - temp2 * sin;
+    //     this->vertexB.z = temp2 * cos + temp1 * sin;
+
+    //     temp1 = this->vertexC.y;
+    //     temp2 = this->vertexC.z;
+    //     this->vertexC.y = temp1 * cos - temp2 * sin;
+    //     this->vertexC.z = temp2 * cos + temp1 * sin;
+
+    //     temp1 = this->vertexD.y;
+    //     temp2 = this->vertexD.z;
+    //     this->vertexD.y = temp1 * cos - temp2 * sin;
+    //     this->vertexD.z = temp2 * cos + temp1 * sin;
+    // }
+
+    ObjChess_RotateVector(this, play, &this->vertexA);
+    ObjChess_RotateVector(this, play, &this->vertexB);
+    ObjChess_RotateVector(this, play, &this->vertexC);
+    ObjChess_RotateVector(this, play, &this->vertexD);
+
+    this->vertexA.x += this->dyna.actor.world.pos.x;
+    this->vertexA.y += this->dyna.actor.world.pos.y;
+    this->vertexA.z += this->dyna.actor.world.pos.z;
+
+    this->vertexB.x += this->dyna.actor.world.pos.x;
+    this->vertexB.y += this->dyna.actor.world.pos.y;
+    this->vertexB.z += this->dyna.actor.world.pos.z;
+
+    this->vertexC.x += this->dyna.actor.world.pos.x;
+    this->vertexC.y += this->dyna.actor.world.pos.y;
+    this->vertexC.z += this->dyna.actor.world.pos.z;
+
+    this->vertexD.x += this->dyna.actor.world.pos.x;
+    this->vertexD.y += this->dyna.actor.world.pos.y;
+    this->vertexD.z += this->dyna.actor.world.pos.z;
+
+    // osSyncPrintf("Post-Rotation X: %f\n", this->vertexA.x);
+    // osSyncPrintf("Post-Rotation Y: %f\n", this->vertexA.y);
+    // osSyncPrintf("Post-Rotation Z: %f\n", this->vertexA.z);
+
+    // osSyncPrintf("Post-Rotation X: %f\n", this->vertexB.x);
+    // osSyncPrintf("Post-Rotation Y: %f\n", this->vertexB.y);
+    // osSyncPrintf("Post-Rotation Z: %f\n", this->vertexB.z);
+
+    // osSyncPrintf("Post-Rotation X: %f\n", this->vertexC.x);
+    // osSyncPrintf("Post-Rotation Y: %f\n", this->vertexC.y);
+    // osSyncPrintf("Post-Rotation Z: %f\n", this->vertexC.z);
+
+    // osSyncPrintf("Post-Rotation X: %f\n", this->vertexD.x);
+    // osSyncPrintf("Post-Rotation Y: %f\n", this->vertexD.y);
+    // osSyncPrintf("Post-Rotation Z: %f\n", this->vertexD.z);
 
     Collider_InitQuad(play, &this->collider);
     Collider_SetQuad(play, &this->collider, &this->dyna.actor, &sQuadInit);
@@ -177,12 +298,21 @@ void ObjChess_DrawPieces(ObjChess* this, PlayState* play) {
         for (j = 0; j < 8; j++) {
             int piece = this->chessBoard[i][j];
             if (piece != EMPTY) {
-                int x = this->dyna.actor.world.pos.x + (j * 50) - 175;
-                int y = this->dyna.actor.world.pos.y;
-                int z = this->dyna.actor.world.pos.z + (i * 50) - 175;
+                Vec3f piecePosition;
+                piecePosition.x = (j * 50) - 175;
+                piecePosition.y = 2.5;
+                piecePosition.z = (i * 50) - 175;
 
-                Matrix_Translate(x, y + 2.5, z, MTXMODE_NEW);
+                ObjChess_RotateVector(this, play, &piecePosition);
+                piecePosition.x += this->dyna.actor.world.pos.x;
+                piecePosition.y += this->dyna.actor.world.pos.y;
+                piecePosition.z += this->dyna.actor.world.pos.z;
+
+                Matrix_Translate(piecePosition.x, piecePosition.y, piecePosition.z, MTXMODE_NEW);
                 Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
+
+                // Makes pieces face outward no matter the rotation
+                //Matrix_RotateZYX(this->dyna.actor.shape.rot.x, this->dyna.actor.shape.rot.y, this->dyna.actor.shape.rot.z, MTXMODE_APPLY);
 
                 if (piece >= WHITE_PAWN) {
                     Matrix_RotateY(DEG_TO_RAD(90), MTXMODE_APPLY);
@@ -235,7 +365,7 @@ void ObjChess_Collision(ObjChess* this, PlayState* play) {
         int column = (this->collider.info.bumper.hitPos.x - this->dyna.actor.world.pos.x + 200) / 50;
         int row = (this->collider.info.bumper.hitPos.z - this->dyna.actor.world.pos.z + 200) / 50;
         int squareHit = column + (row * 8);
-        
+        osSyncPrintf("Square Hit: %d\n", squareHit);
         if (this->pieceToMove == -1) {
             this->pieceToMove = squareHit;
         } else {
@@ -429,6 +559,46 @@ void ObjChess_PopulateBoard(ObjChess* this, PlayState* play, char fen[]) {
             boardColumn++;
         }
         i++;
+    }
+}
+
+void ObjChess_RotateVector(ObjChess* this, PlayState* play, Vec3f* vec) {
+    s16 z = this->dyna.actor.shape.rot.z;
+    s16 y = this->dyna.actor.shape.rot.y;
+    s16 x = this->dyna.actor.shape.rot.x;
+    f32 temp1;
+    f32 temp2;
+    f32 sin;
+    f32 cos;
+
+    if (z != 0) {
+        sin = Math_SinS(z);
+        cos = Math_CosS(z);
+
+        temp1 = vec->x;
+        temp2 = vec->y;
+        vec->x = temp1 * cos - temp2 * sin;
+        vec->y = temp2 * cos + temp1 * sin;
+    }
+
+    if (y != 0) {
+        sin = Math_SinS(y);
+        cos = Math_CosS(y);
+
+        temp1 = vec->x;
+        temp2 = vec->z;
+        vec->x = temp1 * cos + temp2 * sin;
+        vec->z = temp1 * sin * -1 + temp2 * cos;
+    }
+
+    if (x != 0) {
+        sin = Math_SinS(x);
+        cos = Math_CosS(x);
+
+        temp1 = vec->y;
+        temp2 = vec->z;
+        vec->y = temp1 * cos - temp2 * sin;
+        vec->z = temp2 * cos + temp1 * sin;
     }
 }
 

@@ -3256,6 +3256,9 @@ void Player_UseItem(PlayState* play, Player* this, s32 item) {
                     func_8083C61C(play, this);
                     Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_CHESS, this->actor.world.pos.x,
                                 this->actor.world.pos.y, this->actor.world.pos.z, 0, 0, 0, 0);
+                    osSyncPrintf("Position x: %f\n", this->actor.world.pos.x);
+                    osSyncPrintf("Position y: %f\n", this->actor.world.pos.y);
+                    osSyncPrintf("Position z: %f\n", this->actor.world.pos.z);
                 } else {
                     Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
                 }

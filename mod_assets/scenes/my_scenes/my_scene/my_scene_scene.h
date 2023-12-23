@@ -14,6 +14,7 @@ extern CollisionHeader my_scene_collisionHeader;
 extern SceneCmd* my_scene_room_0_alternateHeaders[];
 extern SceneCmd my_scene_room_0_header00[];
 extern s16 my_scene_room_0_header00_objectList[];
+extern ActorEntry my_scene_room_0_header00_actorList[];
 extern RoomShapeNormal my_scene_room_0_shapeHeader;
 extern RoomShapeDListsEntry my_scene_room_0_shapeDListEntry[1];
 extern Gfx my_scene_room_0_entry_0_opaque[];
