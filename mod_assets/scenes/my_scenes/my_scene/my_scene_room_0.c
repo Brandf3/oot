@@ -32,16 +32,8 @@ ActorEntry my_scene_room_0_header00_actorList[LENGTH_MY_SCENE_ROOM_0_HEADER00_AC
     // Custom Actor
     {
         /* Actor ID   */ ACTOR_OBJ_CHESS,
-        /* Position   */ { 300, 200, 300 },
+        /* Position   */ { 400, 200, 300 },
         /* Rotation   */ { DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000), DEG_TO_BINANG(90.000) },
-        /* Parameters */ 0x0000
-    },
-
-    // Custom Actor
-    {
-        /* Actor ID   */ ACTOR_OBJ_CHESS,
-        /* Position   */ { -300, 150, 300 },
-        /* Rotation   */ { DEG_TO_BINANG(315.000), DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000) },
         /* Parameters */ 0x0000
     },
 
@@ -50,6 +42,14 @@ ActorEntry my_scene_room_0_header00_actorList[LENGTH_MY_SCENE_ROOM_0_HEADER00_AC
         /* Actor ID   */ ACTOR_OBJ_CHESS,
         /* Position   */ { 0, 200, 300 },
         /* Rotation   */ { DEG_TO_BINANG(270.000), DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000) },
+        /* Parameters */ 0x0000
+    },
+
+    // Custom Actor
+    {
+        /* Actor ID   */ ACTOR_OBJ_CHESS,
+        /* Position   */ { -450, 150, 300 },
+        /* Rotation   */ { DEG_TO_BINANG(315.000), DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000) },
         /* Parameters */ 0x0000
     },
 };

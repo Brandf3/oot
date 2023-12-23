@@ -213,8 +213,8 @@ void ObjChess_DrawPieces(ObjChess* this, PlayState* play) {
                 Matrix_Translate(piecePosition.x, piecePosition.y, piecePosition.z, MTXMODE_NEW);
                 Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
 
-                // Makes pieces face outward no matter the rotation
-                //Matrix_RotateZYX(this->dyna.actor.shape.rot.x, this->dyna.actor.shape.rot.y, this->dyna.actor.shape.rot.z, MTXMODE_APPLY);
+                // Makes pieces face match the rotation instead of pointing upright
+                Matrix_RotateZYX(this->dyna.actor.shape.rot.x, this->dyna.actor.shape.rot.y, this->dyna.actor.shape.rot.z, MTXMODE_APPLY);
 
                 if (piece >= WHITE_PAWN) {
                     Matrix_RotateY(DEG_TO_RAD(90), MTXMODE_APPLY);
@@ -277,7 +277,7 @@ void ObjChess_Collision(ObjChess* this, PlayState* play) {
         int column = hitMark.x;
         int row = hitMark.z;
         int squareHit = column + (row * 8);
-
+        
         if (this->pieceToMove == -1) {
             this->pieceToMove = squareHit;
         } else {
