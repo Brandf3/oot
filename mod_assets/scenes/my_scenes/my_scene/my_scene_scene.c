@@ -30,7 +30,7 @@ RomFile my_scene_scene_roomList[] = {
 ActorEntry my_scene_scene_header00_playerEntryList[] = {
     {
         /* Actor ID   */ ACTOR_PLAYER,
-        /* Position   */ { 386, 19, -315 },
+        /* Position   */ { 0, 0, 0 },
         /* Rotation   */ { DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000) },
         /* Parameters */ 0x0FFF
     },

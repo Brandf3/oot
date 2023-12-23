@@ -202,7 +202,7 @@ void ObjChess_DrawPieces(ObjChess* this, PlayState* play) {
             if (piece != EMPTY) {
                 Vec3f piecePosition;
                 piecePosition.x = (j * 50) - 175;
-                piecePosition.y = 2.5;
+                piecePosition.y = 5;
                 piecePosition.z = (i * 50) - 175;
 
                 ObjChess_RotateVector(this, play, &piecePosition);
@@ -218,7 +218,7 @@ void ObjChess_DrawPieces(ObjChess* this, PlayState* play) {
 
                 if (piece >= WHITE_PAWN) {
                     Matrix_RotateY(DEG_TO_RAD(90), MTXMODE_APPLY);
-                    gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, 255);
+                    gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 200, 200, 200, 255);
                 } else {
                     Matrix_RotateY(DEG_TO_RAD(270), MTXMODE_APPLY);
                     gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 64, 64, 64, 255);
@@ -265,15 +265,19 @@ void ObjChess_Collision(ObjChess* this, PlayState* play) {
         this->collider.base.acFlags &= ~AC_HIT;
 
         Vec3f hitMark;
-        hitMark.x = this->collider.info.bumper.hitPos.x - this->dyna.actor.world.pos.x + 200;
-        hitMark.y = this->collider.info.bumper.hitPos.y - this->dyna.actor.world.pos.y + 200;
-        hitMark.z = this->collider.info.bumper.hitPos.z - this->dyna.actor.world.pos.z + 200;
-        ObjChess_UnrotateVector(this, play, &hitMark);
+        hitMark.x = (this->collider.info.bumper.hitPos.x - this->dyna.actor.world.pos.x);
+        hitMark.y = (this->collider.info.bumper.hitPos.y - this->dyna.actor.world.pos.y);
+        hitMark.z = (this->collider.info.bumper.hitPos.z - this->dyna.actor.world.pos.z);
 
-        int column = hitMark.x / 50;
-        int row = hitMark.z / 50;
+        ObjChess_UnrotateVector(this, play, &hitMark);
+        hitMark.x = (hitMark.x + 200) / 50;
+        hitMark.y = (hitMark.y + 200) / 50;
+        hitMark.z = (hitMark.z + 200) / 50;
+
+        int column = hitMark.x;
+        int row = hitMark.z;
         int squareHit = column + (row * 8);
-        osSyncPrintf("Square Hit: %d\n", squareHit);
+
         if (this->pieceToMove == -1) {
             this->pieceToMove = squareHit;
         } else {
@@ -482,7 +486,7 @@ void ObjChess_RotateVector(ObjChess* this, PlayState* play, Vec3f* vec) {
     if (z != 0) {
         sin = Math_SinS(z);
         cos = Math_CosS(z);
-
+        
         temp1 = vec->x;
         temp2 = vec->y;
         vec->x = temp1 * cos - temp2 * sin;
