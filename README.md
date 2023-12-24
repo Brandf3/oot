@@ -1,3 +1,5 @@
+This repository is a collection of custom actors and items that I have made. You may freely use them in your own mods without asking me, but please credit me for them. 
+
 # The Legend of Zelda: Ocarina of Time
 
 [![Build Status][jenkins-badge]][jenkins] [![Decompilation Progress][progress-badge]][progress] [![Contributors][contributors-badge]][contributors] [![Discord Channel][discord-badge]][discord]
