@@ -89,8 +89,12 @@ void EnArrow_Init(Actor* thisx, PlayState* play) {
         this->actor.params = ARROW_NUT;
     }
 
-    if (this->actor.params <= ARROW_SEED) {
+    if (play->haltAllActors == 2) {
+        this->spawnedInTimestop = true;
+    }
 
+    if (this->actor.params <= ARROW_SEED) {
+        
         if (this->actor.params <= ARROW_0E) {
             SkelAnime_Init(play, &this->skelAnime, &gArrowSkel, &gArrow2Anim, NULL, NULL, 0);
         }
@@ -156,7 +160,7 @@ void EnArrow_Shoot(EnArrow* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
 
     if (this->actor.parent == NULL) {
-        if ((this->actor.params != ARROW_NUT) && (player->unk_A73 == 0)) {
+        if ((this->actor.params != ARROW_NUT) && (player->unk_A73 == 0) && (!this->spawnedInTimestop)) {
             Actor_Kill(&this->actor);
             return;
         }
@@ -388,7 +392,7 @@ void EnArrow_Update(Actor* thisx, PlayState* play) {
     s32 pad;
     EnArrow* this = (EnArrow*)thisx;
     Player* player = GET_PLAYER(play);
-
+    
     if (this->isCsNut || ((this->actor.params >= ARROW_NORMAL_LIT) && (player->unk_A73 != 0)) ||
         !Player_InBlockingCsMode(play, player)) {
         this->actionFunc(this, play);
@@ -458,7 +462,7 @@ void EnArrow_Draw(Actor* thisx, PlayState* play) {
         Gfx_SetupDL_25Opa(play->state.gfxCtx);
         SkelAnime_DrawLod(play, this->skelAnime.skeleton, this->skelAnime.jointTable, NULL, NULL, this,
                           (this->actor.projectedPos.z < MREG(95)) ? 0 : 1);
-    } else if (this->actor.speed != 0.0f) {
+    } else if (this->actor.speed != 0.0f || play->haltAllActors == 2) {
         alpha = (Math_CosS(this->timer * 5000) * 127.5f) + 127.5f;
 
         OPEN_DISPS(play->state.gfxCtx, "../z_en_arrow.c", 1346);

@@ -2236,7 +2236,12 @@ void Actor_UpdateAll(PlayState* play, ActorContext* actorCtx) {
                     if (actor->colorFilterTimer != 0) {
                         actor->colorFilterTimer--;
                     }
-                    actor->update(actor, play);
+                    
+                    // Add other actor categories here to exclude from freezing
+                    if (!(play->haltAllActors == 2) || actor == player->naviActor || i == ACTORCAT_PLAYER) {
+                        actor->update(actor, play);
+                    } 
+
                     DynaPoly_UnsetAllInteractFlags(play, &play->colCtx.dyna, actor);
                 }
 

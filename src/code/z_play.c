@@ -896,7 +896,7 @@ void Play_Update(PlayState* this) {
 
                     PLAY_LOG(3637);
 
-                    if (!this->haltAllActors) {
+                    if (this->haltAllActors != true) {
                         Actor_UpdateAll(this, &this->actorCtx);
                     }
 

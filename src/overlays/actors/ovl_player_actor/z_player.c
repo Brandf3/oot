@@ -3219,7 +3219,9 @@ void Player_UseItem(PlayState* play, Player* this, s32 item) {
 
     itemAction = Player_ItemToItemAction(item);
 
-    if (((this->heldItemAction == this->itemAction) &&
+    if ((itemAction == PLAYER_IA_HOOKSHOT || itemAction == PLAYER_IA_LONGSHOT) && play->haltAllActors == 2) {
+        Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+    } else if (((this->heldItemAction == this->itemAction) &&
          (!(this->stateFlags1 & PLAYER_STATE1_22) || (Player_ActionToMeleeWeapon(itemAction) != 0) ||
           (itemAction == PLAYER_IA_NONE))) ||
         ((this->itemAction < 0) && ((Player_ActionToMeleeWeapon(itemAction) != 0) || (itemAction == PLAYER_IA_NONE)))) {
@@ -3242,8 +3244,10 @@ void Player_UseItem(PlayState* play, Player* this, s32 item) {
                 if (Magic_RequestChange(play, 0, MAGIC_CONSUME_LENS)) {
                     if (play->actorCtx.lensActive) {
                         Actor_DisableLens(play);
+                        play->haltAllActors = false;
                     } else {
                         play->actorCtx.lensActive = true;
+                        play->haltAllActors = 2;
                     }
 
                     Sfx_PlaySfxCentered((play->actorCtx.lensActive) ? NA_SE_SY_GLASSMODE_ON : NA_SE_SY_GLASSMODE_OFF);
