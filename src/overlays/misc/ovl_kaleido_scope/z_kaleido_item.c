@@ -5,11 +5,11 @@ u8 gAmmoItems[] = {
     ITEM_DEKU_STICK, ITEM_DEKU_NUT, ITEM_BOMB, ITEM_BOW, ITEM_NONE, ITEM_NONE, 
     ITEM_SLINGSHOT, ITEM_NONE, ITEM_BOMBCHU, ITEM_NONE, ITEM_NONE, ITEM_NONE,
     ITEM_NONE, ITEM_NONE, ITEM_MAGIC_BEAN, ITEM_NONE, ITEM_NONE, ITEM_NONE,
-    // ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE,
-    // ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, // First line of custom items
-    // ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE,
-    // ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE,
-    // ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE,
+    ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE,
+    ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, // First line of custom items
+    ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE,
+    ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE,
+    ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE, ITEM_NONE,
 };
 
 static s16 sEquipState = 0;
@@ -20,7 +20,7 @@ static s16 sAmmoVtxOffset[] = {
     0, 2, 4, 6, 99, 99, 8, 99, 99, 10, 99, 99, 99, 99, 99, 99, 12,
 };
 
-void KaleidoScope_DrawAmmoCount(PauseContext* pauseCtx, GraphicsContext* gfxCtx, s16 item) {
+void KaleidoScope_DrawAmmoCount(PauseContext* pauseCtx, GraphicsContext* gfxCtx, s16 item, u8 invOffset) {
     s16 ammo;
     s16 i;
 
@@ -54,7 +54,7 @@ void KaleidoScope_DrawAmmoCount(PauseContext* pauseCtx, GraphicsContext* gfxCtx,
     gDPPipeSync(POLY_OPA_DISP++);
 
     if (i != 0) {
-        gSPVertex(POLY_OPA_DISP++, &pauseCtx->itemVtx[(sAmmoVtxOffset[item] + 27) * 4], 4, 0);
+        gSPVertex(POLY_OPA_DISP++, &pauseCtx->itemVtx[(sAmmoVtxOffset[item - invOffset] + 27) * 4], 4, 0);
 
         gDPLoadTextureBlock(POLY_OPA_DISP++, ((u8*)gAmmoDigit0Tex + (8 * 8 * i)), G_IM_FMT_IA, G_IM_SIZ_8b, 8, 8, 0,
                             G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD,
@@ -63,7 +63,7 @@ void KaleidoScope_DrawAmmoCount(PauseContext* pauseCtx, GraphicsContext* gfxCtx,
         gSP1Quadrangle(POLY_OPA_DISP++, 0, 2, 3, 1, 0);
     }
 
-    gSPVertex(POLY_OPA_DISP++, &pauseCtx->itemVtx[(sAmmoVtxOffset[item] + 28) * 4], 4, 0);
+    gSPVertex(POLY_OPA_DISP++, &pauseCtx->itemVtx[(sAmmoVtxOffset[item - invOffset] + 28) * 4], 4, 0);
 
     gDPLoadTextureBlock(POLY_OPA_DISP++, ((u8*)gAmmoDigit0Tex + (8 * 8 * ammo)), G_IM_FMT_IA, G_IM_SIZ_8b, 8, 8, 0,
                         G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD,
@@ -80,7 +80,13 @@ void KaleidoScope_SetCursorVtx(PauseContext* pauseCtx, u16 index, Vtx* vtx) {
 }
 
 void KaleidoScope_SetItemCursorVtx(PauseContext* pauseCtx) {
-    KaleidoScope_SetCursorVtx(pauseCtx, pauseCtx->cursorSlot[PAUSE_ITEM] * 4, pauseCtx->itemVtx);
+    int invOffset;
+    if (pauseCtx->cursorY[PAUSE_ITEM] > 3) {
+        invOffset = pauseCtx->cursorY[PAUSE_ITEM] * 6 - 18;
+    } else {
+        invOffset = 0;
+    }
+    KaleidoScope_SetCursorVtx(pauseCtx, pauseCtx->cursorSlot[PAUSE_ITEM] * 4 - invOffset, pauseCtx->itemVtx);
 }
 
 void KaleidoScope_DrawItemSelect(PlayState* play) {
@@ -345,7 +351,13 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
             }
 
             if (cursorItem != PAUSE_ITEM_NONE) {
-                index = cursorSlot * 4; // required to match?
+                int invOffset;
+                if (pauseCtx->cursorY[PAUSE_ITEM] > 3) {
+                    invOffset = pauseCtx->cursorY[PAUSE_ITEM] * 6 - 18;
+                } else {
+                    invOffset = 0;
+                }
+                index = (cursorSlot - invOffset) * 4; // required to match?
                 KaleidoScope_SetCursorVtx(pauseCtx, index, pauseCtx->itemVtx);
 
                 if ((pauseCtx->debugState == 0) && (pauseCtx->state == PAUSE_STATE_MAIN) && (pauseCtx->mainState == PAUSE_MAIN_STATE_IDLE)) {
@@ -411,7 +423,13 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                                  &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
         }
     } else if ((pauseCtx->mainState == PAUSE_MAIN_STATE_3) && (pauseCtx->pageIndex == PAUSE_ITEM)) {
-        KaleidoScope_SetCursorVtx(pauseCtx, cursorSlot * 4, pauseCtx->itemVtx);
+        int invOffset;
+        if (pauseCtx->cursorY[PAUSE_ITEM] > 3) {
+            invOffset = pauseCtx->cursorY[PAUSE_ITEM] * 6 - 18;
+        } else {
+            invOffset = 0;
+        }
+        KaleidoScope_SetCursorVtx(pauseCtx, (cursorSlot - invOffset) * 4, pauseCtx->itemVtx);
         pauseCtx->cursorColorSet = 4;
     }
 
@@ -419,6 +437,13 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                       ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
     gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, pauseCtx->alpha);
     gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, 0);
+
+    int invOffset;
+    if (pauseCtx->cursorY[PAUSE_ITEM] > 3) {
+        invOffset = pauseCtx->cursorY[PAUSE_ITEM] * 6 - 18;
+    } else {
+        invOffset = 0;
+    }
 
     for (i = 0, j = 24 * 4; i < 3; i++, j += 4) {
         if (gSaveContext.save.info.equips.buttonItems[i + 1] != ITEM_NONE) {
@@ -430,7 +455,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
     gDPPipeSync(POLY_OPA_DISP++);
     gDPSetCombineMode(POLY_OPA_DISP++, G_CC_MODULATEIA_PRIM, G_CC_MODULATEIA_PRIM);
 
-    for (i = j = 0; i < 24; i++, j += 4) {
+    for (i = invOffset, j = 0; i < 24 + invOffset; i++, j += 4) {
         gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, pauseCtx->alpha);
 
         if (gSaveContext.save.info.inventory.items[i] != ITEM_NONE) {
@@ -484,9 +509,9 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
     gDPSetCombineLERP(POLY_OPA_DISP++, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0, PRIMITIVE,
                       ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
 
-    for (i = 0; i < 15; i++) {
+    for (i = invOffset; i < invOffset + 24; i++) {
         if ((gAmmoItems[i] != ITEM_NONE) && (gSaveContext.save.info.inventory.items[i] != ITEM_NONE)) {
-            KaleidoScope_DrawAmmoCount(pauseCtx, play->state.gfxCtx, gSaveContext.save.info.inventory.items[i]);
+            KaleidoScope_DrawAmmoCount(pauseCtx, play->state.gfxCtx, gSaveContext.save.info.inventory.items[i], invOffset);
         }
     }
 
