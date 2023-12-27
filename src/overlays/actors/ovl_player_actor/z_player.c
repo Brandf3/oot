@@ -1246,6 +1246,33 @@ static s8 sItemActions[] = {
     PLAYER_IA_SWORD_BIGGORON,      // ITEM_SWORD_BIGGORON
 };
 
+static s8 sCustomItemActions[] = {
+    PLAYER_IA_CUSTOM1,
+    PLAYER_IA_CUSTOM2,
+    PLAYER_IA_CUSTOM3,
+    PLAYER_IA_CUSTOM4,
+    PLAYER_IA_CUSTOM5,
+    PLAYER_IA_CUSTOM6,
+    PLAYER_IA_CUSTOM7,
+    PLAYER_IA_CUSTOM8,
+    PLAYER_IA_CUSTOM9,
+    PLAYER_IA_CUSTOM10,
+    PLAYER_IA_CUSTOM11,
+    PLAYER_IA_CUSTOM12,
+    PLAYER_IA_CUSTOM13,
+    PLAYER_IA_CUSTOM14,
+    PLAYER_IA_CUSTOM15,
+    PLAYER_IA_CUSTOM16,
+    PLAYER_IA_CUSTOM17,
+    PLAYER_IA_CUSTOM18,
+    PLAYER_IA_CUSTOM19,
+    PLAYER_IA_CUSTOM20,
+    PLAYER_IA_CUSTOM21,
+    PLAYER_IA_CUSTOM22,
+    PLAYER_IA_CUSTOM23,
+    PLAYER_IA_CUSTOM24,
+};
+
 static s32 (*sItemActionUpdateFuncs[])(Player* this, PlayState* play) = {
     func_8083485C,                 // PLAYER_IA_NONE
     func_8083485C,                 // PLAYER_IA_SWORD_CS
@@ -2174,6 +2201,8 @@ s8 Player_ItemToItemAction(s32 item) {
         return PLAYER_IA_SWORD_CS;
     } else if (item == ITEM_FISHING_POLE) {
         return PLAYER_IA_FISHING_POLE;
+    } else if (item >= ITEM_CUSTOM1 && item <= ITEM_CUSTOM24) {
+        return sCustomItemActions[item - ITEM_CUSTOM1];
     } else {
         return sItemActions[item];
     }
@@ -3236,6 +3265,8 @@ void Player_UseItem(PlayState* play, Player* this, s32 item) {
                                    (play->actorCtx.actorLists[ACTORCAT_EXPLOSIVE].length >= 3)))))) {
                 // Prevent some items from being used if player is out of ammo.
                 // Also prevent explosives from being used if there are 3 or more active (outside of bombchu bowling)
+                Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+            } else if (itemAction >= PLAYER_IA_CUSTOM1 && itemAction <= PLAYER_IA_CUSTOM24) {
                 Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
             } else if (itemAction == PLAYER_IA_LENS_OF_TRUTH) {
                 // Handle Lens of Truth
