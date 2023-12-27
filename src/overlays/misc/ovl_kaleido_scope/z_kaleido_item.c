@@ -86,7 +86,7 @@ void KaleidoScope_SetItemCursorVtx(PauseContext* pauseCtx) {
     } else {
         invOffset = 0;
     }
-    KaleidoScope_SetCursorVtx(pauseCtx, pauseCtx->cursorSlot[PAUSE_ITEM] * 4 - invOffset, pauseCtx->itemVtx);
+    KaleidoScope_SetCursorVtx(pauseCtx, pauseCtx->cursorSlot[PAUSE_ITEM] * 4 - invOffset * 4, pauseCtx->itemVtx);
 }
 
 void KaleidoScope_DrawItemSelect(PlayState* play) {
@@ -444,9 +444,11 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
     } else {
         invOffset = 0;
     }
-
+    
     for (i = 0, j = 24 * 4; i < 3; i++, j += 4) {
-        if (gSaveContext.save.info.equips.buttonItems[i + 1] != ITEM_NONE) {
+        if (gSaveContext.save.info.equips.buttonItems[i + 1] != ITEM_NONE &&
+            gSaveContext.save.info.equips.buttonItems[i + 1] >= invOffset &&
+            gSaveContext.save.info.equips.buttonItems[i + 1] < invOffset + 24) {
             gSPVertex(POLY_OPA_DISP++, &pauseCtx->itemVtx[j], 4, 0);
             POLY_OPA_DISP = KaleidoScope_QuadTextureIA8(POLY_OPA_DISP, gEquippedItemOutlineTex, 32, 32, 0);
         }
