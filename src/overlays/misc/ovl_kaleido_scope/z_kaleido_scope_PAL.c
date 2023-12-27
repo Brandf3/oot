@@ -193,30 +193,30 @@ u8 gSlotAgeReqs[] = {
     AGE_REQ_ADULT, // SLOT_TRADE_ADULT
     AGE_REQ_CHILD, // SLOT_TRADE_CHILD
 
-    AGE_REQ_CHILD, // SLOT_DEKU_STICK
-    AGE_REQ_NONE,  // SLOT_DEKU_NUT
-    AGE_REQ_NONE,  // SLOT_BOMB
-    AGE_REQ_ADULT, // SLOT_BOW
-    AGE_REQ_ADULT, // SLOT_ARROW_FIRE
-    AGE_REQ_NONE,  // SLOT_DINS_FIRE
-    AGE_REQ_CHILD, // SLOT_SLINGSHOT
-    AGE_REQ_NONE,  // SLOT_OCARINA
-    AGE_REQ_NONE,  // SLOT_BOMBCHU
-    AGE_REQ_ADULT, // SLOT_HOOKSHOT
-    AGE_REQ_ADULT, // SLOT_ARROW_ICE
-    AGE_REQ_NONE,  // SLOT_FARORES_WIND
-    AGE_REQ_CHILD, // SLOT_BOOMERANG
-    AGE_REQ_NONE,  // SLOT_LENS_OF_TRUTH
-    AGE_REQ_CHILD, // SLOT_MAGIC_BEAN
-    AGE_REQ_ADULT, // SLOT_HAMMER
-    AGE_REQ_ADULT, // SLOT_ARROW_LIGHT
-    AGE_REQ_NONE,  // SLOT_NAYRUS_LOVE
-    AGE_REQ_NONE,  // SLOT_BOTTLE_1
-    AGE_REQ_NONE,  // SLOT_BOTTLE_2
-    AGE_REQ_NONE,  // SLOT_BOTTLE_3
-    AGE_REQ_NONE,  // SLOT_BOTTLE_4
-    AGE_REQ_ADULT, // SLOT_TRADE_ADULT
-    AGE_REQ_CHILD, // SLOT_TRADE_CHILD
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM1
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM2
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM3
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM4
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM5
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM6
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM7
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM8
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM9
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM10
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM11
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM12
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM13
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM14
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM15
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM16
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM17
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM18
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM19
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM20
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM21
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM22
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM23
+    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM24
 };
 
 u8 gEquipAgeReqs[4][4] = {
@@ -356,9 +356,8 @@ u8 gItemAgeReqs[] = {
     AGE_REQ_NONE,  // ITEM_CUSTOM_20
     AGE_REQ_NONE,  // ITEM_CUSTOM_21
     AGE_REQ_NONE,  // ITEM_CUSTOM_22
-    AGE_REQ_NONE,  // ITEM_CUSTOM_23
-    AGE_REQ_NONE,  // ITEM_CUSTOM_24
-    
+    AGE_REQ_CHILD,  // ITEM_CUSTOM_23
+    AGE_REQ_ADULT,  // ITEM_CUSTOM_24
 };
 
 u8 gAreaGsFlags[] = {
@@ -2748,7 +2747,13 @@ void KaleidoScope_Update(PlayState* play) {
 
             for (i = 0; i < ARRAY_COUNTU(gItemAgeReqs); i++) {
                 if (!CHECK_AGE_REQ_ITEM(i)) {
-                    KaleidoScope_GrayOutTextureRGBA32(SEGMENTED_TO_VIRTUAL(gItemIcons[i]),
+                    void* itemIcon;
+                    if (i < 87) {
+                        itemIcon = gItemIcons[i];
+                    } else {
+                        itemIcon = gCustomItemIcons[i - 87];
+                    }
+                    KaleidoScope_GrayOutTextureRGBA32(SEGMENTED_TO_VIRTUAL(itemIcon),
                                                       ITEM_ICON_WIDTH * ITEM_ICON_HEIGHT);
                 }
             }

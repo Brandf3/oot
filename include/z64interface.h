@@ -14,7 +14,8 @@ extern u8 _icon_item_24_staticSegmentRomStart[];
  *
  * @param itemId An ItemId value in the range `ITEM_DEKU_STICK`..`ITEM_FISHING_POLE`
  */
-#define GET_ITEM_ICON_VROM(itemId) ((uintptr_t)_icon_item_staticSegmentRomStart + ((itemId)*ITEM_ICON_SIZE))
+#define GET_ITEM_ICON_VROM(itemId) \
+    (itemId >= ITEM_CUSTOM1 ? (uintptr_t)_icon_item_staticSegmentRomEnd + ((itemId - ITEM_CUSTOM24 - 1)*ITEM_ICON_SIZE) : (uintptr_t)_icon_item_staticSegmentRomStart + ((itemId)*ITEM_ICON_SIZE))
 
 // A "quest icon" (gQuestIcon*Tex) is 24x24 rgba32
 #define QUEST_ICON_WIDTH 24
