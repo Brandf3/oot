@@ -215,6 +215,33 @@ void* gItemIcons[] = {
     gOcarinaBtnIconATex,      // ITEM_INVALID_7
 };
 
+void* gCustomItemIcons[] = {
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+    gItemIconDekuStickTex,
+};
+
 // Used to map item IDs to inventory slots
 u8 gItemSlots[] = {
     SLOT_DEKU_STICK,    // ITEM_DEKU_STICK
@@ -273,6 +300,31 @@ u8 gItemSlots[] = {
     SLOT_TRADE_ADULT,   // ITEM_EYEBALL_FROG
     SLOT_TRADE_ADULT,   // ITEM_EYE_DROPS
     SLOT_TRADE_ADULT,   // ITEM_CLAIM_CHECK
+
+    SLOT_CUSTOM_ITEM1,
+    SLOT_CUSTOM_ITEM2,
+    SLOT_CUSTOM_ITEM3,
+    SLOT_CUSTOM_ITEM4,
+    SLOT_CUSTOM_ITEM5,
+    SLOT_CUSTOM_ITEM6,
+    SLOT_CUSTOM_ITEM7,
+    SLOT_CUSTOM_ITEM8,
+    SLOT_CUSTOM_ITEM9,
+    SLOT_CUSTOM_ITEM10,
+    SLOT_CUSTOM_ITEM11,
+    SLOT_CUSTOM_ITEM12,
+    SLOT_CUSTOM_ITEM13,
+    SLOT_CUSTOM_ITEM14,
+    SLOT_CUSTOM_ITEM15,
+    SLOT_CUSTOM_ITEM16,  
+    SLOT_CUSTOM_ITEM17,
+    SLOT_CUSTOM_ITEM18,
+    SLOT_CUSTOM_ITEM19,
+    SLOT_CUSTOM_ITEM20,
+    SLOT_CUSTOM_ITEM21,
+    SLOT_CUSTOM_ITEM22,
+    SLOT_CUSTOM_ITEM23,
+    SLOT_CUSTOM_ITEM24,
 };
 
 void Inventory_ChangeEquipment(s16 equipment, u16 value) {

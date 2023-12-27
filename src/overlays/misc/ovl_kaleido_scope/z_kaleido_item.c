@@ -446,9 +446,12 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
     }
     
     for (i = 0, j = 24 * 4; i < 3; i++, j += 4) {
-        if (gSaveContext.save.info.equips.buttonItems[i + 1] != ITEM_NONE &&
-            gSaveContext.save.info.equips.buttonItems[i + 1] >= invOffset &&
-            gSaveContext.save.info.equips.buttonItems[i + 1] < invOffset + 24) {
+        u8 itemId = gSaveContext.save.info.equips.buttonItems[i + 1];
+        if (itemId >= ITEM_CUSTOM1) {
+            itemId -= 132;
+        }
+
+        if (itemId != ITEM_NONE && itemId >= invOffset && itemId < invOffset + 24) {
             gSPVertex(POLY_OPA_DISP++, &pauseCtx->itemVtx[j], 4, 0);
             POLY_OPA_DISP = KaleidoScope_QuadTextureIA8(POLY_OPA_DISP, gEquippedItemOutlineTex, 32, 32, 0);
         }
@@ -496,9 +499,16 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                 }
             }
 
+            void* itemIcon;
+            if (gSaveContext.save.info.inventory.items[i] >= ITEM_CUSTOM1) {
+                itemIcon = gCustomItemIcons[gSaveContext.save.info.inventory.items[i] - 156];
+            } else {
+                itemIcon = gItemIcons[gSaveContext.save.info.inventory.items[i]];
+            }
+            
             gSPVertex(POLY_OPA_DISP++, &pauseCtx->itemVtx[j + 0], 4, 0);
             KaleidoScope_DrawQuadTextureRGBA32(play->state.gfxCtx,
-                                               gItemIcons[gSaveContext.save.info.inventory.items[i]], ITEM_ICON_WIDTH,
+                                               itemIcon, ITEM_ICON_WIDTH,
                                                ITEM_ICON_HEIGHT, 0);
         }
     }

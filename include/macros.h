@@ -39,7 +39,7 @@
 #define IS_DAY (gSaveContext.save.nightFlag == 0)
 #define IS_NIGHT (gSaveContext.save.nightFlag == 1)
 
-#define SLOT(item) gItemSlots[item]
+#define SLOT(item) item >= 156 ? gItemSlots[item - 100] : gItemSlots[item]
 #define INV_CONTENT(item) gSaveContext.save.info.inventory.items[SLOT(item)]
 #define AMMO(item) gSaveContext.save.info.inventory.ammo[SLOT(item)]
 #define BEANS_BOUGHT AMMO(ITEM_MAGIC_BEAN + 1)
