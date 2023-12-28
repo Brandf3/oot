@@ -215,8 +215,8 @@ u8 gSlotAgeReqs[] = {
     AGE_REQ_NONE, // SLOT_CUSTOM_ITEM20
     AGE_REQ_NONE, // SLOT_CUSTOM_ITEM21
     AGE_REQ_NONE, // SLOT_CUSTOM_ITEM22
-    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM23
-    AGE_REQ_NONE, // SLOT_CUSTOM_ITEM24
+    AGE_REQ_CHILD, // SLOT_CUSTOM_ITEM23
+    AGE_REQ_ADULT, // SLOT_CUSTOM_ITEM24
 };
 
 u8 gEquipAgeReqs[4][4] = {
@@ -2748,10 +2748,10 @@ void KaleidoScope_Update(PlayState* play) {
             for (i = 0; i < ARRAY_COUNTU(gItemAgeReqs); i++) {
                 if (!CHECK_AGE_REQ_ITEM(i)) {
                     void* itemIcon;
-                    if (i < 87) {
+                    if (i < 86) {
                         itemIcon = gItemIcons[i];
                     } else {
-                        itemIcon = gCustomItemIcons[i - 87];
+                        itemIcon = gCustomItemIcons[i - 86];
                     }
                     KaleidoScope_GrayOutTextureRGBA32(SEGMENTED_TO_VIRTUAL(itemIcon),
                                                       ITEM_ICON_WIDTH * ITEM_ICON_HEIGHT);
