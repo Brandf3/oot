@@ -20,6 +20,9 @@ extern u8 _icon_item_24_staticSegmentRomStart[];
 #define GET_ITEM_ICON(itemId) \
     (itemId >= ITEM_CUSTOM1 ? gCustomItemIcons[itemId - ITEM_CUSTOM1] : gItemIcons[itemId])
 
+#define INVENTORY_OFFSET \
+    (pauseCtx->cursorY[PAUSE_ITEM] > 3 ? pauseCtx->cursorY[PAUSE_ITEM] * 6 - 18 : 0)
+
 // A "quest icon" (gQuestIcon*Tex) is 24x24 rgba32
 #define QUEST_ICON_WIDTH 24
 #define QUEST_ICON_HEIGHT 24

@@ -2101,13 +2101,7 @@ void KaleidoScope_InitVertices(PlayState* play, GraphicsContext* gfxCtx) {
 
     for (phi_t3 = 1; phi_t3 < 4; phi_t3++, phi_t2 += 4) {
         if (gSaveContext.save.info.equips.cButtonSlots[phi_t3 - 1] != ITEM_NONE) {
-            int invOffset;
-            if (pauseCtx->cursorY[PAUSE_ITEM] > 3) {
-                invOffset = pauseCtx->cursorY[PAUSE_ITEM] * 6 - 18;
-            } else {
-                invOffset = 0;
-            }
-            phi_t4 = (gSaveContext.save.info.equips.cButtonSlots[phi_t3 - 1] - invOffset) * 4;
+            phi_t4 = (gSaveContext.save.info.equips.cButtonSlots[phi_t3 - 1] - INVENTORY_OFFSET) * 4;
 
             pauseCtx->itemVtx[phi_t2 + 0].v.ob[0] = pauseCtx->itemVtx[phi_t2 + 2].v.ob[0] =
                 pauseCtx->itemVtx[phi_t4].v.ob[0] - 2;

@@ -82,13 +82,7 @@ void KaleidoScope_SetCursorVtx(PauseContext* pauseCtx, u16 index, Vtx* vtx) {
 }
 
 void KaleidoScope_SetItemCursorVtx(PauseContext* pauseCtx) {
-    int invOffset;
-    if (pauseCtx->cursorY[PAUSE_ITEM] > 3) {
-        invOffset = pauseCtx->cursorY[PAUSE_ITEM] * 6 - 18;
-    } else {
-        invOffset = 0;
-    }
-    KaleidoScope_SetCursorVtx(pauseCtx, pauseCtx->cursorSlot[PAUSE_ITEM] * 4 - invOffset * 4, pauseCtx->itemVtx);
+    KaleidoScope_SetCursorVtx(pauseCtx, (pauseCtx->cursorSlot[PAUSE_ITEM] - INVENTORY_OFFSET) * 4, pauseCtx->itemVtx);
 }
 
 void KaleidoScope_DrawItemSelect(PlayState* play) {
@@ -353,13 +347,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
             }
 
             if (cursorItem != PAUSE_ITEM_NONE) {
-                int invOffset;
-                if (pauseCtx->cursorY[PAUSE_ITEM] > 3) {
-                    invOffset = pauseCtx->cursorY[PAUSE_ITEM] * 6 - 18;
-                } else {
-                    invOffset = 0;
-                }
-                index = (cursorSlot - invOffset) * 4; // required to match?
+                index = (cursorSlot - INVENTORY_OFFSET) * 4; // required to match?
                 KaleidoScope_SetCursorVtx(pauseCtx, index, pauseCtx->itemVtx);
 
                 if ((pauseCtx->debugState == 0) && (pauseCtx->state == PAUSE_STATE_MAIN) && (pauseCtx->mainState == PAUSE_MAIN_STATE_IDLE)) {
@@ -425,13 +413,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                                  &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
         }
     } else if ((pauseCtx->mainState == PAUSE_MAIN_STATE_3) && (pauseCtx->pageIndex == PAUSE_ITEM)) {
-        int invOffset;
-        if (pauseCtx->cursorY[PAUSE_ITEM] > 3) {
-            invOffset = pauseCtx->cursorY[PAUSE_ITEM] * 6 - 18;
-        } else {
-            invOffset = 0;
-        }
-        KaleidoScope_SetCursorVtx(pauseCtx, (cursorSlot - invOffset) * 4, pauseCtx->itemVtx);
+        KaleidoScope_SetCursorVtx(pauseCtx, (cursorSlot - INVENTORY_OFFSET) * 4, pauseCtx->itemVtx);
         pauseCtx->cursorColorSet = 4;
     }
 
@@ -440,13 +422,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
     gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, pauseCtx->alpha);
     gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, 0);
 
-    int invOffset;
-    if (pauseCtx->cursorY[PAUSE_ITEM] > 3) {
-        invOffset = pauseCtx->cursorY[PAUSE_ITEM] * 6 - 18;
-    } else {
-        invOffset = 0;
-    }
-    
+    u8 invOffset = INVENTORY_OFFSET;
     for (i = 0, j = 24 * 4; i < 3; i++, j += 4) {
         u8 itemId = gSaveContext.save.info.equips.buttonItems[i + 1];
         if (itemId >= ITEM_CUSTOM1) {
