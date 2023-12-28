@@ -378,7 +378,6 @@ beginseg
     include "build/src/code/z_fbdemo_circle.o"
     include "build/src/code/z_fbdemo_fade.o"
     include "build/src/code/shrink_window.o"
-    include "build/src/code/db_camera.o"
     include "build/src/code/code_800BB0A0.o"
     include "build/src/code/mempak.o"
     include "build/src/code/z_kaleido_manager.o"
@@ -407,7 +406,6 @@ beginseg
     include "build/src/code/sys_rumble.o"
     include "build/src/code/code_800D31A0.o"
     include "build/src/code/irqmgr.o"
-    include "build/src/code/debug_malloc.o"
     include "build/src/code/fault.o"
     include "build/src/code/fault_drawer.o"
 #ifndef NON_MATCHING
