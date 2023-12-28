@@ -17,20 +17,22 @@ static s16 sEquipAnimTimer = 0;
 static s16 sEquipMoveTimer = 10;
 
 static s16 sAmmoVtxOffset[] = {
-    0, 2, 4, 6, 99, 99, 8, 99, 99, 10, 99, 99, 99, 99, 99, 99, 12,
+    0, 2, 4, 6, 99, 99, 8, 99, 10, 99, 99, 99, 99, 99, 12,
 };
 
 void KaleidoScope_DrawAmmoCount(PauseContext* pauseCtx, GraphicsContext* gfxCtx, s16 item, u8 invOffset) {
     s16 ammo;
     s16 i;
+    u8 slot;
 
     OPEN_DISPS(gfxCtx, "../z_kaleido_item.c", 69);
 
     ammo = AMMO(item);
+    slot = SLOT(item);
 
     gDPPipeSync(POLY_OPA_DISP++);
 
-    if (!CHECK_AGE_REQ_SLOT(SLOT(item))) {
+    if (!CHECK_AGE_REQ_SLOT(slot)) {
         gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 100, 100, 100, pauseCtx->alpha);
     } else {
         gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, pauseCtx->alpha);
@@ -52,9 +54,9 @@ void KaleidoScope_DrawAmmoCount(PauseContext* pauseCtx, GraphicsContext* gfxCtx,
     }
 
     gDPPipeSync(POLY_OPA_DISP++);
-
+    
     if (i != 0) {
-        gSPVertex(POLY_OPA_DISP++, &pauseCtx->itemVtx[(sAmmoVtxOffset[item - invOffset] + 27) * 4], 4, 0);
+        gSPVertex(POLY_OPA_DISP++, &pauseCtx->itemVtx[(sAmmoVtxOffset[slot - invOffset] + 27) * 4], 4, 0);
 
         gDPLoadTextureBlock(POLY_OPA_DISP++, ((u8*)gAmmoDigit0Tex + (8 * 8 * i)), G_IM_FMT_IA, G_IM_SIZ_8b, 8, 8, 0,
                             G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD,
@@ -63,7 +65,7 @@ void KaleidoScope_DrawAmmoCount(PauseContext* pauseCtx, GraphicsContext* gfxCtx,
         gSP1Quadrangle(POLY_OPA_DISP++, 0, 2, 3, 1, 0);
     }
 
-    gSPVertex(POLY_OPA_DISP++, &pauseCtx->itemVtx[(sAmmoVtxOffset[item - invOffset] + 28) * 4], 4, 0);
+    gSPVertex(POLY_OPA_DISP++, &pauseCtx->itemVtx[(sAmmoVtxOffset[slot - invOffset] + 28) * 4], 4, 0);
 
     gDPLoadTextureBlock(POLY_OPA_DISP++, ((u8*)gAmmoDigit0Tex + (8 * 8 * ammo)), G_IM_FMT_IA, G_IM_SIZ_8b, 8, 8, 0,
                         G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD,
