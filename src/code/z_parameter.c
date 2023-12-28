@@ -3389,8 +3389,8 @@ void Interface_Draw(PlayState* play) {
                 // Normal Equip (icon goes from the inventory slot to the C button when equipping it)
                 gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, pauseCtx->equipAnimAlpha);
                 gSPVertex(OVERLAY_DISP++, &pauseCtx->cursorVtx[16], 4, 0);
-
-                gDPLoadTextureBlock(OVERLAY_DISP++, gItemIcons[pauseCtx->equipTargetItem], G_IM_FMT_RGBA, G_IM_SIZ_32b,
+                
+                gDPLoadTextureBlock(OVERLAY_DISP++, GET_ITEM_ICON(pauseCtx->equipTargetItem), G_IM_FMT_RGBA, G_IM_SIZ_32b,
                                     ITEM_ICON_WIDTH, ITEM_ICON_HEIGHT, 0, G_TX_NOMIRROR | G_TX_WRAP,
                                     G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
             } else {
