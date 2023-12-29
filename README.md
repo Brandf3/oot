@@ -1,3 +1,6 @@
+Add custom item icon pngs under `icon_item_static` and item names under `item_name_static` and change the `.c` and `.h` files to match your item/file names. 
+There is a space set aside in `Player_UseItem` for you to implement your custom item actions, look for `itemAction >= PLAYER_IA_CUSTOM1 && itemAction <= PLAYER_IA_CUSTOM24`.
+
 # The Legend of Zelda: Ocarina of Time
 
 [![Build Status][jenkins-badge]][jenkins] [![Decompilation Progress][progress-badge]][progress] [![Contributors][contributors-badge]][contributors] [![Discord Channel][discord-badge]][discord]
