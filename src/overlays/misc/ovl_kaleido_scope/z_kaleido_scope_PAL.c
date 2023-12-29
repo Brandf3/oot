@@ -1325,8 +1325,10 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
 
             // Note that this is used to draw both item name and map name textures, it expects that the dimensions and
             // format for both sets of textures are identical.
-            POLY_OPA_DISP = KaleidoScope_QuadTextureIA4(POLY_OPA_DISP, pauseCtx->nameSegment, ITEM_NAME_TEX_WIDTH,
+            if ((u32)pauseCtx->pageIndex != PAUSE_ITEM || pauseCtx->namedItem != ITEM_NONE) {
+                POLY_OPA_DISP = KaleidoScope_QuadTextureIA4(POLY_OPA_DISP, pauseCtx->nameSegment, ITEM_NAME_TEX_WIDTH,
                                                         ITEM_NAME_TEX_HEIGHT, 0);
+            }
         }
 
         if (pauseCtx->pageIndex == PAUSE_MAP) {
