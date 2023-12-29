@@ -1547,9 +1547,12 @@ void KaleidoScope_UpdateNamePanel(PlayState* play) {
                                         MAP_NAME_TEX1_SIZE, "../z_kaleido_scope_PAL.c", 2093);
             } else {
                 osSyncPrintf("zoom_name=%d\n", pauseCtx->namedItem);
+                if (pauseCtx->namedItem >= ITEM_CUSTOM1) {
+                    sp2A -= 33;
+                }
 
                 if (gSaveContext.language) { // != LANGUAGE_ENG
-                    sp2A += 123;
+                    sp2A += 147;
                 }
                 if (gSaveContext.language == LANGUAGE_FRA) {
                     sp2A += 123;
