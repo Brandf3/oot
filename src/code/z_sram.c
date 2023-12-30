@@ -126,6 +126,78 @@ static Inventory sNewSaveInventory = {
     0, // gsTokens
 };
 
+void Sram_ResetTime(PlayState* play) {
+    u32 temp = gSaveContext.save.info.inventory.questItems;
+    bzero(&gSaveContext.save.info, sizeof(SaveInfo));
+    gSaveContext.save.resetTimer = 12000;
+
+    gSaveContext.save.info.playerData = sNewSavePlayerData;
+    gSaveContext.save.info.equips = sNewSaveEquips;
+    gSaveContext.save.info.inventory = sNewSaveInventory;
+    gSaveContext.save.info.inventory.questItems = temp;
+    gSaveContext.save.info.horseData.sceneId = SCENE_HYRULE_FIELD;
+    gSaveContext.save.info.horseData.pos.x = -1840;
+    gSaveContext.save.info.horseData.pos.y = 72;
+    gSaveContext.save.info.horseData.pos.z = 5497;
+    gSaveContext.save.info.horseData.angle = -0x6AD9;
+    gSaveContext.save.info.playerData.magicLevel = 0;
+    gSaveContext.save.info.infTable[INFTABLE_1DX_INDEX] = 1;
+    gSaveContext.save.info.sceneFlags[SCENE_WATER_TEMPLE].swch = 0x40000000;
+    gSaveContext.save.entranceIndex = (LINK_AGE_IN_YEARS == YEARS_CHILD) ? ENTR_LINKS_HOUSE_0 : ENTR_TEMPLE_OF_TIME_7;
+    gSaveContext.buttonStatus[0] = gSaveContext.buttonStatus[1] = gSaveContext.buttonStatus[2] =
+        gSaveContext.buttonStatus[3] = gSaveContext.buttonStatus[4] = BTN_ENABLED;
+
+    gSaveContext.forceRisingButtonAlphas = gSaveContext.nextHudVisibilityMode = gSaveContext.hudVisibilityMode =
+        gSaveContext.hudVisibilityModeTimer = 0; 
+    SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM_MAIN, 0);
+    gSaveContext.respawnFlag = 0;
+    gSaveContext.respawn[RESPAWN_MODE_DOWN].entranceIndex = ENTR_LOAD_OPENING;
+    gSaveContext.seqId = (u8)NA_BGM_DISABLED;
+    gSaveContext.natureAmbienceId = 0xFF;
+    gSaveContext.showTitleCard = true;
+    gWeatherMode = WEATHER_MODE_CLEAR;
+
+    if (CHECK_QUEST_ITEM(QUEST_KOKIRI_EMERALD)) {
+        gSaveContext.save.resetTimer += 6000;
+    }
+
+    if (CHECK_QUEST_ITEM(QUEST_ZORA_SAPPHIRE)) {
+        gSaveContext.save.resetTimer += 6000;
+    }
+
+    if (CHECK_QUEST_ITEM(QUEST_GORON_RUBY)) {
+        gSaveContext.save.resetTimer += 6000;
+    }
+
+    if (CHECK_QUEST_ITEM(QUEST_MEDALLION_FOREST)) {
+        gSaveContext.save.resetTimer += 6000;
+    }
+
+    if (CHECK_QUEST_ITEM(QUEST_MEDALLION_FIRE)) {
+        gSaveContext.save.resetTimer += 6000;
+    }
+
+    if (CHECK_QUEST_ITEM(QUEST_MEDALLION_WATER)) {
+        gSaveContext.save.resetTimer += 6000;
+    }
+
+    if (CHECK_QUEST_ITEM(QUEST_MEDALLION_SHADOW)) {
+        gSaveContext.save.resetTimer += 6000;
+    }
+
+    if (CHECK_QUEST_ITEM(QUEST_MEDALLION_SPIRIT)) {
+        gSaveContext.save.resetTimer += 6000;
+    }
+
+    Message_CloseTextbox(play);
+    play->nextEntranceIndex = gSaveContext.save.entranceIndex;
+    play->transitionTrigger = TRANS_TRIGGER_START;
+    play->transitionType = TRANS_TYPE_FADE_BLACK_SLOW;
+    gSaveContext.nextCutsceneIndex = 0;
+    gSaveContext.nextTransitionType = TRANS_TYPE_FADE_BLACK_SLOW;
+
+}
+
 static u16 sNewSaveChecksum = 0;
 
 /**
@@ -138,6 +210,7 @@ void Sram_InitNewSave(void) {
     bzero(&gSaveContext.save.info, sizeof(SaveInfo));
     gSaveContext.save.totalDays = 0;
     gSaveContext.save.bgsDayCount = 0;
+    gSaveContext.save.resetTimer = 20000;
 
     gSaveContext.save.info.playerData = sNewSavePlayerData;
     gSaveContext.save.info.equips = sNewSaveEquips;
@@ -284,6 +357,7 @@ void Sram_InitDebugSave(void) {
     gSaveContext.save.info.playerData = sDebugSavePlayerData;
     gSaveContext.save.info.equips = sDebugSaveEquips;
     gSaveContext.save.info.inventory = sDebugSaveInventory;
+    gSaveContext.save.resetTimer = 200;
 
     temp->save.info.checksum = sDebugSaveChecksum;
     gSaveContext.save.info.horseData.sceneId = SCENE_HYRULE_FIELD;

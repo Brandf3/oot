@@ -3937,6 +3937,52 @@ void Interface_Draw(PlayState* play) {
                 }
             }
         }
+
+        sTimerDigits[0] = sTimerDigits[1] = sTimerDigits[3] = 0;
+        sTimerDigits[2] = 10; // digit 10 is used as ':' (colon)
+        sTimerDigits[4] = gSaveContext.save.resetTimer / 20;
+
+        // Convert to minutes
+        while (sTimerDigits[4] >= 60) {
+            sTimerDigits[1]++;
+            if (sTimerDigits[1] >= 10) {
+                sTimerDigits[0]++;
+                sTimerDigits[1] -= 10;
+            }
+            sTimerDigits[4] -= 60;
+        }
+
+        // Separate ones and tens place of remaining seconds
+        while (sTimerDigits[4] >= 10) {
+            sTimerDigits[3]++;
+            sTimerDigits[4] -= 10;
+        }
+
+        // Clock Icon
+        gDPPipeSync(OVERLAY_DISP++);
+        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, 255);
+        gDPSetEnvColor(OVERLAY_DISP++, 0, 0, 0, 0);
+        OVERLAY_DISP = Gfx_TextureIA8(OVERLAY_DISP, gClockIconTex, 16, 16, 250, 120, 16, 16, 1 << 10, 1 << 10);
+
+        // Timer Counter
+        gDPPipeSync(OVERLAY_DISP++);
+        gDPSetCombineLERP(OVERLAY_DISP++, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0);
+
+        if ((gSaveContext.save.resetTimer < 200)) {
+            gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 50, 0, 255);
+        } else {
+            gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, 255);
+        }
+
+        int i;
+        s16 timerDigitLeftPos[] = { 16, 25, 34, 42, 51 };
+        s16 sDigitWidths[] = { 9, 9, 8, 9, 9 };
+        for (i = 0; i < ARRAY_COUNT(sTimerDigits); i++) {
+            OVERLAY_DISP = Gfx_TextureI8(OVERLAY_DISP, ((u8*)gCounterDigit0Tex + (8 * 16 * sTimerDigits[i])), 8, 16,
+                                250 + timerDigitLeftPos[i],
+                                120, sDigitWidths[i], VREG(42),
+                                VREG(43) << 1, VREG(43) << 1);
+        }
     }
 
     if (pauseCtx->debugState == 3) {

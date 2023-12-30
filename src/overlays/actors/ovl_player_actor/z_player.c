@@ -22,6 +22,7 @@
 #include "overlays/effects/ovl_Effect_Ss_Fhg_Flash/z_eff_ss_fhg_flash.h"
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 #include "assets/objects/object_link_child/object_link_child.h"
+#include "assets/textures/parameter_static/parameter_static.h"
 
 // Some player animations are played at this reduced speed, for reasons yet unclear.
 // This is called "adjusted" for now.
@@ -10916,6 +10917,14 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
     s32 pad;
 
     sControlInput = input;
+
+    if (!Play_InCsMode(play)) {
+        if (gSaveContext.save.resetTimer <= 0) {
+            Sram_ResetTime(play);
+        } else {
+            gSaveContext.save.resetTimer--;
+        }
+    }
 
     if (this->unk_A86 < 0) {
         this->unk_A86++;
