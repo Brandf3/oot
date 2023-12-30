@@ -1171,6 +1171,36 @@ Gfx* Gfx_TextureI8(Gfx* displayListHead, void* texture, s16 textureWidth, s16 te
     return displayListHead;
 }
 
+/**
+ * Draw a 4b texture on a rectangle
+ *
+ * @param gfx the display list pointer
+ * @param texture
+ * @param fmt texture image format
+ * @param textureWidth texture image width in texels
+ * @param textureHeight texture image height in texels
+ * @param rectLeft the x-coordinate of upper-left corner of rectangle
+ * @param rectTop the y-coordinate of upper-left corner of rectangle
+ * @param rectWidth rectangle width in texels
+ * @param rectHeight rectangle height in texels
+ * @param cms gives the clamp, wrap, and mirror flag for the s axis
+ * @param masks specify the mask for the s axis
+ * @param rects the texture coordinate s of upper-left corner of rectangle (s10.5)
+ * @param dsdx the change in s for each change in x (s5.10)
+ * @param dtdy the change in t for each change in y (s5.10)
+ * @return Gfx* the display list pointer
+ */
+Gfx* Gfx_DrawTexRect4b(Gfx* gfx, void* texture, s32 fmt, s16 textureWidth, s16 textureHeight, s16 rectLeft,
+                       s16 rectTop, s16 rectWidth, s16 rectHeight, s32 cms, s32 masks, s32 rects, u16 dsdx, u16 dtdy) {
+    gDPLoadTextureBlock_4b(gfx++, texture, fmt, textureWidth, textureHeight, 0, cms, G_TX_NOMIRROR | G_TX_WRAP, masks,
+                           G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
+
+    gSPTextureRectangle(gfx++, rectLeft << 2, rectTop << 2, (rectLeft + rectWidth) << 2, (rectTop + rectHeight) << 2,
+                        G_TX_RENDERTILE, rects, 0, dsdx, dtdy);
+
+    return gfx;
+}
+
 void Inventory_SwapAgeEquipment(void) {
     s16 i;
     u16 shieldEquipValue;
@@ -3111,7 +3141,7 @@ void Interface_Draw(PlayState* play) {
     static s16 magicArrowEffectsG[] = { 0, 100, 255 };
     static s16 magicArrowEffectsB[] = { 0, 255, 100 };
     static s16 timerDigitLeftPos[] = { 16, 25, 34, 42, 51 };
-    static s16 sDigitWidths[] = { 9, 9, 8, 9, 9 };
+    static s16 sDigitWidths[] = { 9, 9, 8, 9, 9, 8, 9, 9 };
     // unused, most likely colors
     static s16 D_80125B1C[][3] = {
         { 0, 150, 0 }, { 100, 255, 0 }, { 255, 255, 255 }, { 0, 0, 0 }, { 255, 255, 255 },
@@ -3126,6 +3156,14 @@ void Interface_Draw(PlayState* play) {
     static s16 sSubTimerNextSecondTimer;
     static s16 sSubTimerStateTimer;
     static s16 sTimerDigits[5];
+    static void* sFinalHoursDigitTextures[] = {
+        gFinalHoursClockDigit0Tex, gFinalHoursClockDigit1Tex, gFinalHoursClockDigit2Tex, gFinalHoursClockDigit3Tex,
+        gFinalHoursClockDigit4Tex, gFinalHoursClockDigit5Tex, gFinalHoursClockDigit6Tex, gFinalHoursClockDigit7Tex,
+        gFinalHoursClockDigit8Tex, gFinalHoursClockDigit9Tex, gFinalHoursClockColonTex,
+    };
+    static s16 sFinalHoursDigitSlotPosXOffset[] = {
+        127, 136, 144, 151, 160, 168, 175, 184,
+    };
     InterfaceContext* interfaceCtx = &play->interfaceCtx;
     PauseContext* pauseCtx = &play->pauseCtx;
     MessageContext* msgCtx = &play->msgCtx;
@@ -3938,50 +3976,103 @@ void Interface_Draw(PlayState* play) {
             }
         }
 
-        sTimerDigits[0] = sTimerDigits[1] = sTimerDigits[3] = 0;
-        sTimerDigits[2] = 10; // digit 10 is used as ':' (colon)
-        sTimerDigits[4] = gSaveContext.save.resetTimer / 20;
+        // sTimerDigits[0] = sTimerDigits[1] = sTimerDigits[3] = 0;
+        // sTimerDigits[2] = 10; // digit 10 is used as ':' (colon)
+        // sTimerDigits[4] = gSaveContext.save.resetTimer / 20;
+
+        // // Convert to minutes
+        // while (sTimerDigits[4] >= 60) {
+        //     sTimerDigits[1]++;
+        //     if (sTimerDigits[1] >= 10) {
+        //         sTimerDigits[0]++;
+        //         sTimerDigits[1] -= 10;
+        //     }
+        //     sTimerDigits[4] -= 60;
+        // }
+
+        // // Separate ones and tens place of remaining seconds
+        // while (sTimerDigits[4] >= 10) {
+        //     sTimerDigits[3]++;
+        //     sTimerDigits[4] -= 10;
+        // }
+
+        // // Clock Icon
+        // gDPPipeSync(OVERLAY_DISP++);
+        // gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, 255);
+        // gDPSetEnvColor(OVERLAY_DISP++, 0, 0, 0, 0);
+        // OVERLAY_DISP = Gfx_TextureIA8(OVERLAY_DISP, gClockIconTex, 16, 16, 250, 120, 16, 16, 1 << 10, 1 << 10);
+
+        // // Timer Counter
+        // gDPPipeSync(OVERLAY_DISP++);
+        // gDPSetCombineLERP(OVERLAY_DISP++, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0);
+
+        // if ((gSaveContext.save.resetTimer < 200)) {
+        //     gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 50, 0, 255);
+        // } else {
+        //     gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, 255);
+        // }
+
+        // int i;
+        // s16 timerDigitLeftPos[] = { 16, 25, 34, 42, 51 };
+        // s16 sDigitWidths[] = { 9, 9, 8, 9, 9 };
+        // for (i = 0; i < ARRAY_COUNT(sTimerDigits); i++) {
+        //     OVERLAY_DISP = Gfx_TextureI8(OVERLAY_DISP, ((u8*)gCounterDigit0Tex + (8 * 16 * sTimerDigits[i])), 8, 16,
+        //                         250 + timerDigitLeftPos[i],
+        //                         120, sDigitWidths[i], VREG(42),
+        //                         VREG(43) << 1, VREG(43) << 1);
+        // }
+
+        /**
+        * Section: Draws Final-Hours Clock's Frame
+        */
+        gSPMatrix(OVERLAY_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_parameter.c", 3998), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        gDPSetAlphaCompare(OVERLAY_DISP++, G_AC_THRESHOLD);
+        gDPSetRenderMode(OVERLAY_DISP++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
+        gDPSetCombineLERP(OVERLAY_DISP++, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0,
+                        PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
+        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 195, 255);
+        gDPSetEnvColor(OVERLAY_DISP++, 0, 0, 0, 0);
+
+        OVERLAY_DISP = Gfx_DrawTexRect4b(OVERLAY_DISP, gFinalHoursClockFrameTex, 3, 80, 13, 119, 202, 80, 13, 0,
+                                            0, 0, 1 << 10, 1 << 10);
+                                
+        s16 sResetTimerDigits[8];
+        sResetTimerDigits[0] = sResetTimerDigits[1] = sResetTimerDigits[3] = sResetTimerDigits[4] =
+        sResetTimerDigits[6] = sResetTimerDigits[7] = 0;
+        sResetTimerDigits[2] = sResetTimerDigits[5] = 10; // digit 10 is used as ':' (colon)
+        sResetTimerDigits[7] = gSaveContext.save.resetTimer / 20;
 
         // Convert to minutes
-        while (sTimerDigits[4] >= 60) {
-            sTimerDigits[1]++;
-            if (sTimerDigits[1] >= 10) {
-                sTimerDigits[0]++;
-                sTimerDigits[1] -= 10;
+        while (sResetTimerDigits[7] >= 60) {
+            sResetTimerDigits[4]++;
+            if (sResetTimerDigits[4] >= 10) {
+                sResetTimerDigits[3]++;
+                sResetTimerDigits[4] -= 10;
             }
-            sTimerDigits[4] -= 60;
+            sResetTimerDigits[7] -= 60;
         }
 
         // Separate ones and tens place of remaining seconds
-        while (sTimerDigits[4] >= 10) {
-            sTimerDigits[3]++;
-            sTimerDigits[4] -= 10;
+        while (sResetTimerDigits[7] >= 10) {
+            sResetTimerDigits[6]++;
+            sResetTimerDigits[7] -= 10;
         }
 
-        // Clock Icon
+        /**
+        * Section: Draws Final-Hours Clock's Digits
+        */
         gDPPipeSync(OVERLAY_DISP++);
-        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, 255);
-        gDPSetEnvColor(OVERLAY_DISP++, 0, 0, 0, 0);
-        OVERLAY_DISP = Gfx_TextureIA8(OVERLAY_DISP, gClockIconTex, 16, 16, 250, 120, 16, 16, 1 << 10, 1 << 10);
-
-        // Timer Counter
-        gDPPipeSync(OVERLAY_DISP++);
-        gDPSetCombineLERP(OVERLAY_DISP++, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0);
-
-        if ((gSaveContext.save.resetTimer < 200)) {
-            gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 50, 0, 255);
+        if (gSaveContext.save.resetTimer / 20 < 300) {
+            gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 0, 0, 255);
         } else {
-            gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, 255);
+            gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 0, 0, 0, 255);
         }
-
+        
+        gDPSetEnvColor(OVERLAY_DISP++, 255, 0, 0, 0);
         int i;
-        s16 timerDigitLeftPos[] = { 16, 25, 34, 42, 51 };
-        s16 sDigitWidths[] = { 9, 9, 8, 9, 9 };
-        for (i = 0; i < ARRAY_COUNT(sTimerDigits); i++) {
-            OVERLAY_DISP = Gfx_TextureI8(OVERLAY_DISP, ((u8*)gCounterDigit0Tex + (8 * 16 * sTimerDigits[i])), 8, 16,
-                                250 + timerDigitLeftPos[i],
-                                120, sDigitWidths[i], VREG(42),
-                                VREG(43) << 1, VREG(43) << 1);
+        for (i = 0; i < 8; i++) {
+            OVERLAY_DISP = Gfx_TextureI8(OVERLAY_DISP, sFinalHoursDigitTextures[sResetTimerDigits[i]], 8, 8,
+                                sFinalHoursDigitSlotPosXOffset[i], 205, 8, 8, 1 << 10, 1 << 10);
         }
     }
 
