@@ -3296,9 +3296,22 @@ void Player_UseItem(PlayState* play, Player* this, s32 item) {
                 if (AMMO(ITEM_DEKU_NUT) != 0) {
                     func_8083C61C(play, this);
                     int height = LINK_IS_ADULT ? 70 : 50;
-                    Player_RotateVector(play, &this->actor.world.pos);
                     play->fovFlip = (play->fovFlip + 1) % 2;
-                    this->actor.world.pos.y += height * (-1 * play->fovFlip);
+                    height *= (-1 * play->fovFlip);
+
+                    // Player_RotateVector(play, &this->actor.world.pos);
+                    // this->actor.world.pos.y += height;
+                    
+                    int i;
+                    Actor* actor;
+                    for (i = 0; i < 12; i++) {
+                        actor = play->actorCtx.actorLists[i].head;
+                        while (actor != NULL) {
+                            Player_RotateVector(play, &actor->world.pos);
+                            actor->world.pos.y += height;
+                            actor = actor->next;
+                        }
+                    }
                 } else {
                     Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
                 }
