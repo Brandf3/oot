@@ -10477,3 +10477,17 @@ beginseg
     romalign 0x1000
     include "build/baserom/softsprite_matrix_static.o"
 endseg
+
+beginseg
+    name "reverse_test_scene"
+    romalign 0x1000
+    include "build/assets/scenes/dungeons/reverse_test/reverse_test_scene.o"
+    number 2
+endseg
+
+beginseg
+    name "reverse_test_room_0"
+    romalign 0x1000
+    include "build/assets/scenes/dungeons/reverse_test/reverse_test_room_0.o"
+    number 3
+endseg

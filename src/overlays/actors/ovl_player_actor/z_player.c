@@ -3212,6 +3212,47 @@ void Player_DestroyHookshot(Player* this) {
     }
 }
 
+
+void Player_RotateVector(PlayState* play, Vec3f* vec) {
+    s16 z = DEG_TO_BINANG(180);
+    s16 y = DEG_TO_BINANG(0);
+    s16 x = DEG_TO_BINANG(0);
+    f32 temp1;
+    f32 temp2;
+    f32 sin;
+    f32 cos;
+
+    if (z != 0) {
+        sin = Math_SinS(z);
+        cos = Math_CosS(z);
+        
+        temp1 = vec->x;
+        temp2 = vec->y;
+        vec->x = temp1 * cos - temp2 * sin;
+        vec->y = temp2 * cos + temp1 * sin;
+    }
+
+    if (y != 0) {
+        sin = Math_SinS(y);
+        cos = Math_CosS(y);
+
+        temp1 = vec->x;
+        temp2 = vec->z;
+        vec->x = temp1 * cos + temp2 * sin;
+        vec->z = temp1 * sin * -1 + temp2 * cos;
+    }
+
+    if (x != 0) {
+        sin = Math_SinS(x);
+        cos = Math_CosS(x);
+
+        temp1 = vec->y;
+        temp2 = vec->z;
+        vec->y = temp1 * cos - temp2 * sin;
+        vec->z = temp2 * cos + temp1 * sin;
+    }
+}
+
 void Player_UseItem(PlayState* play, Player* this, s32 item) {
     s8 itemAction;
     s32 temp;
@@ -3254,6 +3295,10 @@ void Player_UseItem(PlayState* play, Player* this, s32 item) {
                 // Handle Deku Nuts
                 if (AMMO(ITEM_DEKU_NUT) != 0) {
                     func_8083C61C(play, this);
+                    int height = LINK_IS_ADULT ? 70 : 50;
+                    Player_RotateVector(play, &this->actor.world.pos);
+                    play->fovFlip = (play->fovFlip + 1) % 2;
+                    this->actor.world.pos.y += height * (-1 * play->fovFlip);
                 } else {
                     Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
                 }
@@ -10916,6 +10961,12 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
     s32 pad;
 
     sControlInput = input;
+
+    if (play->fovFlip) {
+        play->mainCamera.fov = -60;
+    } else {
+        play->mainCamera.fov = 60;
+    }
 
     if (this->unk_A86 < 0) {
         this->unk_A86++;
