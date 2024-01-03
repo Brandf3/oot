@@ -1,3 +1,5 @@
+This is a custom actor that implements chess puzzles that can be solved with the slingshot. There is a more developed version under the branch `Chess-with-rotation` that I would recommend using instead, but if you want to keep it simple and don't need to rotate the board at all this branch works fine. 
+
 # The Legend of Zelda: Ocarina of Time
 
 [![Build Status][jenkins-badge]][jenkins] [![Decompilation Progress][progress-badge]][progress] [![Contributors][contributors-badge]][contributors] [![Discord Channel][discord-badge]][discord]
