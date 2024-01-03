@@ -1,3 +1,5 @@
+This is a WIP for a challenge romhack idea I have. This is not currently in a position to use and needs to be worked on more, but I'll keep it publicly available for people that are curious about how to work with the save data.
+
 This repository is a collection of custom actors and items that I have made. You may freely use them in your own mods without asking me, but please credit me for them. 
 
 # The Legend of Zelda: Ocarina of Time
