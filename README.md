@@ -1,4 +1,6 @@
-This repository is a collection of custom actors and items that I have made. You may freely use them in your own mods without asking me, but please credit me for them. 
+This repository is a collection of custom actors and items that I have made. You may freely use them in your own mods without asking me, but please credit me for them. Some of these are just proof of concepts and have not been rigorously tested, but provide a base to build off of or to read through and understand how to start with certain mod ideas. 
+
+When looking at one of the mods you should compare it to my main branch, not `zeldaret/oot`. If you are confused by the use of `install_mod_assets` and the `mod_assets` folder you should watch Kentonm's youtube tutorial on asset management as this repo follows his way. 
 
 # The Legend of Zelda: Ocarina of Time
 
