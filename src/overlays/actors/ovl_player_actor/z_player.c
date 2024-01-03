@@ -3308,7 +3308,15 @@ void Player_UseItem(PlayState* play, Player* this, s32 item) {
                         actor = play->actorCtx.actorLists[i].head;
                         while (actor != NULL) {
                             Player_RotateVector(play, &actor->world.pos);
+                            // Adjust all actors by player height. Does this need to be actor height?
                             actor->world.pos.y += height;
+
+                            // If you only want to flip gravity for player. Needs some work
+                            // if (actor->category != ACTORCAT_PLAYER) {
+                            //     actor->gravity *= -1;
+                            //     actor->minVelocityY = actor->gravity;
+                            // }
+
                             actor = actor->next;
                         }
                     }
