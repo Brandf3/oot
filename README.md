@@ -1,3 +1,5 @@
+This is some simple code changes to implement a custom item that can stop time. There is a place marked in the code where you can exclude actor categories from being paused, currently just Link and Navi are unfrozen. This also includes fixes for the arrow overlay so that it functions during timestop. I do not know how this functions with every actor overall, you'll need to test it on your maps and exclude actors from being frozen if it messes up your map, I tested on LonLon Ranch where everything seemed to function nicely.
+
 This repository is a collection of custom actors and items that I have made. You may freely use them in your own mods without asking me, but please credit me for them. 
 
 # The Legend of Zelda: Ocarina of Time
