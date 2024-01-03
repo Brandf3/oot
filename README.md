@@ -1,3 +1,9 @@
+In this branch I was playing around with an effect that "reverses gravity". To use this split your room into 2, the midpoint between the split rooms should be the origin (0, 0, 0) to easily do this you can create your room, duplicate the contents of it and rotate them 180 degrees so it's upside down with the 2 floors overlapping at the origin. The effect works by rotating the actor position matrices 180 degrees around the origin, meant to seamlessly move all actors between the rooms so it looks like the gravity is flipping. Actors should only be in the starting "upright" section as they will be moved between sections along with the player. Due to poor mapmaking skills this has not been tested much, but provides a fun start.
+
+Example test room I used:
+![image](https://github.com/Brandf3/oot/assets/54910647/4d6e17b4-49f9-43d3-994e-70bf751d4e4b)
+
+
 This repository is a collection of custom actors and items that I have made. You may freely use them in your own mods without asking me, but please credit me for them. 
 
 # The Legend of Zelda: Ocarina of Time
