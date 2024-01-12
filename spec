@@ -3377,6 +3377,12 @@ beginseg
 endseg
 
 beginseg
+    name "ovl_En_Summon"
+    include "build/src/overlays/actors/ovl_En_Summon/z_en_summon.o"
+    include "build/src/overlays/actors/ovl_En_Summon/ovl_En_Summon_reloc.o"
+endseg
+
+beginseg
     name "gameplay_keep"
     romalign 0x1000
     include "build/assets/objects/gameplay_keep/gameplay_keep.o"
@@ -10477,3 +10483,4 @@ beginseg
     romalign 0x1000
     include "build/baserom/softsprite_matrix_static.o"
 endseg
+
