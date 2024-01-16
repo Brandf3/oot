@@ -3212,10 +3212,73 @@ void Player_DestroyHookshot(Player* this) {
     }
 }
 
+typedef enum {
+    EMPTY,
+    UP,
+    DOWN,
+    RIGHT,
+    LEFT,
+    MAZE_UP,
+    MAZE_DOWN,
+    MAZE_RIGHT,
+    MAZE_LEFT,
+} MazeComponent;
+
+u8 maze[10][10] = {
+                        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                        { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+                    };
+
+unsigned long int next = 1;
+
+u8 rand(int offset, int range) {
+    next = next * 1103515245 + 12345;
+    return (unsigned int)(next/65536) % range + offset;
+}
+
+u8 move(int row, int column) {
+    u8 choice = rand(0, 4);
+    while (true) {
+        if (choice == 0 && row > 0) {
+            return UP;
+        } else if (choice == 1 && row < 9) {
+            return DOWN;
+        } else if (choice == 2 && column < 9) {
+            return RIGHT;
+        } else if (choice == 3 && column > 0) {
+            return LEFT;
+        }
+        choice += rand(1, 3);
+    }
+}
+
+u8 findEmptyCell() {
+    u8 i;
+    u8 j;
+    for (i = 0; i < 10; i++) {
+        for (j = 0; j < 10; j++) {
+            if (maze[i][j] < MAZE_UP) {
+                return (i * 10) + j;
+            }
+        }
+    }
+
+    return 0;
+}
+
 void Player_UseItem(PlayState* play, Player* this, s32 item) {
     s8 itemAction;
     s32 temp;
     s32 nextAnimType;
+    next = gSaveContext.save.dayTime + play->gameplayFrames;
 
     itemAction = Player_ItemToItemAction(item);
 
@@ -3253,7 +3316,69 @@ void Player_UseItem(PlayState* play, Player* this, s32 item) {
             } else if (itemAction == PLAYER_IA_DEKU_NUT) {
                 // Handle Deku Nuts
                 if (AMMO(ITEM_DEKU_NUT) != 0) {
-                    func_8083C61C(play, this);
+                    //func_8083C61C(play, this);
+                    u8 current;
+                    u8 direction;
+                    u8 mazeCount = 0;
+                    u8 start = rand(90, 10);
+                    u8 end = rand(0, 10);
+                    maze[0][end] = MAZE_UP;
+                    mazeCount++;
+
+                    osSyncPrintf("start: %d\n", start);
+                    while (mazeCount < 100) {
+                        current = start;
+                        while (maze[current / 10][current % 10] < MAZE_UP) {
+                            direction = move(current / 10, current % 10);
+                            maze[current / 10][current % 10] = direction;
+
+                            switch (direction) {
+                                case UP:
+                                    current -= 10;
+                                    break;
+                                case DOWN:
+                                    current += 10;
+                                    break;
+                                case RIGHT:
+                                    current += 1;
+                                    break;
+                                case LEFT:
+                                    current -= 1;
+                                    break;
+                            }
+                        }
+
+                        current = start;
+                        while (maze[current / 10][current % 10] < MAZE_UP) {
+                            maze[current / 10][current % 10] += 4;
+                            mazeCount++;
+                            switch (maze[current / 10][current % 10]) {
+                                case MAZE_UP:
+                                    current -= 10;
+                                    break;
+                                case MAZE_DOWN:
+                                    current += 10;
+                                    break;
+                                case MAZE_RIGHT:
+                                    current += 1;
+                                    break;
+                                case MAZE_LEFT:
+                                    current -= 1;
+                                    break;
+                            }
+                        }
+
+                        start = findEmptyCell();
+                    }
+
+                    int i;
+                    int j;
+                    for (i = 0; i < 10; i++) {
+                        for (j = 0; j < 10; j++) {
+                            osSyncPrintf("%d ", maze[i][j]);
+                        }
+                        osSyncPrintf("\n");
+                    }
                 } else {
                     Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
                 }
