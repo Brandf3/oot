@@ -7572,6 +7572,13 @@ beginseg
     include "$(BUILD_DIR)/src/overlays/actors/ovl_Shot_Sun/ovl_Shot_Sun_reloc.o"
 endseg
 
+beginseg
+    name "ovl_Obj_Maze"
+    compress
+    include "$(BUILD_DIR)/build/src/overlays/actors/ovl_Obj_Maze/z_obj_maze.o"
+    include "$(BUILD_DIR)/build/src/overlays/actors/ovl_Obj_Maze/ovl_Obj_Maze_reloc.o"
+endseg
+
 #endif
 
 beginseg
