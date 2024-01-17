@@ -8,8 +8,14 @@ struct ObjMaze;
 
 typedef void (*ObjMazeActionFunc)(struct ObjMaze*, PlayState*);
 
+typedef struct Cell {
+    u8 direction;
+    bool top_wall;
+    bool right_wall;
+} Cell;
+
 typedef struct ObjMaze {
-    u8 maze[10][10];
+    Cell maze[10][10];
     unsigned long int next;
 } ObjMaze;
 
