@@ -42,18 +42,12 @@ typedef enum {
     MAZE_LEFT,
 } Direction;
 
-typedef struct Cell {
-    u8 direction;
-    bool top_wall;
-    bool right_wall;
-} Cell;
-
 void ObjMaze_Init(Actor* thisx, PlayState* play) {
     ObjMaze* this = (ObjMaze*)thisx;
     this->next = gSaveContext.save.dayTime + play->gameplayFrames;
 
-    int i;
-    int j;
+    u8 i;
+    u8 j;
     u8 current;
     u8 direction;
     u8 mazeCount = 0;
@@ -62,17 +56,20 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
     
     for (i = 0; i < 10; i++) {
         for (j = 0; j < 10; j++) {
-            this->maze[i][j] = 0;
+            this->maze[i][j].direction = EMPTY;
+            this->maze[i][j].top_wall = true;
+            this->maze[i][j].right_wall = true;
         }
     }
 
-    this->maze[0][end] = MAZE_UP;
+    this->maze[0][end].direction = MAZE_UP;
+    this->maze[0][end].top_wall = false;
     mazeCount++;
     while (mazeCount < 100) {
         current = start;
-        while (this->maze[current / 10][current % 10] < MAZE_UP) {
+        while (this->maze[current / 10][current % 10].direction < MAZE_UP) {
             direction = move(this, current / 10, current % 10);
-            this->maze[current / 10][current % 10] = direction;
+            this->maze[current / 10][current % 10].direction = direction;
 
             switch (direction) {
                 case UP:
@@ -91,26 +88,37 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
         }
         
         current = start;
-        while (this->maze[current / 10][current % 10] < MAZE_UP) {
-            this->maze[current / 10][current % 10] += 4;
+        while (this->maze[current / 10][current % 10].direction < MAZE_UP) {
+            this->maze[current / 10][current % 10].direction += 4;
             mazeCount++;
-            switch (this->maze[current / 10][current % 10]) {
+            switch (this->maze[current / 10][current % 10].direction) {
                 case MAZE_UP:
+                    this->maze[current / 10][current % 10].top_wall = false;
                     current -= 10;
                     break;
                 case MAZE_DOWN:
                     current += 10;
+                    this->maze[current / 10][current % 10].top_wall = false;
                     break;
                 case MAZE_RIGHT:
+                    this->maze[current / 10][current % 10].right_wall = false;
                     current += 1;
                     break;
                 case MAZE_LEFT:
                     current -= 1;
+                    this->maze[current / 10][current % 10].right_wall = false;
                     break;
             }
         }
 
         start = findEmptyCell(this);
+    }
+
+    for (i = 0; i < 10; i++) {
+        for (j = 0; j < 10; j++) {
+            osSyncPrintf("(%d, %d, %d)", this->maze[i][j].direction, this->maze[i][j].top_wall, this->maze[i][j].right_wall);
+        }
+        osSyncPrintf("\n");
     }
 }
 
@@ -152,7 +160,7 @@ u8 findEmptyCell(ObjMaze* this) {
     u8 j;
     for (i = 0; i < 10; i++) {
         for (j = 0; j < 10; j++) {
-            if (this->maze[i][j] < MAZE_UP) {
+            if (this->maze[i][j].direction < MAZE_UP) {
                 return (i * 10) + j;
             }
         }
