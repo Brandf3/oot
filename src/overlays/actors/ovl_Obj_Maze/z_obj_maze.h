@@ -9,6 +9,7 @@ struct ObjMaze;
 typedef void (*ObjMazeActionFunc)(struct ObjMaze*, PlayState*);
 
 typedef struct ObjMaze {
+    Actor actor;
     u8 maze[10][10];
     unsigned long int next;
 } ObjMaze;
