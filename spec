@@ -3377,6 +3377,12 @@ beginseg
 endseg
 
 beginseg
+    name "ovl_Obj_Maze"
+    include "build/src/overlays/actors/ovl_Obj_Maze/z_obj_maze.o"
+    include "build/src/overlays/actors/ovl_Obj_Maze/ovl_Obj_Maze_reloc.o"
+endseg
+
+beginseg
     name "gameplay_keep"
     romalign 0x1000
     include "build/assets/objects/gameplay_keep/gameplay_keep.o"
