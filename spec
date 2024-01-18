@@ -7575,8 +7575,8 @@ endseg
 beginseg
     name "ovl_Obj_Maze"
     compress
-    include "$(BUILD_DIR)/build/src/overlays/actors/ovl_Obj_Maze/z_obj_maze.o"
-    include "$(BUILD_DIR)/build/src/overlays/actors/ovl_Obj_Maze/ovl_Obj_Maze_reloc.o"
+    include "$(BUILD_DIR)/src/overlays/actors/ovl_Obj_Maze/z_obj_maze.o"
+    include "$(BUILD_DIR)/src/overlays/actors/ovl_Obj_Maze/ovl_Obj_Maze_reloc.o"
 endseg
 
 #endif
@@ -10633,6 +10633,14 @@ beginseg
     compress
     romalign 0x1000
     include "$(BUILD_DIR)/assets/objects/object_zl4/object_zl4.o"
+    number 6
+endseg
+
+beginseg
+    name "object_maze"
+    compress
+    romalign 0x1000
+    include "$(BUILD_DIR)/assets/objects/object_maze/gMazeWallDL.o"
     number 6
 endseg
 
@@ -19595,4 +19603,18 @@ beginseg
     compress
     romalign 0x1000
     include "$(BUILD_DIR)/baserom/softsprite_matrix_static.o"
+endseg
+
+beginseg
+    name "test_map_scene"
+    romalign 0x1000
+    include "build/assets/scenes/my_scenes/test_map/test_map_scene.o"
+    number 2
+endseg
+
+beginseg
+    name "test_map_room_0"
+    romalign 0x1000
+    include "build/assets/scenes/my_scenes/test_map/test_map_room_0.o"
+    number 3
 endseg

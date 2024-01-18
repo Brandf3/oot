@@ -305,6 +305,7 @@ static SceneSelectEntry sScenes[] = {
     // "125: Hyrule Garden Game 2" (Early Hyrule Garden Game)
     { "125:" GFXP_KATAKANA "ﾊｲﾗﾙ" GFXP_HIRAGANA "ﾆﾜ" GFXP_KATAKANA "ｹﾞｰﾑ2", MapSelect_LoadGame, ENTR_HAIRAL_NIWA2_0 },
 #endif
+    { "126:Test Map", MapSelect_LoadGame, ENTR_TEST_MAP_0 },
     // "title" (Title Screen)
     { "title", (void*)MapSelect_LoadTitle, 0 },
 #if PLATFORM_N64
