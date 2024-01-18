@@ -108,19 +108,19 @@ CollisionPoly test_map_polygons[] = {
 };
 
 Vec3s test_map_vertices[4] = {
-	{ -700, 0, 700 },
-	{ 700, 0, 700 },
-	{ 700, 0, -700 },
-	{ -700, 0, -700 },
+	{ -1000, 0, 1000 },
+	{ 1000, 0, 1000 },
+	{ 1000, 0, -1000 },
+	{ -1000, 0, -1000 },
 };
 
 CollisionHeader test_map_collisionHeader = {
-	-700,
+	-1000,
 	0,
-	-700,
-	700,
+	-1000,
+	1000,
 	0,
-	700,
+	1000,
 	4,
 	test_map_vertices,
 	2,
