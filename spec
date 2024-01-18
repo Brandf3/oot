@@ -6056,6 +6056,13 @@ beginseg
 endseg
 
 beginseg
+    name "object_maze"
+    romalign 0x1000
+    include "build/assets/objects/object_maze/gMazeWallDL.o"
+    number 6
+endseg
+
+beginseg
     name "g_pn_01"
     romalign 0x1000
     include "build/assets/textures/place_title_cards/g_pn_01.o"
@@ -10482,4 +10489,18 @@ beginseg
     name "softsprite_matrix_static"
     romalign 0x1000
     include "build/baserom/softsprite_matrix_static.o"
+endseg
+
+beginseg
+    name "test_map_scene"
+    romalign 0x1000
+    include "build/assets/scenes/my_scenes/test_map/test_map_scene.o"
+    number 2
+endseg
+
+beginseg
+    name "test_map_room_0"
+    romalign 0x1000
+    include "build/assets/scenes/my_scenes/test_map/test_map_room_0.o"
+    number 3
 endseg

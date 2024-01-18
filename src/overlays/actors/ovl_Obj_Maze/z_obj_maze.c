@@ -5,7 +5,7 @@
  */
 
 #include "z_obj_maze.h"
-#include "assets/objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/object_maze/gMazeWallDL.h"
 
 #define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_2 | ACTOR_FLAG_4)
 
@@ -22,7 +22,7 @@ ActorInit Obj_Maze_InitVars = {
     /**/ ACTOR_OBJ_MAZE,
     /**/ ACTORCAT_BG,
     /**/ FLAGS,
-    /**/ OBJECT_GAMEPLAY_KEEP,
+    /**/ OBJECT_MAZE,
     /**/ sizeof(ObjMaze),
     /**/ ObjMaze_Init,
     /**/ ObjMaze_Destroy,
@@ -157,12 +157,13 @@ void ObjMaze_Draw(Actor* thisx, PlayState* play) {
             gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_chess.c", 175), G_MTX_MODELVIEW | G_MTX_LOAD);
             
             if (cell < 110) {
-                if (cell > 100) {
-                    gSPDisplayList(POLY_OPA_DISP++, gBombchuDL);
-                } else if (cell > 10) {
-                    gSPDisplayList(POLY_OPA_DISP++, gDebugPyramidDL);
-                } else {
-                    gSPDisplayList(POLY_OPA_DISP++, gLiftableRockDL);
+                if (cell > 100) { // only right wall
+                    //gSPDisplayList(POLY_OPA_DISP++, gBombchuDL);
+                    gSPDisplayList(POLY_OPA_DISP++, gMazeWallDL);
+                } else if (cell > 10) { // only top wall
+                    //gSPDisplayList(POLY_OPA_DISP++, gDebugPyramidDL);
+                } else { // both walls
+                    //gSPDisplayList(POLY_OPA_DISP++, gLiftableRockDL);
                 }
                 
             }
