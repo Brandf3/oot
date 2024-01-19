@@ -12,7 +12,7 @@ Vtx gMazeWallDL_gMazeWallDL_mesh_layer_Opaque_vtx_cull[8] = {
 	{{ {5000, 10000, -6000}, 0, {0, 0}, {0, 0, 0, 0} }},
 };
 
-Vtx gMazeWallDL_gMazeWallDL_mesh_layer_Opaque_vtx_0[16] = {
+Vtx gMazeWallDL_gMazeWallDL_mesh_layer_Opaque_vtx_0[20] = {
 	{{ {-5000, 0, -4000}, 0, {368, 1008}, {129, 0, 0, 255} }},
 	{{ {-5000, 10000, -4000}, 0, {624, 1008}, {129, 0, 0, 255} }},
 	{{ {-5000, 10000, -6000}, 0, {624, 752}, {129, 0, 0, 255} }},
@@ -29,14 +29,19 @@ Vtx gMazeWallDL_gMazeWallDL_mesh_layer_Opaque_vtx_0[16] = {
 	{{ {5000, 10000, -4000}, 0, {624, 240}, {0, 0, 127, 255} }},
 	{{ {-5000, 10000, -4000}, 0, {624, -16}, {0, 0, 127, 255} }},
 	{{ {-5000, 0, -4000}, 0, {368, -16}, {0, 0, 127, 255} }},
+	{{ {-5000, 10000, -4000}, 0, {624, -16}, {0, 127, 0, 255} }},
+	{{ {5000, 10000, -4000}, 0, {624, 240}, {0, 127, 0, 255} }},
+	{{ {5000, 10000, -6000}, 0, {624, 496}, {0, 127, 0, 255} }},
+	{{ {-5000, 10000, -6000}, 0, {624, 752}, {0, 127, 0, 255} }},
 };
 
 Gfx gMazeWallDL_gMazeWallDL_mesh_layer_Opaque_tri_0[] = {
-	gsSPVertex(gMazeWallDL_gMazeWallDL_mesh_layer_Opaque_vtx_0 + 0, 16, 0),
+	gsSPVertex(gMazeWallDL_gMazeWallDL_mesh_layer_Opaque_vtx_0 + 0, 20, 0),
 	gsSP2Triangles(0, 1, 2, 0, 0, 2, 3, 0),
 	gsSP2Triangles(4, 5, 6, 0, 4, 6, 7, 0),
 	gsSP2Triangles(8, 9, 10, 0, 8, 10, 11, 0),
 	gsSP2Triangles(12, 13, 14, 0, 12, 14, 15, 0),
+	gsSP2Triangles(16, 17, 18, 0, 16, 18, 19, 0),
 	gsSPEndDisplayList(),
 };
 
@@ -47,6 +52,7 @@ Gfx mat_gMazeWallDL_f3dlite_material_layerOpaque[] = {
 	gsSPSetOtherMode(G_SETOTHERMODE_H, 4, 20, G_AD_NOISE | G_CD_MAGICSQ | G_CK_NONE | G_TC_FILT | G_TF_BILERP | G_TT_NONE | G_TL_TILE | G_TD_CLAMP | G_TP_PERSP | G_CYC_2CYCLE | G_PM_NPRIMITIVE),
 	gsSPSetOtherMode(G_SETOTHERMODE_L, 0, 32, G_AC_NONE | G_ZS_PIXEL | G_RM_FOG_SHADE_A | G_RM_AA_ZB_OPA_SURF2),
 	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsDPSetPrimColor(0, 0, 255, 255, 255, 255),
 	gsSPEndDisplayList(),
 };
 
