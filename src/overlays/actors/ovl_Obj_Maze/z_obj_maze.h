@@ -12,6 +12,7 @@ typedef struct ObjMaze {
     Actor actor;
     u8 maze[10][10];
     unsigned long int next;
+    u8 start;
 } ObjMaze;
 
 #endif

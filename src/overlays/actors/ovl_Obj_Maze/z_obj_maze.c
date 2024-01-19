@@ -53,7 +53,7 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
     u8 current;
     u8 direction;
     u8 mazeCount = 0;
-    u8 start = rand(this, 90, 10);
+    this->start = rand(this, 90, 10);
     u8 end = rand(this, 0, 10);
     for (i = 0; i < 10; i++) {
         for (j = 0; j < 10; j++) {
@@ -64,7 +64,7 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
     this->maze[0][end] = MAZE_UP + NO_TOP_WALL;
     mazeCount++;
     while (mazeCount < 100) {
-        current = start;
+        current = this->start;
         while (this->maze[current / 10][current % 10] < MAZE_UP) {
             direction = move(this, current / 10, current % 10);
             this->maze[current / 10][current % 10] = direction;
@@ -85,7 +85,7 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
             }
         }
 
-        current = start;
+        current = this->start;
         while (this->maze[current / 10][current % 10] % 10 < MAZE_UP) {
             this->maze[current / 10][current % 10] += 4;
             mazeCount++;
@@ -117,7 +117,7 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
             }
         }
 
-        start = findEmptyCell(this);
+        this->start = findEmptyCell(this);
     }
 }
 
@@ -127,6 +127,11 @@ void ObjMaze_Destroy(Actor* thisx, PlayState* play) {
 
 void ObjMaze_Update(Actor* thisx, PlayState* play) {
     ObjMaze* this = (ObjMaze*)thisx;
+
+    // TODO 
+    // Create a wall actor & spawn 4 of it on init. 
+    // In update check player location to identify maze cell they're located in
+    // Move the walls to surround that cell, if there's a path there move the wall under the map
 }
 
 void ObjMaze_Draw(Actor* thisx, PlayState* play) {
@@ -149,28 +154,43 @@ void ObjMaze_Draw(Actor* thisx, PlayState* play) {
             if (cell < 110) {
                 if (cell > 100) { // only right wall
                     Matrix_RotateY(DEG_TO_RAD(270), MTXMODE_APPLY);
-                    gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, 255);
-                    //gSPDisplayList(POLY_OPA_DISP++, gMazeWallDL);
                 } else if (cell > 10) { // only top wall
-                    gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 0, 0, 0, 255);
+                    // Don't need to rotate
                 } else { // both walls
-                    gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 0, 0, 0, 255);
                     gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_maze.c", 158), G_MTX_MODELVIEW | G_MTX_LOAD);
                     gSPDisplayList(POLY_OPA_DISP++, gMazeWallDL);
                     Matrix_Translate(x, y + 2.5, z, MTXMODE_NEW);
                     Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
                     Matrix_RotateY(DEG_TO_RAD(270), MTXMODE_APPLY);
                     gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, 255);
-                    // gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_maze.c", 158), G_MTX_MODELVIEW | G_MTX_LOAD);
-                    // gSPDisplayList(POLY_OPA_DISP++, gMazeWallDL);
                 }
                 gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_maze.c", 158), G_MTX_MODELVIEW | G_MTX_LOAD);
                 gSPDisplayList(POLY_OPA_DISP++, gMazeWallDL);
             }
-
-            
-
         }
+    }
+
+    for (i = 0; i < 10; i++) {
+        if (i != this->start % 10) {
+            int x = this->actor.world.pos.x + (i * 100) - 450;
+            int y = this->actor.world.pos.y;
+            int z = this->actor.world.pos.z + 550;
+            Matrix_Translate(x, y + 2.5, z, MTXMODE_NEW);
+            Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
+            gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_maze.c", 158), G_MTX_MODELVIEW | G_MTX_LOAD);
+            gSPDisplayList(POLY_OPA_DISP++, gMazeWallDL);
+        }
+    }
+
+    for (i = 0; i < 10; i++) {
+        int x = this->actor.world.pos.x - 550;
+        int y = this->actor.world.pos.y;
+        int z = this->actor.world.pos.z + (i * 100) - 450;
+        Matrix_Translate(x, y + 2.5, z, MTXMODE_NEW);
+        Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
+        Matrix_RotateY(DEG_TO_RAD(270), MTXMODE_APPLY);
+        gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_maze.c", 158), G_MTX_MODELVIEW | G_MTX_LOAD);
+        gSPDisplayList(POLY_OPA_DISP++, gMazeWallDL);
     }
 
     CLOSE_DISPS(play->state.gfxCtx, "../z_obj_maze.c", 169);
