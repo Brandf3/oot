@@ -5,7 +5,7 @@
  */
 
 #include "z_en_niw.h"
-#include "assets/objects/object_niw/object_niw.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 #include "overlays/actors/ovl_En_Attack_Niw/z_en_attack_niw.h"
 #include "terminal.h"
 
@@ -40,7 +40,7 @@ ActorInit En_Niw_InitVars = {
     /**/ ACTOR_EN_NIW,
     /**/ ACTORCAT_PROP,
     /**/ FLAGS,
-    /**/ OBJECT_NIW,
+    /**/ OBJECT_GAMEPLAY_KEEP,
     /**/ sizeof(EnNiw),
     /**/ EnNiw_Init,
     /**/ EnNiw_Destroy,
@@ -153,7 +153,7 @@ void EnNiw_Init(Actor* thisx, PlayState* play) {
     Actor_ProcessInitChain(&this->actor, sInitChain);
     this->actor.flags |= ACTOR_FLAG_0;
     ActorShape_Init(&this->actor.shape, 0.0f, ActorShadow_DrawCircle, 25.0f);
-    SkelAnime_InitFlex(play, &this->skelAnime, &gCuccoSkel, &gCuccoAnim, this->jointTable, this->morphTable, 16);
+    SkelAnime_InitFlex(play, &this->skelAnime, &gPocketCuccoSkel, &gPocketCuccoAnim, this->jointTable, this->morphTable, 16);
 
     if (play->sceneId == SCENE_KAKARIKO_VILLAGE) {
         for (i = 0; i < ARRAY_COUNT(sKakarikoPosList); i++) {
@@ -407,7 +407,7 @@ void func_80AB6100(EnNiw* this, PlayState* play, s32 arg2) {
 }
 
 void EnNiw_ResetAction(EnNiw* this, PlayState* play) {
-    Animation_Change(&this->skelAnime, &gCuccoAnim, 1.0f, 0.0f, Animation_GetLastFrame(&gCuccoAnim), ANIMMODE_LOOP,
+    Animation_Change(&this->skelAnime, &gPocketCuccoAnim, 1.0f, 0.0f, Animation_GetLastFrame(&gPocketCuccoAnim), ANIMMODE_LOOP,
                      -10.0f);
 
     switch (this->actor.params) {
@@ -821,7 +821,7 @@ void func_80AB7204(EnNiw* this, PlayState* play) {
 }
 
 void func_80AB7290(EnNiw* this, PlayState* play) {
-    Animation_Change(&this->skelAnime, &gCuccoAnim, 1.0f, 0.0f, Animation_GetLastFrame(&gCuccoAnim), ANIMMODE_LOOP,
+    Animation_Change(&this->skelAnime, &gPocketCuccoAnim, 1.0f, 0.0f, Animation_GetLastFrame(&gPocketCuccoAnim), ANIMMODE_LOOP,
                      -10.0f);
     this->unk_2A0 = Rand_ZeroFloat(1.99f);
     this->actor.speed = 4.0f;
@@ -896,6 +896,10 @@ void EnNiw_Update(Actor* thisx, PlayState* play) {
     if (1) {}
 
     this->unk_294++;
+
+    if (this->actor.params == 15 && this->actor.parent == NULL) {
+        Actor_Kill(&this->actor);
+    }
 
     if (this->actionFunc != func_80AB6570) {
         this->unk_26C[9] = 0.0f;
@@ -1216,7 +1220,7 @@ void EnNiw_DrawEffects(EnNiw* this, PlayState* play) {
     for (i = 0; i < EN_NIW_EFFECT_COUNT; i++, effect++) {
         if (effect->type == 1) {
             if (materialFlag == 0) {
-                gSPDisplayList(POLY_XLU_DISP++, gCuccoEffectFeatherMaterialDL);
+                gSPDisplayList(POLY_XLU_DISP++, gPocketCuccoEffectFeatherMaterialDL);
                 materialFlag++;
             }
             Matrix_Translate(effect->pos.x, effect->pos.y, effect->pos.z, MTXMODE_NEW);
@@ -1226,7 +1230,7 @@ void EnNiw_DrawEffects(EnNiw* this, PlayState* play) {
             Matrix_Translate(0.0f, -1000.0f, 0.0f, MTXMODE_APPLY);
             gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(gfxCtx, "../z_en_niw.c", 1913),
                       G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
-            gSPDisplayList(POLY_XLU_DISP++, gCuccoEffectFeatherModelDL);
+            gSPDisplayList(POLY_XLU_DISP++, gPocketCuccoEffectFeatherModelDL);
         }
     }
 

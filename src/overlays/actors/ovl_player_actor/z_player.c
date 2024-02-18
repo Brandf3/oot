@@ -144,6 +144,7 @@ void Player_InitHammerIA(PlayState* play, Player* this);
 void Player_InitBowOrSlingshotIA(PlayState* play, Player* this);
 void Player_InitDekuStickIA(PlayState* play, Player* this);
 void Player_InitExplosiveIA(PlayState* play, Player* this);
+void Player_InitPocketCuccoIA(PlayState* play, Player* this);
 void Player_InitHookshotIA(PlayState* play, Player* this);
 void Player_InitBoomerangIA(PlayState* play, Player* this);
 
@@ -165,6 +166,7 @@ s32 func_80835B60(Player* this, PlayState* play);
 s32 func_80835C08(Player* this, PlayState* play);
 
 void Player_UseItem(PlayState* play, Player* this, s32 item);
+void Player_UseNewHeldItem(PlayState* play, Player* this, s8 itemAction, s32 item);
 void func_80839F90(Player* this, PlayState* play);
 s32 func_8083C61C(PlayState* play, Player* this);
 void func_8083CA20(PlayState* play, Player* this);
@@ -1383,7 +1385,7 @@ static void (*sItemActionInitFuncs[])(PlayState* play, Player* this) = {
     Player_InitDefaultIA,        // PLAYER_IA_MASK_ZORA
     Player_InitDefaultIA,        // PLAYER_IA_MASK_GERUDO
     Player_InitDefaultIA,        // PLAYER_IA_MASK_TRUTH
-    Player_InitDefaultIA,        // PLAYER_IA_LENS_OF_TRUTH
+    Player_InitPocketCuccoIA,        // PLAYER_IA_LENS_OF_TRUTH
 };
 
 typedef enum {
@@ -2233,6 +2235,26 @@ void Player_InitExplosiveIA(PlayState* play, Player* this) {
     }
 }
 
+void Player_InitPocketCuccoIA(PlayState* play, Player* this) {
+    Actor* spawnedActor;
+
+    if (this->stateFlags1 & PLAYER_STATE1_11) {
+        func_80832528(play, this);
+        return;
+    }
+
+    spawnedActor = Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, ACTOR_EN_NIW,
+                                        this->actor.world.pos.x, this->actor.world.pos.y,
+                                        this->actor.world.pos.z, 0, this->actor.shape.rot.y, 0, 15);
+    if (spawnedActor != NULL) {
+        this->interactRangeActor = spawnedActor;
+        this->heldActor = spawnedActor;
+        this->getItemId = GI_NONE;
+        this->unk_3BC.y = spawnedActor->shape.rot.y - this->actor.shape.rot.y;
+        this->stateFlags1 |= PLAYER_STATE1_11;
+    }
+}
+
 void Player_InitHookshotIA(PlayState* play, Player* this) {
     this->stateFlags1 |= PLAYER_STATE1_3;
     this->unk_860 = -3;
@@ -2252,6 +2274,9 @@ void Player_InitItemAction(PlayState* play, Player* this, s8 itemAction) {
     this->unk_858 = 0.0f;
 
     this->heldItemAction = this->itemAction = itemAction;
+    if (itemAction == PLAYER_IA_LENS_OF_TRUTH) {
+        this->heldItemAction = this->itemAction = 18;
+    }
     this->modelGroup = this->nextModelGroup;
 
     this->stateFlags1 &= ~(PLAYER_STATE1_3 | PLAYER_STATE1_24);
@@ -3215,7 +3240,6 @@ void Player_DestroyHookshot(Player* this) {
 void Player_UseItem(PlayState* play, Player* this, s32 item) {
     s8 itemAction;
     s32 temp;
-    s32 nextAnimType;
 
     itemAction = Player_ItemToItemAction(item);
 
@@ -3238,18 +3262,7 @@ void Player_UseItem(PlayState* play, Player* this, s32 item) {
                 // Also prevent explosives from being used if there are 3 or more active (outside of bombchu bowling)
                 Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
             } else if (itemAction == PLAYER_IA_LENS_OF_TRUTH) {
-                // Handle Lens of Truth
-                if (Magic_RequestChange(play, 0, MAGIC_CONSUME_LENS)) {
-                    if (play->actorCtx.lensActive) {
-                        Actor_DisableLens(play);
-                    } else {
-                        play->actorCtx.lensActive = true;
-                    }
-
-                    Sfx_PlaySfxCentered((play->actorCtx.lensActive) ? NA_SE_SY_GLASSMODE_ON : NA_SE_SY_GLASSMODE_OFF);
-                } else {
-                    Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
-                }
+                Player_UseNewHeldItem(play, this, itemAction, item);
             } else if (itemAction == PLAYER_IA_DEKU_NUT) {
                 // Handle Deku Nuts
                 if (AMMO(ITEM_DEKU_NUT) != 0) {
@@ -3287,28 +3300,30 @@ void Player_UseItem(PlayState* play, Player* this, s32 item) {
                 }
             } else if ((itemAction != this->heldItemAction) ||
                        ((this->heldActor == NULL) && (Player_ActionToExplosive(this, itemAction) >= 0))) {
-                // Handle using a new held item
-                this->nextModelGroup = Player_ActionToModelGroup(this, itemAction);
-                nextAnimType = gPlayerModelTypes[this->nextModelGroup][PLAYER_MODELGROUPENTRY_ANIM];
-
-                if ((this->heldItemAction >= 0) && (Player_ActionToMagicSpell(this, itemAction) < 0) &&
-                    (item != this->heldItemId) &&
-                    (sItemChangeTypes[gPlayerModelTypes[this->modelGroup][PLAYER_MODELGROUPENTRY_ANIM]][nextAnimType] !=
-                     PLAYER_ITEM_CHG_0)) {
-                    // Start the held item change process
-                    this->heldItemId = item;
-                    this->stateFlags1 |= PLAYER_STATE1_START_CHANGING_HELD_ITEM;
-                } else {
-                    // Init new held item for use
-                    Player_DestroyHookshot(this);
-                    Player_DetachHeldActor(play, this);
-                    Player_InitItemActionWithAnim(play, this, itemAction);
-                }
+                Player_UseNewHeldItem(play, this, itemAction, item);
             } else {
                 // Handle using the held item already in hand
                 sUseHeldItem = sHeldItemButtonIsHeldDown = true;
             }
         }
+    }
+}
+
+void Player_UseNewHeldItem(PlayState* play, Player* this, s8 itemAction, s32 item) {
+    // Handle using a new held item
+    this->nextModelGroup = Player_ActionToModelGroup(this, itemAction);
+    s32 nextAnimType = gPlayerModelTypes[this->nextModelGroup][PLAYER_MODELGROUPENTRY_ANIM];
+
+    if ((this->heldItemAction >= 0) && (Player_ActionToMagicSpell(this, itemAction) < 0) && (item != this->heldItemId) &&
+        (sItemChangeTypes[gPlayerModelTypes[this->modelGroup][PLAYER_MODELGROUPENTRY_ANIM]][nextAnimType] != PLAYER_ITEM_CHG_0)) {
+        // Start the held item change process
+        this->heldItemId = item;
+        this->stateFlags1 |= PLAYER_STATE1_START_CHANGING_HELD_ITEM;
+    } else {
+        // Init new held item for use
+        Player_DestroyHookshot(this);
+        Player_DetachHeldActor(play, this);
+        Player_InitItemActionWithAnim(play, this, itemAction);
     }
 }
 
