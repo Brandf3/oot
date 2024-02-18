@@ -1315,7 +1315,7 @@ static s32 (*sItemActionUpdateFuncs[])(Player* this, PlayState* play) = {
     func_8083485C,                 // PLAYER_IA_MASK_ZORA
     func_8083485C,                 // PLAYER_IA_MASK_GERUDO
     func_8083485C,                 // PLAYER_IA_MASK_TRUTH
-    func_8083485C,                 // PLAYER_IA_LENS_OF_TRUTH
+    Player_UpperAction_CarryActor, // PLAYER_IA_LENS_OF_TRUTH
 };
 
 static void (*sItemActionInitFuncs[])(PlayState* play, Player* this) = {
@@ -1677,7 +1677,7 @@ void Player_DetachHeldActor(PlayState* play, Player* this) {
         this->stateFlags1 &= ~PLAYER_STATE1_11;
     }
 
-    if (Player_GetExplosiveHeld(this) >= 0) {
+    if (Player_GetExplosiveHeld(this) >= 0 || this->heldItemAction == PLAYER_IA_LENS_OF_TRUTH) {
         Player_InitItemAction(play, this, PLAYER_IA_NONE);
         this->heldItemId = ITEM_NONE_FE;
     }
@@ -2274,9 +2274,6 @@ void Player_InitItemAction(PlayState* play, Player* this, s8 itemAction) {
     this->unk_858 = 0.0f;
 
     this->heldItemAction = this->itemAction = itemAction;
-    if (itemAction == PLAYER_IA_LENS_OF_TRUTH) {
-        this->heldItemAction = this->itemAction = 18;
-    }
     this->modelGroup = this->nextModelGroup;
 
     this->stateFlags1 &= ~(PLAYER_STATE1_3 | PLAYER_STATE1_24);
