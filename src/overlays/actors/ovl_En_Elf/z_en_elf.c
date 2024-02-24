@@ -826,8 +826,9 @@ void EnElf_UpdateLights(EnElf* this, PlayState* play) {
                                   this->actor.world.pos.z, 255, 255, 255, -1);
     }
 
+    Color_RGBAf naviColor = play->actorCtx.targetCtx.naviInner;
     Lights_PointGlowSetInfo(&this->lightInfoGlow, this->actor.world.pos.x, this->actor.world.pos.y,
-                            this->actor.world.pos.z, 255, 255, 255, glowLightRadius);
+                            this->actor.world.pos.z, naviColor.r, naviColor.g, naviColor.b, glowLightRadius);
 
     this->unk_2BC = Math_Atan2S(this->actor.velocity.z, this->actor.velocity.x);
 
