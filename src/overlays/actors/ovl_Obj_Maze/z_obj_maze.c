@@ -48,11 +48,14 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
     ObjMaze* this = (ObjMaze*)thisx;
     this->next = gSaveContext.save.dayTime + play->gameplayFrames;
 
+    // Wilson's Maze Algorithm
     int i;
     int j;
     u8 current;
     u8 direction;
     u8 mazeCount = 0;
+    this->frameCount = 0;
+    this->originShiftPoint = rand(this, 0, 100);
     this->start = rand(this, 90, 10);
     u8 end = rand(this, 0, 10);
     for (i = 0; i < 10; i++) {
@@ -91,28 +94,20 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
             mazeCount++;
             switch (this->maze[current / 10][current % 10] % 10) {
                 case MAZE_UP:
-                    if (this->maze[current / 10][current % 10] < 100) {
-                        this->maze[current / 10][current % 10] += NO_TOP_WALL;
-                    }
+                    this->maze[current / 10][current % 10] += NO_TOP_WALL;
                     current -= 10;
                     break;
                 case MAZE_DOWN:
                     current += 10;
-                    if (this->maze[current / 10][current % 10] < 100) {
-                        this->maze[current / 10][current % 10] += NO_TOP_WALL;
-                    }
+                    this->maze[current / 10][current % 10] += NO_TOP_WALL;
                     break;
                 case MAZE_RIGHT:
-                    if (this->maze[current / 10][current % 10] % 100 < 10) {
-                        this->maze[current / 10][current % 10] += NO_RIGHT_WALL;
-                    }
+                    this->maze[current / 10][current % 10] += NO_RIGHT_WALL;
                     current += 1;
                     break;
                 case MAZE_LEFT:
                     current -= 1;
-                    if (this->maze[current / 10][current % 10] % 100 < 10) {
-                        this->maze[current / 10][current % 10] += NO_RIGHT_WALL;
-                    }
+                    this->maze[current / 10][current % 10] += NO_RIGHT_WALL;
                     break;
             }
         }
@@ -127,6 +122,55 @@ void ObjMaze_Destroy(Actor* thisx, PlayState* play) {
 
 void ObjMaze_Update(Actor* thisx, PlayState* play) {
     ObjMaze* this = (ObjMaze*)thisx;
+
+    // Origin Shift Algorithm
+    u8 direction;
+    u8 row;
+    u8 column;
+    u8 curValue;
+    
+    this->frameCount += 1;
+    if (this->frameCount % 5 == 0)
+    {
+        this->frameCount = 0;
+        row = this->originShiftPoint / 10;
+        column = this->originShiftPoint % 10;
+        switch (this->maze[row][column] % 10) {
+            case MAZE_UP:
+                this->maze[row][column] -= NO_TOP_WALL;
+                break;
+            case MAZE_DOWN:
+                this->maze[row + 1][column] -= NO_TOP_WALL;
+                break;
+            case MAZE_RIGHT:
+                this->maze[row][column] -= NO_RIGHT_WALL;
+                break;
+            case MAZE_LEFT:
+                this->maze[row][column - 1] -= NO_RIGHT_WALL;
+                break;
+        }
+
+        direction = move(this, row, column);
+        this->maze[row][column] += direction + 4 - (this->maze[row][column] % 10);
+        switch (this->maze[row][column] % 10) {
+            case MAZE_UP:
+                this->maze[row][column] += NO_TOP_WALL;
+                this->originShiftPoint -= 10;
+                break;
+            case MAZE_DOWN:
+                this->maze[row + 1][column] += NO_TOP_WALL;
+                this->originShiftPoint += 10;
+                break;
+            case MAZE_RIGHT:
+                this->maze[row][column] += NO_RIGHT_WALL;
+                this->originShiftPoint += 1;
+                break;
+            case MAZE_LEFT:
+                this->maze[row][column - 1] += NO_RIGHT_WALL;
+                this->originShiftPoint -= 1;
+                break;
+        }
+    }
 
     // TODO 
     // Create a wall actor & spawn 4 of it on init. 
@@ -151,7 +195,7 @@ void ObjMaze_Draw(Actor* thisx, PlayState* play) {
             Matrix_Translate(x, y + 2.5, z, MTXMODE_NEW);
             Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
             
-            if (cell < 110) {
+            if (!(cell >= 100 && cell % 100 >= 10)) { // Skip drawing walls if both walls are removed
                 if (cell > 100) { // only right wall
                     Matrix_RotateY(DEG_TO_RAD(270), MTXMODE_APPLY);
                 } else if (cell > 10) { // only top wall
