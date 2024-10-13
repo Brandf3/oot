@@ -13,6 +13,8 @@ typedef struct ObjMaze {
     u8 maze[10][10];
     unsigned long int next;
     u8 start;
+    u8 originShiftPoint;
+    u8 frameCount;
 } ObjMaze;
 
 #endif
