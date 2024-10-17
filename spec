@@ -654,9 +654,6 @@ beginseg
     include "$(BUILD_DIR)/src/code/z_fbdemo_circle.o"
     include "$(BUILD_DIR)/src/code/z_fbdemo_fade.o"
     include "$(BUILD_DIR)/src/code/shrink_window.o"
-#if OOT_DEBUG
-    include "$(BUILD_DIR)/src/code/db_camera.o"
-#endif
     include "$(BUILD_DIR)/src/code/code_800BB0A0.o"
 #if OOT_DEBUG
     include "$(BUILD_DIR)/src/code/mempak.o"
@@ -694,9 +691,6 @@ beginseg
 #if PLATFORM_N64
     include "$(BUILD_DIR)/src/code/code_n64dd_800AD410.o"
     include "$(BUILD_DIR)/src/code/code_n64dd_800AD4C0.o"
-#endif
-#if OOT_DEBUG
-    include "$(BUILD_DIR)/src/code/debug_malloc.o"
 #endif
 #if PLATFORM_N64
     include "$(BUILD_DIR)/src/code/fault_n64.o"
@@ -7577,6 +7571,13 @@ beginseg
     compress
     include "$(BUILD_DIR)/src/overlays/actors/ovl_Obj_Maze/z_obj_maze.o"
     include "$(BUILD_DIR)/src/overlays/actors/ovl_Obj_Maze/ovl_Obj_Maze_reloc.o"
+endseg
+
+beginseg
+    name "ovl_Obj_Maze_Wall"
+    compress
+    include "$(BUILD_DIR)/src/overlays/actors/ovl_Obj_Maze_Wall/z_obj_maze_wall.o"
+    include "$(BUILD_DIR)/src/overlays/actors/ovl_Obj_Maze_Wall/ovl_Obj_Maze_Wall_reloc.o"
 endseg
 
 #endif

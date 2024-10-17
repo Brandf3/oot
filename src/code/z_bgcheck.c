@@ -1558,37 +1558,41 @@ void BgCheck_Allocate(CollisionContext* colCtx, PlayState* play, CollisionHeader
         (R_SCENE_CAM_TYPE == SCENE_CAM_TYPE_FIXED_TOGGLE_VIEWPOINT) || (R_SCENE_CAM_TYPE == SCENE_CAM_TYPE_FIXED) ||
         (R_SCENE_CAM_TYPE == SCENE_CAM_TYPE_FIXED_MARKET)) {
         if (play->sceneId == SCENE_STABLE) {
-            PRINTF(T("/* BGCheck LonLonサイズ %dbyte */\n", "/* BGCheck LonLon Size %dbyte */\n"), 0x3520);
-            colCtx->memSize = 0x3520;
+            // "/* BGCheck LonLon Size %dbyte */\n"
+            osSyncPrintf("/* BGCheck LonLonサイズ %dbyte */\n", 0x3520);
+            colCtx->memSize = 0x7CC00;
         } else {
-            PRINTF(T("/* BGCheck ミニサイズ %dbyte */\n", "/* BGCheck Mini Size %dbyte */\n"), 0x4E20);
-            colCtx->memSize = 0x4E20;
+            // "/* BGCheck Mini Size %dbyte */\n"
+            osSyncPrintf("/* BGCheck ミニサイズ %dbyte */\n", 0x4E20);
+            colCtx->memSize = 0x7CC00;
         }
-        colCtx->dyna.polyNodesMax = 500;
-        colCtx->dyna.polyListMax = 256;
-        colCtx->dyna.vtxListMax = 256;
+        colCtx->dyna.polyNodesMax = 3000;
+        colCtx->dyna.polyListMax = 1536;
+        colCtx->dyna.vtxListMax = 1536;
         colCtx->subdivAmount.x = 2;
         colCtx->subdivAmount.y = 2;
         colCtx->subdivAmount.z = 2;
     } else if (BgCheck_IsSpotScene(play) == true) {
-        colCtx->memSize = 0xF000;
-        PRINTF(T("/* BGCheck Spot用サイズ %dbyte */\n", "/* BGCheck Spot Size %dbyte */\n"), 0xF000);
-        colCtx->dyna.polyNodesMax = 1000;
-        colCtx->dyna.polyListMax = 512;
-        colCtx->dyna.vtxListMax = 512;
+        colCtx->memSize = 0x7CC00;
+        // "/* BGCheck Spot Size %dbyte */\n"
+        osSyncPrintf("/* BGCheck Spot用サイズ %dbyte */\n", 0xF000);
+        colCtx->dyna.polyNodesMax = 6000;
+        colCtx->dyna.polyListMax = 3072;
+        colCtx->dyna.vtxListMax = 3072;
         colCtx->subdivAmount.x = 16;
         colCtx->subdivAmount.y = 4;
         colCtx->subdivAmount.z = 16;
     } else {
         if (BgCheck_TryGetCustomMemsize(play->sceneId, &customMemSize)) {
-            colCtx->memSize = customMemSize;
+            colCtx->memSize = 0x7CC00;
         } else {
-            colCtx->memSize = 0x1CC00;
+            colCtx->memSize = 0x7CC00;
         }
-        PRINTF(T("/* BGCheck ノーマルサイズ %dbyte  */\n", "/* BGCheck Normal Size %dbyte  */\n"), colCtx->memSize);
-        colCtx->dyna.polyNodesMax = 1000;
-        colCtx->dyna.polyListMax = 512;
-        colCtx->dyna.vtxListMax = 512;
+        // "/* BGCheck Normal Size %dbyte  */\n"
+        osSyncPrintf("/* BGCheck ノーマルサイズ %dbyte  */\n", colCtx->memSize);
+        colCtx->dyna.polyNodesMax = 6000;
+        colCtx->dyna.polyListMax = 3072;
+        colCtx->dyna.vtxListMax = 3072;
         useCustomSubdivisions = false;
 
         for (i = 0; i < ARRAY_COUNT(sceneSubdivisionList); i++) {

@@ -197,7 +197,6 @@ void GameState_Draw(GameState* gameState, GraphicsContext* gfxCtx) {
     if (R_ENABLE_ARENA_DBG < 0) {
 #if OOT_DEBUG
         s32 pad;
-        DebugArena_Display();
         SystemArena_Display();
         PRINTF(T("ハイラル滅亡まであと %08x バイト(game_alloc)\n",
                  "%08x bytes left until Hyrule is destroyed (game_alloc)\n"),

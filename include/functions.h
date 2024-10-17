@@ -49,8 +49,6 @@ void ActorOverlayTable_Cleanup(void);
 void SaveContext_Init(void);
 s32 func_800635D0(s32);
 void Regs_Init(void);
-void DebugCamera_ScreenText(u8 x, u8 y, const char* text);
-void DebugCamera_ScreenTextColored(u8 x, u8 y, u8 colorIndex, const char* text);
 #if OOT_DEBUG
 void Regs_UpdateEditor(Input* input);
 #endif
@@ -196,11 +194,6 @@ void TransitionFade_Draw(void* thisx, Gfx** gfxP);
 s32 TransitionFade_IsDone(void* thisx);
 void TransitionFade_SetColor(void* thisx, u32 color);
 void TransitionFade_SetType(void* thisx, s32 type);
-
-void DebugCamera_Init(DebugCam* debugCam, Camera* cameraPtr);
-void DebugCamera_Enable(DebugCam* debugCam, Camera* cam);
-void DebugCamera_Update(DebugCam* debugCam, Camera* cam);
-void DebugCamera_Reset(Camera* cam, DebugCam* debugCam);
 void func_800BB0A0(f32 u, Vec3f* pos, f32* roll, f32* viewAngle, f32* point0, f32* point1, f32* point2, f32* point3);
 s32 func_800BB2B4(Vec3f* pos, f32* roll, f32* fov, CutsceneCameraPoint* point, s16* keyFrame, f32* curFrame);
 
@@ -263,25 +256,6 @@ u64* SysUcode_GetUCodeData(void);
 NORETURN void func_800D31A0(void);
 void func_800D31F0(void);
 void func_800D3210(void);
-void* DebugArena_Malloc(u32 size);
-void* DebugArena_MallocR(u32 size);
-void* DebugArena_Realloc(void* ptr, u32 newSize);
-void DebugArena_Free(void* ptr);
-void* DebugArena_Calloc(u32 num, u32 size);
-void DebugArena_GetSizes(u32* outMaxFree, u32* outFree, u32* outAlloc);
-void DebugArena_Check(void);
-void DebugArena_Init(void* start, u32 size);
-void DebugArena_Cleanup(void);
-s32 DebugArena_IsInitialized(void);
-#if OOT_DEBUG
-void DebugArena_CheckPointer(void* ptr, u32 size, const char* name, const char* action);
-void* DebugArena_MallocDebug(u32 size, const char* file, int line);
-void* DebugArena_MallocRDebug(u32 size, const char* file, int line);
-void* DebugArena_ReallocDebug(void* ptr, u32 newSize, const char* file, int line);
-void DebugArena_FreeDebug(void* ptr, const char* file, int line);
-void DebugArena_Display(void);
-#endif
-
 void RcpUtils_PrintRegisterStatus(void);
 void RcpUtils_Reset(void);
 void* Overlay_AllocateAndLoad(uintptr_t vromStart, uintptr_t vromEnd, void* vramStart, void* vramEnd);
