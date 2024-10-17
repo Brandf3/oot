@@ -567,7 +567,7 @@ endif
 #### Main Targets ###
 all:
 	python3 install_mod_assets.py
-	make -j2 build
+	make -j16 build
 
 all: rom compress
 

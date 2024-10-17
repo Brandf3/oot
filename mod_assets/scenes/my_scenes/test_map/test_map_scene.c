@@ -30,7 +30,7 @@ RomFile test_map_scene_roomList[] = {
 ActorEntry test_map_scene_header00_playerEntryList[] = {
     {
         /* Actor ID   */ ACTOR_PLAYER,
-        /* Position   */ { 0, 0, 0 },
+        /* Position   */ { 550, 0, 0 },
         /* Rotation   */ { DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000) },
         /* Parameters */ 0x0FFF
     },
