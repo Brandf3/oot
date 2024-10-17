@@ -6062,7 +6062,7 @@ endseg
 beginseg
     name "object_maze"
     romalign 0x1000
-    include "build/assets/objects/object_maze/gMazeWall2DL.o"
+    include "build/assets/objects/object_maze/gMazeWallDL.o"
     number 6
 endseg
 

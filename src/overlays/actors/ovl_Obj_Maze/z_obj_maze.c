@@ -5,7 +5,7 @@
  */
 
 #include "z_obj_maze.h"
-#include "assets/objects/object_maze/gMazeWall2DL.h"
+#include "assets/objects/object_maze/gMazeWallDL.h"
 
 #define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
 
@@ -115,41 +115,41 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
         this->start = findEmptyCell(this);
     }
 
-    // for (i = 0; i < 10; i++) {
-    //     for (j = 0; j < 10; j++) {
-    //         int cell = this->maze[i][j];
-    //         int x = this->actor.world.pos.x + (j * 100) - 450;
-    //         int y = this->actor.world.pos.y;
-    //         int z = this->actor.world.pos.z + (i * 100) - 450;
+    for (i = 0; i < 10; i++) {
+        for (j = 0; j < 10; j++) {
+            int cell = this->maze[i][j];
+            int x = this->actor.world.pos.x + (j * 100) - 450;
+            int y = this->actor.world.pos.y;
+            int z = this->actor.world.pos.z + (i * 100) - 450;
             
-    //         if (!(cell >= 100 && cell % 100 >= 10)) { // Skip drawing walls if both walls are removed
-    //             if (cell > 100) { // only right wall
-    //                Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x + 150, y + 2.5, z, 0, DEG_TO_BINANG(270), 0, 1);
-    //             } else if (cell > 10) { // only top wall
-    //                 // Don't need to rotate
-    //             } else { // both walls
-    //                 Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x + 150, y + 2.5, z, 0, DEG_TO_BINANG(270), 0, 1);
-    //             }
-    //             Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x + 100, y + 2.5, z - 50, 0, 0, 0, 1);
-    //         }
-    //     }
-    // }
+            if (!(cell >= 100 && cell % 100 >= 10)) { // Skip drawing walls if both walls are removed
+                if (cell > 100) { // only right wall
+                   Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x + 50, y + 5, z, 0, DEG_TO_BINANG(90), 0, 1);
+                } else if (cell > 10) { // only top wall
+                    Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x, y + 5, z - 50, 0, 0, 0, 1);
+                } else { // both walls
+                    Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x + 50, y + 5, z, 0, DEG_TO_BINANG(90), 0, 1);
+                    Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x, y + 5, z - 50, 0, 0, 0, 1);
+                }
+            }
+        }
+    }
 
-    // for (i = 0; i < 10; i++) {
-    //     if (i != this->start % 10) {
-    //         int x = this->actor.world.pos.x + (i * 100) - 450;
-    //         int y = this->actor.world.pos.y;
-    //         int z = this->actor.world.pos.z + 500;
-    //         Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x, y + 2.5, z, 0, 0, 0, 1);
-    //     }
-    // }
+    for (i = 0; i < 10; i++) {
+        if (i != this->start % 10) {
+            int x = this->actor.world.pos.x + (i * 100) - 450;
+            int y = this->actor.world.pos.y;
+            int z = this->actor.world.pos.z + 500;
+            Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x, y + 5, z, 0, 0, 0, 1);
+        }
+    }
 
-    // for (i = 0; i < 10; i++) {
-    //     int x = this->actor.world.pos.x - 500;
-    //     int y = this->actor.world.pos.y;
-    //     int z = this->actor.world.pos.z + (i * 100) - 450;
-    //     Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x + 100, y + 2.5, z, 0, DEG_TO_BINANG(270), 0, 1);
-    // }
+    for (i = 0; i < 10; i++) {
+        int x = this->actor.world.pos.x - 500;
+        int y = this->actor.world.pos.y;
+        int z = this->actor.world.pos.z + (i * 100) - 450;
+        Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x, y + 5, z, 0, DEG_TO_BINANG(90), 0, 1);
+    }
 }
 
 void ObjMaze_Destroy(Actor* thisx, PlayState* play) {
@@ -216,60 +216,6 @@ void ObjMaze_Update(Actor* thisx, PlayState* play) {
 
 void ObjMaze_Draw(Actor* thisx, PlayState* play) {
     ObjMaze* this = (ObjMaze*)thisx;
-
-    int i;
-    int j;
-
-    for (i = 0; i < 10; i++) {
-        for (j = 0; j < 10; j++) {
-            int cell = this->maze[i][j];
-            int x = this->actor.world.pos.x + (j * 100) - 450;
-            int y = this->actor.world.pos.y;
-            int z = this->actor.world.pos.z + (i * 100) - 450;
-            Matrix_Translate(x, y + 2.5, z, MTXMODE_NEW);
-            Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
-            
-            if (!(cell >= 100 && cell % 100 >= 10)) { // Skip drawing walls if both walls are removed
-                if (cell > 100) { // only right wall
-                    Matrix_RotateY(DEG_TO_RAD(270), MTXMODE_APPLY);
-                } else if (cell > 10) { // only top wall
-                    // Don't need to rotate
-                } else { // both walls
-                    gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_maze.c", 158), G_MTX_MODELVIEW | G_MTX_LOAD);
-                    gSPDisplayList(POLY_OPA_DISP++, gMazeWall2DL);
-                    Matrix_Translate(x, y + 2.5, z, MTXMODE_NEW);
-                    Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
-                    Matrix_RotateY(DEG_TO_RAD(270), MTXMODE_APPLY);
-                    gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, 255);
-                }
-                gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_maze.c", 158), G_MTX_MODELVIEW | G_MTX_LOAD);
-                gSPDisplayList(POLY_OPA_DISP++, gMazeWall2DL);
-            }
-        }
-    }
-
-    for (i = 0; i < 10; i++) {
-        if (i != this->start % 10) {
-            int x = this->actor.world.pos.x + (i * 100) - 450;
-            int y = this->actor.world.pos.y;
-            int z = this->actor.world.pos.z + 550;
-            Matrix_Translate(x, y + 2.5, z, MTXMODE_NEW);
-            Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
-            gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_maze.c", 158), G_MTX_MODELVIEW | G_MTX_LOAD);
-            gSPDisplayList(POLY_OPA_DISP++, gMazeWall2DL);
-        }
-    }
-
-    for (i = 0; i < 10; i++) {
-        int x = this->actor.world.pos.x - 550;
-        int y = this->actor.world.pos.y;
-        int z = this->actor.world.pos.z + (i * 100) - 450;
-        Matrix_Translate(x, y + 2.5, z, MTXMODE_NEW);
-        Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
-        Matrix_RotateY(DEG_TO_RAD(270), MTXMODE_APPLY);
-        gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_maze.c", 158), G_MTX_MODELVIEW | G_MTX_LOAD);
-        gSPDisplayList(POLY_OPA_DISP++, gMazeWall2DL);
-    }
 }
 
 u8 rand(ObjMaze* this, int offset, int range) {
