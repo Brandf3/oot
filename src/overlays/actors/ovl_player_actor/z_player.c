@@ -3254,8 +3254,9 @@ void Player_UseItem(PlayState* play, Player* this, s32 item) {
                 // Handle Deku Nuts
                 if (AMMO(ITEM_DEKU_NUT) != 0) {
                     //func_8083C61C(play, this);
-                    Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE, this->actor.world.pos.x,
-                                this->actor.world.pos.y, this->actor.world.pos.z, 0, 0, 0, 0);
+                    // Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE, this->actor.world.pos.x,
+                    //             this->actor.world.pos.y, this->actor.world.pos.z, 0, 0, 0, 0);
+                    osSyncPrintf("X: %f\nY: %f\nZ: %f\n", this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z);
                 } else {
                     Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
                 }
@@ -13657,8 +13658,6 @@ s32 func_8084FCAC(Player* this, PlayState* play) {
         } else {
             speed = 20.0f;
         }
-
-        DebugCamera_ScreenText(3, 2, "DEBUG MODE");
 
         if (!CHECK_BTN_ALL(sControlInput->cur.button, BTN_L)) {
             if (CHECK_BTN_ALL(sControlInput->cur.button, BTN_B)) {

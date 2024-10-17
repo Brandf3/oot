@@ -5,7 +5,7 @@
  */
 
 #include "z_obj_maze.h"
-#include "assets/objects/object_maze/gMazeWallDL.h"
+#include "assets/objects/object_maze/gMazeWall2DL.h"
 
 #define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
 
@@ -114,6 +114,42 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
 
         this->start = findEmptyCell(this);
     }
+
+    // for (i = 0; i < 10; i++) {
+    //     for (j = 0; j < 10; j++) {
+    //         int cell = this->maze[i][j];
+    //         int x = this->actor.world.pos.x + (j * 100) - 450;
+    //         int y = this->actor.world.pos.y;
+    //         int z = this->actor.world.pos.z + (i * 100) - 450;
+            
+    //         if (!(cell >= 100 && cell % 100 >= 10)) { // Skip drawing walls if both walls are removed
+    //             if (cell > 100) { // only right wall
+    //                Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x + 150, y + 2.5, z, 0, DEG_TO_BINANG(270), 0, 1);
+    //             } else if (cell > 10) { // only top wall
+    //                 // Don't need to rotate
+    //             } else { // both walls
+    //                 Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x + 150, y + 2.5, z, 0, DEG_TO_BINANG(270), 0, 1);
+    //             }
+    //             Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x + 100, y + 2.5, z - 50, 0, 0, 0, 1);
+    //         }
+    //     }
+    // }
+
+    // for (i = 0; i < 10; i++) {
+    //     if (i != this->start % 10) {
+    //         int x = this->actor.world.pos.x + (i * 100) - 450;
+    //         int y = this->actor.world.pos.y;
+    //         int z = this->actor.world.pos.z + 500;
+    //         Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x, y + 2.5, z, 0, 0, 0, 1);
+    //     }
+    // }
+
+    // for (i = 0; i < 10; i++) {
+    //     int x = this->actor.world.pos.x - 500;
+    //     int y = this->actor.world.pos.y;
+    //     int z = this->actor.world.pos.z + (i * 100) - 450;
+    //     Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x + 100, y + 2.5, z, 0, DEG_TO_BINANG(270), 0, 1);
+    // }
 }
 
 void ObjMaze_Destroy(Actor* thisx, PlayState* play) {
@@ -124,53 +160,53 @@ void ObjMaze_Update(Actor* thisx, PlayState* play) {
     ObjMaze* this = (ObjMaze*)thisx;
 
     // Origin Shift Algorithm
-    u8 direction;
-    u8 row;
-    u8 column;
-    u8 curValue;
+    // u8 direction;
+    // u8 row;
+    // u8 column;
+    // u8 curValue;
     
-    this->frameCount += 1;
-    if (this->frameCount % 5 == 0)
-    {
-        this->frameCount = 0;
-        row = this->originShiftPoint / 10;
-        column = this->originShiftPoint % 10;
-        switch (this->maze[row][column] % 10) {
-            case MAZE_UP:
-                this->maze[row][column] -= NO_TOP_WALL;
-                break;
-            case MAZE_DOWN:
-                this->maze[row + 1][column] -= NO_TOP_WALL;
-                break;
-            case MAZE_RIGHT:
-                this->maze[row][column] -= NO_RIGHT_WALL;
-                break;
-            case MAZE_LEFT:
-                this->maze[row][column - 1] -= NO_RIGHT_WALL;
-                break;
-        }
+    // this->frameCount += 1;
+    // if (this->frameCount % 5 == 0)
+    // {
+    //     this->frameCount = 0;
+    //     row = this->originShiftPoint / 10;
+    //     column = this->originShiftPoint % 10;
+    //     switch (this->maze[row][column] % 10) {
+    //         case MAZE_UP:
+    //             this->maze[row][column] -= NO_TOP_WALL;
+    //             break;
+    //         case MAZE_DOWN:
+    //             this->maze[row + 1][column] -= NO_TOP_WALL;
+    //             break;
+    //         case MAZE_RIGHT:
+    //             this->maze[row][column] -= NO_RIGHT_WALL;
+    //             break;
+    //         case MAZE_LEFT:
+    //             this->maze[row][column - 1] -= NO_RIGHT_WALL;
+    //             break;
+    //     }
 
-        direction = move(this, row, column);
-        this->maze[row][column] += direction + 4 - (this->maze[row][column] % 10);
-        switch (this->maze[row][column] % 10) {
-            case MAZE_UP:
-                this->maze[row][column] += NO_TOP_WALL;
-                this->originShiftPoint -= 10;
-                break;
-            case MAZE_DOWN:
-                this->maze[row + 1][column] += NO_TOP_WALL;
-                this->originShiftPoint += 10;
-                break;
-            case MAZE_RIGHT:
-                this->maze[row][column] += NO_RIGHT_WALL;
-                this->originShiftPoint += 1;
-                break;
-            case MAZE_LEFT:
-                this->maze[row][column - 1] += NO_RIGHT_WALL;
-                this->originShiftPoint -= 1;
-                break;
-        }
-    }
+    //     direction = move(this, row, column);
+    //     this->maze[row][column] += direction + 4 - (this->maze[row][column] % 10);
+    //     switch (this->maze[row][column] % 10) {
+    //         case MAZE_UP:
+    //             this->maze[row][column] += NO_TOP_WALL;
+    //             this->originShiftPoint -= 10;
+    //             break;
+    //         case MAZE_DOWN:
+    //             this->maze[row + 1][column] += NO_TOP_WALL;
+    //             this->originShiftPoint += 10;
+    //             break;
+    //         case MAZE_RIGHT:
+    //             this->maze[row][column] += NO_RIGHT_WALL;
+    //             this->originShiftPoint += 1;
+    //             break;
+    //         case MAZE_LEFT:
+    //             this->maze[row][column - 1] += NO_RIGHT_WALL;
+    //             this->originShiftPoint -= 1;
+    //             break;
+    //     }
+    // }
 
     // TODO 
     // Create a wall actor & spawn 4 of it on init. 
@@ -183,8 +219,6 @@ void ObjMaze_Draw(Actor* thisx, PlayState* play) {
 
     int i;
     int j;
-
-    OPEN_DISPS(play->state.gfxCtx, "../z_obj_maze.c", 147);
 
     for (i = 0; i < 10; i++) {
         for (j = 0; j < 10; j++) {
@@ -202,14 +236,14 @@ void ObjMaze_Draw(Actor* thisx, PlayState* play) {
                     // Don't need to rotate
                 } else { // both walls
                     gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_maze.c", 158), G_MTX_MODELVIEW | G_MTX_LOAD);
-                    gSPDisplayList(POLY_OPA_DISP++, gMazeWallDL);
+                    gSPDisplayList(POLY_OPA_DISP++, gMazeWall2DL);
                     Matrix_Translate(x, y + 2.5, z, MTXMODE_NEW);
                     Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
                     Matrix_RotateY(DEG_TO_RAD(270), MTXMODE_APPLY);
                     gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, 255);
                 }
                 gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_maze.c", 158), G_MTX_MODELVIEW | G_MTX_LOAD);
-                gSPDisplayList(POLY_OPA_DISP++, gMazeWallDL);
+                gSPDisplayList(POLY_OPA_DISP++, gMazeWall2DL);
             }
         }
     }
@@ -222,7 +256,7 @@ void ObjMaze_Draw(Actor* thisx, PlayState* play) {
             Matrix_Translate(x, y + 2.5, z, MTXMODE_NEW);
             Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
             gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_maze.c", 158), G_MTX_MODELVIEW | G_MTX_LOAD);
-            gSPDisplayList(POLY_OPA_DISP++, gMazeWallDL);
+            gSPDisplayList(POLY_OPA_DISP++, gMazeWall2DL);
         }
     }
 
@@ -234,10 +268,8 @@ void ObjMaze_Draw(Actor* thisx, PlayState* play) {
         Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
         Matrix_RotateY(DEG_TO_RAD(270), MTXMODE_APPLY);
         gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_maze.c", 158), G_MTX_MODELVIEW | G_MTX_LOAD);
-        gSPDisplayList(POLY_OPA_DISP++, gMazeWallDL);
+        gSPDisplayList(POLY_OPA_DISP++, gMazeWall2DL);
     }
-
-    CLOSE_DISPS(play->state.gfxCtx, "../z_obj_maze.c", 169);
 }
 
 u8 rand(ObjMaze* this, int offset, int range) {

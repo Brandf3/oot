@@ -378,7 +378,6 @@ beginseg
     include "build/src/code/z_fbdemo_circle.o"
     include "build/src/code/z_fbdemo_fade.o"
     include "build/src/code/shrink_window.o"
-    include "build/src/code/db_camera.o"
     include "build/src/code/code_800BB0A0.o"
     include "build/src/code/mempak.o"
     include "build/src/code/z_kaleido_manager.o"
@@ -407,7 +406,6 @@ beginseg
     include "build/src/code/sys_rumble.o"
     include "build/src/code/code_800D31A0.o"
     include "build/src/code/irqmgr.o"
-    include "build/src/code/debug_malloc.o"
     include "build/src/code/fault.o"
     include "build/src/code/fault_drawer.o"
 #ifndef NON_MATCHING
@@ -3383,6 +3381,12 @@ beginseg
 endseg
 
 beginseg
+    name "ovl_Obj_Maze_Wall"
+    include "build/src/overlays/actors/ovl_Obj_Maze_Wall/z_obj_maze_wall.o"
+    include "build/src/overlays/actors/ovl_Obj_Maze_Wall/ovl_Obj_Maze_Wall_reloc.o"
+endseg
+
+beginseg
     name "gameplay_keep"
     romalign 0x1000
     include "build/assets/objects/gameplay_keep/gameplay_keep.o"
@@ -6058,7 +6062,7 @@ endseg
 beginseg
     name "object_maze"
     romalign 0x1000
-    include "build/assets/objects/object_maze/gMazeWallDL.o"
+    include "build/assets/objects/object_maze/gMazeWall2DL.o"
     number 6
 endseg
 
