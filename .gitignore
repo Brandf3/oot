@@ -39,6 +39,7 @@ tools/*dSYM/
 graphs/
 
 # Assets
+assets/
 *.png
 *.jpg
 *.mdli
@@ -54,3 +55,12 @@ graphs/
 
 # Per-user configuration
 .python-version
+
+!mod_assets/
+!mod_assets/**/*.png
+!mod_assets/**/*.jpg
+!mod_assets/**/*.mdli
+!mod_assets/**/*.anmi
+!mod_assets/**/*.obj
+!mod_assets/**/*.mtl
+!mod_assets/**/*.fbx
