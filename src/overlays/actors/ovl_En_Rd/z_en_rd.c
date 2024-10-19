@@ -1,5 +1,6 @@
 #include "z_en_rd.h"
 #include "assets/objects/object_rd/object_rd.h"
+#include "assets/objects/object_in/object_in.h"
 
 #define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_2 | ACTOR_FLAG_4 | ACTOR_FLAG_10)
 
@@ -51,6 +52,29 @@ typedef enum {
     /* 3 */ REDEAD_GRAB_RELEASE,
     /* 4 */ REDEAD_GRAB_END
 } EnRdGrabState;
+
+static Gfx* sAdultEraDLs[] = {
+    NULL,
+    NULL,
+    gIngoAdultEraLeftThighDL,
+    gIngoAdultEraLeftLegDL,
+    gIngoAdultEraLeftFootDL,
+    gIngoAdultEraRightThighDL,
+    gIngoAdultEraRightLegDL,
+    gIngoAdultEraRightFootDL,
+    gIngoAdultEraTorsoDL,
+    gIngoAdultEraChestDL,
+    gIngoAdultEraLeftShoulderDL,
+    gIngoAdultEraLeftArmDL,
+    gIngoAdultEraLeftHandDL,
+    gIngoAdultEraRightShoulderDL,
+    gIngoAdultEraRightArmDL,
+    gIngoAdultEraRightHandDL,
+    gIngoAdultEraHeadDL,
+    gIngoAdultEraLeftEyebrowDL,
+    gIngoAdultEraRightEyebrowDL,
+    gIngoAdultEraMustacheDL,
+};
 
 ActorInit En_Rd_InitVars = {
     /**/ ACTOR_EN_RD,
@@ -159,9 +183,9 @@ void EnRd_Init(Actor* thisx, PlayState* play) {
         this->actor.params &= 0xFF;
     }
 
-    if (this->actor.params >= REDEAD_TYPE_DOES_NOT_MOURN) {
-        SkelAnime_InitFlex(play, &this->skelAnime, &gRedeadSkel, &gGibdoRedeadIdleAnim, this->jointTable,
-                           this->morphTable, REDEAD_GIBDO_LIMB_MAX);
+    if (this->actor.params >= REDEAD_TYPE_DOES_NOT_MOURN) { // &gGibdoRedeadIdleAnim
+        SkelAnime_InitFlex(play, &this->skelAnime, &gIngoSkel, NULL, this->jointTable,
+                           this->morphTable, INGO_LIMB_MAX);
         this->actor.naviEnemyId = NAVI_ENEMY_REDEAD;
     } else {
         SkelAnime_InitFlex(play, &this->skelAnime, &gGibdoSkel, &gGibdoRedeadIdleAnim, this->jointTable,
@@ -420,7 +444,7 @@ void EnRd_WalkToHome(EnRd* this, PlayState* play) {
             if (this->actor.params != REDEAD_TYPE_CRYING) {
                 EnRd_SetupIdle(this);
             } else {
-                EnRd_SetupCrouch(this);
+                //EnRd_SetupCrouch(this);
             }
         }
     }
@@ -483,7 +507,7 @@ void EnRd_WalkToParent(EnRd* this, PlayState* play) {
             if (this->actor.params != REDEAD_TYPE_CRYING) {
                 EnRd_SetupIdle(this);
             } else {
-                EnRd_SetupCrouch(this);
+                //EnRd_SetupCrouch(this);
             }
         }
 
@@ -886,111 +910,161 @@ void EnRd_Update(Actor* thisx, PlayState* play) {
 
 s32 EnRd_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx, Gfx** gfx) {
     EnRd* this = (EnRd*)thisx;
+    Vec3s limbRot;
 
-    if (limbIndex == REDEAD_GIBDO_LIMB_HEAD_ROOT) {
-        rot->y += this->headYRotation;
-    } else if (limbIndex == REDEAD_GIBDO_LIMB_UPPER_BODY_ROOT) {
-        rot->y += this->upperBodyYRotation;
+    if (this->actor.params > 0 && limbIndex != INGO_HEAD_LIMB) {
+        if (sAdultEraDLs[limbIndex] != NULL) {
+            *dList = sAdultEraDLs[limbIndex];
+        }
     }
+    if (limbIndex == INGO_HEAD_LIMB) {
+        Matrix_Translate(1500.0f, 0.0f, 0.0f, MTXMODE_APPLY);
+        Matrix_RotateZ(BINANG_TO_RAD_ALT(limbRot.x), MTXMODE_APPLY);
+        Matrix_RotateX(BINANG_TO_RAD_ALT(limbRot.y), MTXMODE_APPLY);
+        Matrix_Translate(-1500.0f, 0.0f, 0.0f, MTXMODE_APPLY);
+    }
+    if (limbIndex == INGO_CHEST_LIMB) {
+        Matrix_RotateX(BINANG_TO_RAD_ALT(limbRot.x), MTXMODE_APPLY);
+        Matrix_RotateY(BINANG_TO_RAD_ALT(limbRot.y), MTXMODE_APPLY);
+    }
+    if (limbIndex == INGO_CHEST_LIMB || limbIndex == INGO_LEFT_SHOULDER_LIMB || limbIndex == INGO_RIGHT_SHOULDER_LIMB) {
+        //rot->y += Math_SinS(this->unk_330[limbIndex].y) * 200.0f;
+        //rot->z += Math_CosS(this->unk_330[limbIndex].z) * 200.0f;
+    }
+    return 0;
 
-    return false;
+    // EnRd* this = (EnRd*)thisx;
+
+    // if (limbIndex == REDEAD_GIBDO_LIMB_HEAD_ROOT) {
+    //     rot->y += this->headYRotation;
+    // } else if (limbIndex == REDEAD_GIBDO_LIMB_UPPER_BODY_ROOT) {
+    //     rot->y += this->upperBodyYRotation;
+    // }
+
+    // return false;
 }
 
 void EnRd_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, void* thisx, Gfx** gfx) {
-    Vec3f D_80AE4940 = { 300.0f, 0.0f, 0.0f };
     EnRd* this = (EnRd*)thisx;
-    s32 idx = -1;
-    Vec3f destPos;
+    Vec3f D_80A7B9A8 = { 1600.0, 0.0f, 0.0f };
 
-    if ((this->fireTimer != 0) || ((this->actor.colorFilterTimer != 0) && (this->actor.colorFilterParams & 0x4000))) {
-        switch (limbIndex) {
-            case REDEAD_GIBDO_LIMB_HEAD:
-                idx = 0;
-                break;
+    OPEN_DISPS(play->state.gfxCtx, "../z_en_in.c", 2335);
 
-            case REDEAD_GIBDO_LIMB_ROOT:
-                idx = 1;
-                break;
-
-            case REDEAD_GIBDO_LIMB_RIGHT_HAND:
-                idx = 2;
-                break;
-
-            case REDEAD_GIBDO_LIMB_LEFT_HAND:
-                idx = 3;
-                break;
-
-            case REDEAD_GIBDO_LIMB_TORSO:
-                idx = 4;
-                break;
-
-            case REDEAD_GIBDO_LIMB_PELVIS:
-                idx = 5;
-                break;
-
-            case REDEAD_GIBDO_LIMB_RIGHT_SHIN:
-                idx = 6;
-                break;
-
-            case REDEAD_GIBDO_LIMB_LEFT_SHIN:
-                idx = 7;
-                break;
-
-            case REDEAD_GIBDO_LIMB_RIGHT_FOOT:
-                idx = 8;
-                break;
-
-            case REDEAD_GIBDO_LIMB_LEFT_FOOT:
-                idx = 9;
-                break;
-        }
-
-        if (idx >= 0) {
-            Matrix_MultVec3f(&D_80AE4940, &destPos);
-            this->firePos[idx].x = destPos.x;
-            this->firePos[idx].y = destPos.y;
-            this->firePos[idx].z = destPos.z;
-        }
+    if (limbIndex == INGO_HEAD_LIMB) {
+        Matrix_MultVec3f(&D_80A7B9A8, &this->actor.focus.pos);
+        this->actor.focus.rot = this->actor.world.rot;
     }
+    if (limbIndex == INGO_LEFT_HAND_LIMB && this->skelAnime.animation == &object_in_Anim_014CA8) {
+        gSPDisplayList(POLY_OPA_DISP++, gIngoChildEraBasketDL);
+    }
+    if (limbIndex == INGO_RIGHT_HAND_LIMB && this->skelAnime.animation == &object_in_Anim_014CA8) {
+        gSPDisplayList(POLY_OPA_DISP++, gIngoChildEraPitchForkDL);
+    }
+
+    CLOSE_DISPS(play->state.gfxCtx, "../z_en_in.c", 2365);
+
+
+    // Vec3f D_80AE4940 = { 300.0f, 0.0f, 0.0f };
+    // EnRd* this = (EnRd*)thisx;
+    // s32 idx = -1;
+    // Vec3f destPos;
+
+    // if ((this->fireTimer != 0) || ((this->actor.colorFilterTimer != 0) && (this->actor.colorFilterParams & 0x4000))) {
+    //     switch (limbIndex) {
+    //         case REDEAD_GIBDO_LIMB_HEAD:
+    //             idx = 0;
+    //             break;
+
+    //         case REDEAD_GIBDO_LIMB_ROOT:
+    //             idx = 1;
+    //             break;
+
+    //         case REDEAD_GIBDO_LIMB_RIGHT_HAND:
+    //             idx = 2;
+    //             break;
+
+    //         case REDEAD_GIBDO_LIMB_LEFT_HAND:
+    //             idx = 3;
+    //             break;
+
+    //         case REDEAD_GIBDO_LIMB_TORSO:
+    //             idx = 4;
+    //             break;
+
+    //         case REDEAD_GIBDO_LIMB_PELVIS:
+    //             idx = 5;
+    //             break;
+
+    //         case REDEAD_GIBDO_LIMB_RIGHT_SHIN:
+    //             idx = 6;
+    //             break;
+
+    //         case REDEAD_GIBDO_LIMB_LEFT_SHIN:
+    //             idx = 7;
+    //             break;
+
+    //         case REDEAD_GIBDO_LIMB_RIGHT_FOOT:
+    //             idx = 8;
+    //             break;
+
+    //         case REDEAD_GIBDO_LIMB_LEFT_FOOT:
+    //             idx = 9;
+    //             break;
+    //     }
+
+    //     if (idx >= 0) {
+    //         Matrix_MultVec3f(&D_80AE4940, &destPos);
+    //         this->firePos[idx].x = destPos.x;
+    //         this->firePos[idx].y = destPos.y;
+    //         this->firePos[idx].z = destPos.z;
+    //     }
+    // }
 }
 
 void EnRd_Draw(Actor* thisx, PlayState* play) {
     static Vec3f D_80AE494C = { 300.0f, 0.0f, 0.0f };
     static Vec3f sShadowScale = { 0.25f, 0.25f, 0.25f };
+    static void* eyeTextures[] = { gIngoEyeOpenTex, gIngoEyeHalfTex, gIngoEyeClosedTex, gIngoEyeClosed2Tex };
     s32 pad;
     EnRd* this = (EnRd*)thisx;
     Vec3f thisPos = thisx->world.pos;
 
     OPEN_DISPS(play->state.gfxCtx, "../z_en_rd.c", 1679);
 
-    if (this->alpha == 255) {
-        Gfx_SetupDL_25Opa(play->state.gfxCtx);
-        gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, this->alpha);
-        gSPSegment(POLY_OPA_DISP++, 8, &D_80116280[2]);
-        POLY_OPA_DISP =
-            SkelAnime_DrawFlex(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,
-                               EnRd_OverrideLimbDraw, EnRd_PostLimbDraw, this, POLY_OPA_DISP);
+    Gfx_SetupDL_25Opa(play->state.gfxCtx);
+        gSPSegment(POLY_OPA_DISP++, 0x08, SEGMENTED_TO_VIRTUAL(eyeTextures[0]));
+        gSPSegment(POLY_OPA_DISP++, 0x09, SEGMENTED_TO_VIRTUAL(gIngoHeadGradient2Tex));
+        SkelAnime_DrawFlexOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,
+                              EnRd_OverrideLimbDraw, EnRd_PostLimbDraw, &this->actor);
 
-        func_80033C30(&thisPos, &sShadowScale, 255, play);
+    // if (this->alpha == 255) {
+    //     Gfx_SetupDL_25Opa(play->state.gfxCtx);
+    //     gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, this->alpha);
+    //     gSPSegment(POLY_OPA_DISP++, 8, &D_80116280[2]);
+    //     POLY_OPA_DISP =
+    //         SkelAnime_DrawFlex(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,
+    //                            EnRd_OverrideLimbDraw, EnRd_PostLimbDraw, this, POLY_OPA_DISP);
 
-        if (this->fireTimer != 0) {
-            thisx->colorFilterTimer++;
-            this->fireTimer--;
-            if (this->fireTimer % 4 == 0) {
-                EffectSsEnFire_SpawnVec3s(play, thisx, &this->firePos[this->fireTimer >> 2], 0x4B, 0, 0,
-                                          (this->fireTimer >> 2));
-            }
-        }
-    } else {
-        Gfx_SetupDL_25Xlu(play->state.gfxCtx);
-        gDPSetEnvColor(POLY_XLU_DISP++, 0, 0, 0, this->alpha);
-        gSPSegment(POLY_XLU_DISP++, 8, &D_80116280[0]);
-        POLY_XLU_DISP =
-            SkelAnime_DrawFlex(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,
-                               EnRd_OverrideLimbDraw, NULL, this, POLY_XLU_DISP);
+    //     func_80033C30(&thisPos, &sShadowScale, 255, play);
 
-        func_80033C30(&thisPos, &sShadowScale, this->alpha, play);
-    }
+    //     if (this->fireTimer != 0) {
+    //         thisx->colorFilterTimer++;
+    //         this->fireTimer--;
+    //         if (this->fireTimer % 4 == 0) {
+    //             EffectSsEnFire_SpawnVec3s(play, thisx, &this->firePos[this->fireTimer >> 2], 0x4B, 0, 0,
+    //                                       (this->fireTimer >> 2));
+    //         }
+    //     }
+    // } else {
+    //     Gfx_SetupDL_25Xlu(play->state.gfxCtx);
+    //     gDPSetEnvColor(POLY_XLU_DISP++, 0, 0, 0, this->alpha);
+    //     gSPSegment(POLY_XLU_DISP++, 8, &D_80116280[0]);
+    //     POLY_XLU_DISP =
+    //         SkelAnime_DrawFlex(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,
+    //                            EnRd_OverrideLimbDraw, NULL, this, POLY_XLU_DISP);
+
+    //     func_80033C30(&thisPos, &sShadowScale, this->alpha, play);
+    // }
 
     CLOSE_DISPS(play->state.gfxCtx, "../z_en_rd.c", 1735);
 }

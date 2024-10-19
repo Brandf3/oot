@@ -4334,6 +4334,7 @@ beginseg
     name "object_rd"
     romalign 0x1000
     include "build/assets/objects/object_rd/object_rd.o"
+    include "build/assets/objects/object_in/object_in.o"
     number 6
 endseg
 

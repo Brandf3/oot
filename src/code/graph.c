@@ -169,7 +169,7 @@ void Graph_TaskSet00(GraphicsContext* gfxCtx) {
 
     if (msg == (OSMesg)666) {
         osSyncPrintf(VT_FGCOL(RED));
-        osSyncPrintf("RCPが帰ってきませんでした。"); // "RCP did not return."
+        osSyncPrintf("RCP did not return."); // "RCP did not return."
         osSyncPrintf(VT_RST);
 
         LogUtils_LogHexDump((void*)PHYS_TO_K1(SP_BASE_REG), 0x20);
