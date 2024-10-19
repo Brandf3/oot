@@ -166,7 +166,7 @@ typedef struct {
     /* 0x0002 */ u8     unk_02;
     /* 0x0003 */ u8     lensActive;
     /* 0x0004 */ char   unk_04[0x04];
-    /* 0x0008 */ u8     total; // total number of actors loaded
+    /* 0x0008 */ u16     total; // total number of actors loaded
     /* 0x000C */ ActorListEntry actorLists[ACTORCAT_MAX];
     /* 0x006C */ TargetContext targetCtx;
     struct {

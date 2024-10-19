@@ -4,6 +4,11 @@
 #include "ultra64.h"
 #include "global.h"
 
+#define ROWS 10
+#define COLUMNS 20
+#define ORIGIN_SHIFT_DELAY 10
+#define CELL_SIZE 100
+
 typedef struct {
     u8 type;           // Cell type (e.g., MAZE_UP, MAZE_DOWN, etc.)
     s8 rightWallIdx;   // Index in the wallActors array for the right wall (-1 if no right wall)
@@ -16,8 +21,8 @@ typedef void (*ObjMazeActionFunc)(struct ObjMaze*, PlayState*);
 
 typedef struct ObjMaze {
     Actor actor;
-    Cell maze[10][10];
-    Actor* wallActors[101];
+    Cell maze[ROWS][COLUMNS];
+    Actor* wallActors[(ROWS * COLUMNS) + 1];
     unsigned long int next;
     u8 start;
     u8 originShiftPoint;
