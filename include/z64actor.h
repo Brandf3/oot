@@ -7,7 +7,7 @@
 #include "z64math.h"
 #include "z64collision_check.h"
 
-#define ACTOR_NUMBER_MAX 200
+#define ACTOR_NUMBER_MAX 255
 
 #define INVISIBLE_ACTOR_MAX 20
 

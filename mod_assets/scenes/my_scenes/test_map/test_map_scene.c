@@ -90,8 +90,8 @@ EnvLightSettings test_map_scene_header00_lightSettings[4] = {
 
 Vec3s test_map_camPosData[3] = {
 	{ 0, 0, 0 },
-	{ 8291, 44886, 65245 },
-	{ 3960, -1, -1 },
+	{ 0, 0, 0 },
+	{ 0, 0, 0 },
 };
 
 BgCamInfo test_map_camData[1] = {
