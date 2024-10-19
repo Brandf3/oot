@@ -8666,6 +8666,8 @@ beginseg
     compress
     romalign 0x1000
     include "$(BUILD_DIR)/assets/objects/object_rd/object_rd.o"
+    include "$(BUILD_DIR)/assets/objects/object_in/object_in.o"
+    number 6
     number 6
 endseg
 

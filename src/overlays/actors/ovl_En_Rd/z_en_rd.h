@@ -50,12 +50,36 @@ typedef enum EnRdType {
     /*  3 */ REDEAD_TYPE_INVISIBLE
 } EnRdType;
 
+typedef enum {
+    /* 0x00 */ INGO_LIMB_NONE,
+    /* 0x01 */ INGO_LIMB_ROOT,
+    /* 0x02 */ INGO_LEFT_THIGH_LIMB,
+    /* 0x03 */ INGO_LEFT_LEG_LIMB,
+    /* 0x04 */ INGO_LEFT_FOOT_LIMB,
+    /* 0x05 */ INGO_RIGHT_THIGH_LIMB,
+    /* 0x06 */ INGO_RIGHT_LEG_LIMB,
+    /* 0x07 */ INGO_RIGHT_FOOT_LIMB,
+    /* 0x08 */ INGO_TORSO_LIMB,
+    /* 0x09 */ INGO_CHEST_LIMB,
+    /* 0x0A */ INGO_LEFT_SHOULDER_LIMB,
+    /* 0x0B */ INGO_LEFT_ARM_LIMB,
+    /* 0x0C */ INGO_LEFT_HAND_LIMB,
+    /* 0x0D */ INGO_RIGHT_SHOULDER_LIMB,
+    /* 0x0E */ INGO_RIGHT_ARM_LIMB,
+    /* 0x0F */ INGO_RIGHT_HAND_LIMB,
+    /* 0x10 */ INGO_HEAD_LIMB,
+    /* 0x11 */ INGO_LEFT_EYEBROW_LIMB,
+    /* 0x12 */ INGO_RIGHTEYEBROW_LIMB,
+    /* 0x13 */ INGO_MUSTACHE_LIMB,
+    /* 0x14 */ INGO_LIMB_MAX
+} IngoLimb;
+
 typedef struct EnRd {
     /* 0x0000 */ Actor actor;
     /* 0x014C */ Vec3s firePos[10];
     /* 0x0188 */ SkelAnime skelAnime;
-    /* 0x01CC */ Vec3s jointTable[REDEAD_GIBDO_LIMB_MAX];
-    /* 0x0268 */ Vec3s morphTable[REDEAD_GIBDO_LIMB_MAX];
+    /* 0x01CC */ Vec3s jointTable[INGO_LIMB_MAX];
+    /* 0x0268 */ Vec3s morphTable[INGO_LIMB_MAX];
     /* 0x0304 */ u8 grabState;
     /* 0x0305 */ u8 isMourning;
     /* 0x0306 */ u8 playerStunWaitTimer; // Cannot stun the player if this is non-zero
@@ -74,6 +98,7 @@ typedef struct EnRd {
     /* 0x031C */ u8 damageEffect;
     /* 0x031D */ u8 unk_31D; // related to player->unk_845
     /* 0x0320 */ ColliderCylinder collider;
+    Vec3s unk_330[INGO_LIMB_MAX];
 } EnRd; // size = 0x036C
 
 #endif
