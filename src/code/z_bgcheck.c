@@ -1639,8 +1639,6 @@ void BgCheck_Allocate(CollisionContext* colCtx, PlayState* play, CollisionHeader
         tblMax = customNodeListMax;
     } else {
         if (colCtx->memSize < memSize) {
-            osSyncPrintf("Memory need %d\n", memSize);
-            osSyncPrintf("Current memory %d\n", colCtx->memSize);
             LogUtils_HungupThread("../z_bgcheck.c", 4230);
         }
         tblMax = (colCtx->memSize - memSize) / sizeof(SSNode);

@@ -175,45 +175,45 @@ void ObjMaze_Update(Actor* thisx, PlayState* play) {
     ObjMaze* this = (ObjMaze*)thisx;
 
     //Origin Shift Algorithm
-    // u8 direction;
-    // u8 row;
-    // u8 column;
+    u8 direction;
+    u8 row;
+    u8 column;
 
-    // this->frameCount += 1;
-    // if (this->frameCount % ORIGIN_SHIFT_DELAY == 0)
-    // {
-    //     this->frameCount = 0;
-    //     row = this->originShiftPoint / COLUMNS;
-    //     column = this->originShiftPoint % COLUMNS;
-    //     direction = move(this, row, column);
-    //     this->maze[row][column].type += direction + LEFT - (this->maze[row][column].type % 10);
-    //     switch (this->maze[row][column].type % 10) {
-    //         case MAZE_UP:
-    //             ObjMaze_SetCellToOrigin(this, row - 1, column, this->maze[row][column].topWallIdx);
-    //             this->maze[row][column].type += NO_TOP_WALL;
-    //             this->maze[row][column].topWallIdx = -1;
-    //             this->originShiftPoint -= COLUMNS;
-    //             break;
-    //         case MAZE_DOWN:
-    //             ObjMaze_SetCellToOrigin(this, row + 1, column, this->maze[row + 1][column].topWallIdx);
-    //             this->maze[row + 1][column].type += NO_TOP_WALL;
-    //             this->maze[row + 1][column].topWallIdx = -1;
-    //             this->originShiftPoint += COLUMNS;
-    //             break;
-    //         case MAZE_RIGHT:
-    //             ObjMaze_SetCellToOrigin(this, row, column + 1, this->maze[row][column].rightWallIdx);
-    //             this->maze[row][column].type += NO_RIGHT_WALL;
-    //             this->maze[row][column].rightWallIdx = -1;
-    //             this->originShiftPoint += 1;
-    //             break;
-    //         case MAZE_LEFT:
-    //             ObjMaze_SetCellToOrigin(this, row, column - 1, this->maze[row][column - 1].rightWallIdx);
-    //             this->maze[row][column - 1].type += NO_RIGHT_WALL;
-    //             this->maze[row][column - 1].rightWallIdx = -1;
-    //             this->originShiftPoint -= 1;
-    //             break;
-    //     }
-    // }
+    this->frameCount += 1;
+    if (this->frameCount % ORIGIN_SHIFT_DELAY == 0)
+    {
+        this->frameCount = 0;
+        row = this->originShiftPoint / COLUMNS;
+        column = this->originShiftPoint % COLUMNS;
+        direction = move(this, row, column);
+        this->maze[row][column].type += direction + LEFT - (this->maze[row][column].type % 10);
+        switch (this->maze[row][column].type % 10) {
+            case MAZE_UP:
+                ObjMaze_SetCellToOrigin(this, row - 1, column, this->maze[row][column].topWallIdx);
+                this->maze[row][column].type += NO_TOP_WALL;
+                this->maze[row][column].topWallIdx = -1;
+                this->originShiftPoint -= COLUMNS;
+                break;
+            case MAZE_DOWN:
+                ObjMaze_SetCellToOrigin(this, row + 1, column, this->maze[row + 1][column].topWallIdx);
+                this->maze[row + 1][column].type += NO_TOP_WALL;
+                this->maze[row + 1][column].topWallIdx = -1;
+                this->originShiftPoint += COLUMNS;
+                break;
+            case MAZE_RIGHT:
+                ObjMaze_SetCellToOrigin(this, row, column + 1, this->maze[row][column].rightWallIdx);
+                this->maze[row][column].type += NO_RIGHT_WALL;
+                this->maze[row][column].rightWallIdx = -1;
+                this->originShiftPoint += 1;
+                break;
+            case MAZE_LEFT:
+                ObjMaze_SetCellToOrigin(this, row, column - 1, this->maze[row][column - 1].rightWallIdx);
+                this->maze[row][column - 1].type += NO_RIGHT_WALL;
+                this->maze[row][column - 1].rightWallIdx = -1;
+                this->originShiftPoint -= 1;
+                break;
+        }
+    }
 }
 
 void ObjMaze_Draw(Actor* thisx, PlayState* play) {

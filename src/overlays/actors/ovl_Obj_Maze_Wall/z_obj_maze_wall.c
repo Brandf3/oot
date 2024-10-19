@@ -7,7 +7,7 @@
 #include "z_obj_maze_wall.h"
 #include "assets/objects/object_maze/gMazeWallDL.h"
 
-#define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
+#define FLAGS 0
 
 void ObjMazeWall_Init(Actor* thisx, PlayState* play);
 void ObjMazeWall_Destroy(Actor* thisx, PlayState* play);
