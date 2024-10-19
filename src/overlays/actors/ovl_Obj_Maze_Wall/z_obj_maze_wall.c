@@ -46,5 +46,16 @@ void ObjMazeWall_Update(Actor* thisx, PlayState* play) {
 
 void ObjMazeWall_Draw(Actor* thisx, PlayState* play) {
     ObjMazeWall* this = (ObjMazeWall*)thisx;
-    Gfx_DrawDListOpa(play, gMazeWallDL);
+    OPEN_DISPS(play->state.gfxCtx, "../z_obj_maze_wall.c", 43);
+    gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_maze.c", 158), G_MTX_MODELVIEW | G_MTX_LOAD);
+    if (this->dyna.actor.params == 1) {
+        // Set the color for the teleporter wall
+        gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 0, 0, 255);
+    } else {
+        // Set a default color for regular walls
+        gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 0, 0, 0, 255);
+    }
+    gSPDisplayList(POLY_OPA_DISP++, gMazeWallDL);
+    //Gfx_DrawDListOpa(play, gMazeWallDL);
+    CLOSE_DISPS(play->state.gfxCtx, "../z_obj_maze_wall.c", 47);
 }
