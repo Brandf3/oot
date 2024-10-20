@@ -251,7 +251,7 @@ void EnRd_UpdateMourningTarget(PlayState* play, Actor* thisx, s32 shouldMourn) {
 
 void EnRd_SetupIdle(EnRd* this) {
     if (this->actor.params != REDEAD_TYPE_CRYING) {
-        Animation_MorphToLoop(&this->skelAnime, &gGibdoRedeadIdleAnim, -6.0f);
+        Animation_MorphToLoop(&this->skelAnime, &object_in_Anim_001BE0, 0.0f);
     } else {
         Animation_PlayLoop(&this->skelAnime, &gGibdoRedeadSobbingAnim);
     }
@@ -274,14 +274,8 @@ void EnRd_Idle(EnRd* this, PlayState* play) {
         } else {
             Animation_PlayLoop(&this->skelAnime, &gGibdoRedeadWipingTearsAnim);
         }
-    } else {
-        this->timer--;
-        if (this->timer == 0) {
-            // This resets the idle animation back to its first frame, making the
-            // Redead/Gibdo appear to "judder" in place.
-            this->timer = (Rand_ZeroOne() * 10.0f) + 10.0f;
-            this->skelAnime.curFrame = 0.0f;
-        }
+    } else if (this->skelAnime.curFrame >= this->skelAnime.endFrame) {
+        this->skelAnime.curFrame = 0.0f; // Reset if it has played fully      
     }
 
     if (this->actor.parent != NULL) {
@@ -557,7 +551,7 @@ void EnRd_Grab(EnRd* this, PlayState* play) {
 
     switch (this->grabState) {
         case REDEAD_GRAB_INITIAL_DAMAGE:
-            Animation_PlayLoop(&this->skelAnime, &gGibdoRedeadGrabAttackAnim);
+            Animation_PlayLoop(&this->skelAnime, &object_in_Anim_016B3C);
             this->grabState++;
             play->damagePlayer(play, -8);
             Rumble_Request(this->actor.xzDistToPlayer, 255, 1, 12);
@@ -581,11 +575,11 @@ void EnRd_Grab(EnRd* this, PlayState* play) {
             }
 
             Math_SmoothStepToF(&this->actor.world.pos.x,
-                               (Math_SinS(player->actor.shape.rot.y) * -25.0f) + player->actor.world.pos.x, 1.0f, 10.0f,
+                               (Math_SinS(player->actor.shape.rot.y) * -10.0f) + player->actor.world.pos.x, 1.0f, 10.0f,
                                0.0f);
-            Math_SmoothStepToF(&this->actor.world.pos.y, player->actor.world.pos.y, 1.0f, 10.0f, 0.0f);
+            Math_SmoothStepToF(&this->actor.world.pos.y, player->actor.world.pos.y - 25, 1.0f, 10.0f, 0.0f);
             Math_SmoothStepToF(&this->actor.world.pos.z,
-                               (Math_CosS(player->actor.shape.rot.y) * -25.0f) + player->actor.world.pos.z, 1.0f, 10.0f,
+                               (Math_CosS(player->actor.shape.rot.y) * -10.0f) + player->actor.world.pos.z, 1.0f, 10.0f,
                                0.0f);
             Math_SmoothStepToS(&this->actor.shape.rot.y, player->actor.shape.rot.y, 1, 0x1770, 0);
 
