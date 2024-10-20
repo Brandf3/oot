@@ -17,7 +17,7 @@ void MirRay_Draw(Actor* thisx, PlayState* play);
 s32 MirRay_CheckInFrustum(Vec3f* vecA, Vec3f* vecB, f32 pointx, f32 pointy, f32 pointz, s16 radiusA, s16 radiusB);
 
 // Locations of light beams in sMirRayData
-typedef enum {
+typedef enum MirRayBeamLocations {
     /* 0 */ MIRRAY_SPIRIT_BOMBCHUIWAROOM_DOWNLIGHT,
     /* 1 */ MIRRAY_SPIRIT_SUNBLOCKROOM_DOWNLIGHT,
     /* 2 */ MIRRAY_SPIRIT_SINGLECOBRAROOM_DOWNLIGHT,
@@ -30,7 +30,7 @@ typedef enum {
     /* 9 */ MIRRAY_GANONSCASTLE_SPIRITTRIAL_DOWNLIGHT
 } MirRayBeamLocations;
 
-ActorInit Mir_Ray_InitVars = {
+ActorProfile Mir_Ray_Profile = {
     /**/ ACTOR_MIR_RAY,
     /**/ ACTORCAT_ITEMACTION,
     /**/ FLAGS,
@@ -46,7 +46,7 @@ static u8 D_80B8E670 = 0;
 
 static ColliderQuadInit sQuadInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_ON | AT_TYPE_PLAYER,
         AC_NONE,
         OC1_NONE,
@@ -54,11 +54,11 @@ static ColliderQuadInit sQuadInit = {
         COLSHAPE_QUAD,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00200000, 0x00, 0x00 },
         { 0xFFCFFFFF, 0x00, 0x00 },
-        TOUCH_ON | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_ON | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_NONE,
     },
     { { { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } } },
@@ -67,11 +67,11 @@ static ColliderQuadInit sQuadInit = {
 static ColliderJntSphElementInit sJntSphElementsInit[1] = {
     {
         {
-            ELEMTYPE_UNK0,
+            ELEM_MATERIAL_UNK0,
             { 0x00200000, 0x00, 0x00 },
             { 0x00000000, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_NONE,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_NONE,
             OCELEM_NONE,
         },
         { 0, { { 0, 0, 0 }, 50 }, 100 },
@@ -80,7 +80,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[1] = {
 
 static ColliderJntSphInit sJntSphInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_ON | AT_TYPE_PLAYER,
         AC_NONE,
         OC1_NONE,
@@ -136,7 +136,7 @@ void MirRay_MakeShieldLight(MirRay* this, PlayState* play) {
                               player->actor.world.pos.y + 30.0f, player->actor.world.pos.z, this->sourceEndRad,
                               this->poolEndRad)) {
 
-        if (dataEntry->params & 8) { // Light beams from mirrors
+        if (PARAMS_GET_NOSHIFT(dataEntry->params, 3, 1)) { // Light beams from mirrors
             Math_Vec3f_Diff(&player->actor.world.pos, &this->sourcePt, &reflectionPt);
         } else { // Light beams from windows
             Math_Vec3f_Diff(&this->poolPt, &this->sourcePt, &reflectionPt);
@@ -166,7 +166,7 @@ void MirRay_Init(Actor* thisx, PlayState* play) {
     Actor_ProcessInitChain(&this->actor, sInitChain);
     ActorShape_Init(&this->actor.shape, 0.0f, NULL, 0.0f);
     // "Generation of reflectable light!"
-    osSyncPrintf("反射用 光の発生!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    PRINTF("反射用 光の発生!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     LOG_NUM("this->actor.arg_data", this->actor.params, "../z_mir_ray.c", 518);
 
     if (this->actor.params >= 0xA) {
@@ -207,10 +207,10 @@ void MirRay_Init(Actor* thisx, PlayState* play) {
     this->shieldCorners[5].x = 758.0f;
     this->shieldCorners[5].y = -800.0f;
 
-    if (dataEntry->params & 2) {
+    if (PARAMS_GET_NOSHIFT(dataEntry->params, 1, 1)) {
         Collider_InitJntSph(play, &this->colliderSph);
         Collider_SetJntSph(play, &this->colliderSph, &this->actor, &sJntSphInit, &this->colliderSphItem);
-        if (!(dataEntry->params & 4)) { // Beams not from mirrors
+        if (!PARAMS_GET_NOSHIFT(dataEntry->params, 2, 1)) { // Beams not from mirrors
             MirRay_SetupCollider(this);
         }
     }
@@ -256,7 +256,7 @@ void MirRay_Update(Actor* thisx, PlayState* play) {
         MirRay_MakeShieldLight(this, play);
 
         if (this->reflectIntensity > 0.0f) {
-            func_8002F8F0(&player->actor, NA_SE_IT_SHIELD_BEAM - SFX_FLAG);
+            Actor_PlaySfx_Flagged2(&player->actor, NA_SE_IT_SHIELD_BEAM - SFX_FLAG);
         }
     }
 }
@@ -373,8 +373,6 @@ void MirRay_ReflectedBeam(MirRay* this, PlayState* play, MirRayShieldReflection*
     f32 spE8[3];
     f32 polyNormal[3];
     MtxF* shieldMtx;
-    Vec3f vecA;
-    Vec3f vecC;
 
     shieldMtx = &player->shieldMf;
 
@@ -390,75 +388,80 @@ void MirRay_ReflectedBeam(MirRay* this, PlayState* play, MirRayShieldReflection*
     vecD.y = spE8[1] + vecB.y;
     vecD.z = spE8[2] + vecB.z;
 
-    vecA.x = vecB.x + (shieldMtx->xx * 300.0f);
-    vecA.y = vecB.y + (shieldMtx->yx * 300.0f);
-    vecA.z = vecB.z + (shieldMtx->zx * 300.0f);
+    {
+        Vec3f vecA;
+        Vec3f vecC;
 
-    vecC.x = vecD.x + (shieldMtx->xx * 300.0f);
-    vecC.y = vecD.y + (shieldMtx->yx * 300.0f);
-    vecC.z = vecD.z + (shieldMtx->zx * 300.0f);
+        vecA.x = vecB.x + (shieldMtx->xx * 300.0f);
+        vecA.y = vecB.y + (shieldMtx->yx * 300.0f);
+        vecA.z = vecB.z + (shieldMtx->zx * 300.0f);
 
-    Collider_SetQuadVertices(&this->shieldRay, &vecA, &vecB, &vecC, &vecD);
+        vecC.x = vecD.x + (shieldMtx->xx * 300.0f);
+        vecC.y = vecD.y + (shieldMtx->yx * 300.0f);
+        vecC.z = vecD.z + (shieldMtx->zx * 300.0f);
 
-    for (i = 0; i < 6; i++) {
-        if (reflection[i].reflectionPoly != NULL) {
-            polyNormal[0] = COLPOLY_GET_NORMAL(reflection[i].reflectionPoly->normal.x);
-            polyNormal[1] = COLPOLY_GET_NORMAL(reflection[i].reflectionPoly->normal.y);
-            polyNormal[2] = COLPOLY_GET_NORMAL(reflection[i].reflectionPoly->normal.z);
+        Collider_SetQuadVertices(&this->shieldRay, &vecA, &vecB, &vecC, &vecD);
 
-            if (Math3D_LineSegVsPlane(polyNormal[0], polyNormal[1], polyNormal[2], reflection[i].reflectionPoly->dist,
-                                      &vecB, &vecD, &sp118, 1)) {
+        for (i = 0; i < 6; i++) {
+            if (reflection[i].reflectionPoly != NULL) {
+                polyNormal[0] = COLPOLY_GET_NORMAL(reflection[i].reflectionPoly->normal.x);
+                polyNormal[1] = COLPOLY_GET_NORMAL(reflection[i].reflectionPoly->normal.y);
+                polyNormal[2] = COLPOLY_GET_NORMAL(reflection[i].reflectionPoly->normal.z);
 
-                reflection[i].pos.x = sp118.x;
-                reflection[i].pos.y = sp118.y;
-                reflection[i].pos.z = sp118.z;
+                if (Math3D_LineSegVsPlane(polyNormal[0], polyNormal[1], polyNormal[2],
+                                          reflection[i].reflectionPoly->dist, &vecB, &vecD, &sp118, 1)) {
 
-                temp_f0 = sqrtf(SQ(sp118.x - vecB.x) + SQ(sp118.y - vecB.y) + SQ(sp118.z - vecB.z));
+                    reflection[i].pos.x = sp118.x;
+                    reflection[i].pos.y = sp118.y;
+                    reflection[i].pos.z = sp118.z;
 
-                if (temp_f0 < (this->reflectIntensity * 600.0f)) {
-                    reflection[i].opacity = 200;
+                    temp_f0 = sqrtf(SQ(sp118.x - vecB.x) + SQ(sp118.y - vecB.y) + SQ(sp118.z - vecB.z));
+
+                    if (temp_f0 < (this->reflectIntensity * 600.0f)) {
+                        reflection[i].opacity = 200;
+                    } else {
+                        reflection[i].opacity = (s32)(800.0f - temp_f0);
+                    }
+
+                    sp10C.x = (shieldMtx->xx * 100.0f) + vecB.x;
+                    sp10C.y = (shieldMtx->yx * 100.0f) + vecB.y;
+                    sp10C.z = (shieldMtx->zx * 100.0f) + vecB.z;
+
+                    sp100.x = (spE8[0] * 4.0f) + sp10C.x;
+                    sp100.y = (spE8[1] * 4.0f) + sp10C.y;
+                    sp100.z = (spE8[2] * 4.0f) + sp10C.z;
+
+                    reflection[i].mtx.zw = 0.0f;
+
+                    reflection[i].mtx.xx = reflection[i].mtx.yy = reflection[i].mtx.zz = reflection[i].mtx.ww = 1.0f;
+                    reflection[i].mtx.yx = reflection[i].mtx.zx = reflection[i].mtx.wx = reflection[i].mtx.xy =
+                        reflection[i].mtx.zy = reflection[i].mtx.wy = reflection[i].mtx.xz = reflection[i].mtx.yz =
+                            reflection[i].mtx.wz = reflection[i].mtx.xw = reflection[i].mtx.yw = reflection[i].mtx.zw;
+
+                    if (Math3D_LineSegVsPlane(polyNormal[0], polyNormal[1], polyNormal[2],
+                                              reflection[i].reflectionPoly->dist, &sp10C, &sp100, &intersection, 1)) {
+                        reflection[i].mtx.xx = intersection.x - sp118.x;
+                        reflection[i].mtx.yx = intersection.y - sp118.y;
+                        reflection[i].mtx.zx = intersection.z - sp118.z;
+                    }
+
+                    sp10C.x = (shieldMtx->xy * 100.0f) + vecB.x;
+                    sp10C.y = (shieldMtx->yy * 100.0f) + vecB.y;
+                    sp10C.z = (shieldMtx->zy * 100.0f) + vecB.z;
+
+                    sp100.x = (spE8[0] * 4.0f) + sp10C.x;
+                    sp100.y = (spE8[1] * 4.0f) + sp10C.y;
+                    sp100.z = (spE8[2] * 4.0f) + sp10C.z;
+
+                    if (Math3D_LineSegVsPlane(polyNormal[0], polyNormal[1], polyNormal[2],
+                                              reflection[i].reflectionPoly->dist, &sp10C, &sp100, &intersection, 1)) {
+                        reflection[i].mtx.xy = intersection.x - sp118.x;
+                        reflection[i].mtx.yy = intersection.y - sp118.y;
+                        reflection[i].mtx.zy = intersection.z - sp118.z;
+                    }
                 } else {
-                    reflection[i].opacity = (s32)(800.0f - temp_f0);
+                    reflection[i].reflectionPoly = NULL;
                 }
-
-                sp10C.x = (shieldMtx->xx * 100.0f) + vecB.x;
-                sp10C.y = (shieldMtx->yx * 100.0f) + vecB.y;
-                sp10C.z = (shieldMtx->zx * 100.0f) + vecB.z;
-
-                sp100.x = (spE8[0] * 4.0f) + sp10C.x;
-                sp100.y = (spE8[1] * 4.0f) + sp10C.y;
-                sp100.z = (spE8[2] * 4.0f) + sp10C.z;
-
-                reflection[i].mtx.zw = 0.0f;
-
-                reflection[i].mtx.xx = reflection[i].mtx.yy = reflection[i].mtx.zz = reflection[i].mtx.ww = 1.0f;
-                reflection[i].mtx.yx = reflection[i].mtx.zx = reflection[i].mtx.wx = reflection[i].mtx.xy =
-                    reflection[i].mtx.zy = reflection[i].mtx.wy = reflection[i].mtx.xz = reflection[i].mtx.yz =
-                        reflection[i].mtx.wz = reflection[i].mtx.xw = reflection[i].mtx.yw = reflection[i].mtx.zw;
-
-                if (Math3D_LineSegVsPlane(polyNormal[0], polyNormal[1], polyNormal[2],
-                                          reflection[i].reflectionPoly->dist, &sp10C, &sp100, &intersection, 1)) {
-                    reflection[i].mtx.xx = intersection.x - sp118.x;
-                    reflection[i].mtx.yx = intersection.y - sp118.y;
-                    reflection[i].mtx.zx = intersection.z - sp118.z;
-                }
-
-                sp10C.x = (shieldMtx->xy * 100.0f) + vecB.x;
-                sp10C.y = (shieldMtx->yy * 100.0f) + vecB.y;
-                sp10C.z = (shieldMtx->zy * 100.0f) + vecB.z;
-
-                sp100.x = (spE8[0] * 4.0f) + sp10C.x;
-                sp100.y = (spE8[1] * 4.0f) + sp10C.y;
-                sp100.z = (spE8[2] * 4.0f) + sp10C.z;
-
-                if (Math3D_LineSegVsPlane(polyNormal[0], polyNormal[1], polyNormal[2],
-                                          reflection[i].reflectionPoly->dist, &sp10C, &sp100, &intersection, 1)) {
-                    reflection[i].mtx.xy = intersection.x - sp118.x;
-                    reflection[i].mtx.yy = intersection.y - sp118.y;
-                    reflection[i].mtx.zy = intersection.z - sp118.z;
-                }
-            } else {
-                reflection[i].reflectionPoly = NULL;
             }
         }
     }
@@ -469,7 +472,7 @@ void MirRay_Draw(Actor* thisx, PlayState* play) {
     Player* player = GET_PLAYER(play);
     s32 i;
     MirRayShieldReflection reflection[6];
-    s32 temp;
+    s32 pad;
 
     this->reflectIntensity = 0.0f;
     if ((D_80B8E670 == 0) && !this->unLit && Player_HasMirrorShieldSetToDraw(play)) {
@@ -480,9 +483,8 @@ void MirRay_Draw(Actor* thisx, PlayState* play) {
 
             Gfx_SetupDL_25Xlu(play->state.gfxCtx);
             Matrix_Scale(1.0f, 1.0f, this->reflectIntensity * 5.0f, MTXMODE_APPLY);
-            gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_mir_ray.c", 972),
-                      G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
-            gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, 255, 255, 150, (s16)(temp = this->reflectIntensity * 100.0f));
+            MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx, "../z_mir_ray.c", 972);
+            gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, 255, 255, 150, (s32)(this->reflectIntensity * 100.0f) & 0xFF);
             gSPDisplayList(POLY_XLU_DISP++, gShieldBeamGlowDL);
             MirRay_SetupReflectionPolys(this, play, reflection);
             MirRay_RemoveSimilarReflections(reflection);
@@ -503,8 +505,7 @@ void MirRay_Draw(Actor* thisx, PlayState* play) {
                     Matrix_Translate(reflection[i].pos.x, reflection[i].pos.y, reflection[i].pos.z, MTXMODE_NEW);
                     Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
                     Matrix_Mult(&reflection[i].mtx, MTXMODE_APPLY);
-                    gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_mir_ray.c", 1006),
-                              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                    MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx, "../z_mir_ray.c", 1006);
                     gDPSetRenderMode(POLY_XLU_DISP++, G_RM_FOG_SHADE_A, G_RM_AA_ZB_XLU_DECAL2);
                     gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, 255, 255, 150, reflection[0].opacity);
                     gSPDisplayList(POLY_XLU_DISP++, gShieldBeamImageDL);

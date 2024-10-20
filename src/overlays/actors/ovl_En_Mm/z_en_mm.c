@@ -8,9 +8,9 @@
 #include "assets/objects/object_mm/object_mm.h"
 #include "assets/objects/object_link_child/object_link_child.h"
 
-#define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_3 | ACTOR_FLAG_4)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_4)
 
-typedef enum {
+typedef enum RunningManAnimIndex {
     /* 0 */ RM_ANIM_RUN,
     /* 1 */ RM_ANIM_SIT,
     /* 2 */ RM_ANIM_SIT_WAIT,
@@ -20,7 +20,7 @@ typedef enum {
     /* 6 */ RM_ANIM_HAPPY    // plays when you sell him the bunny hood
 } RunningManAnimIndex;
 
-typedef enum {
+typedef enum RunningManMouthTex {
     /* 0 */ RM_MOUTH_CLOSED,
     /* 1 */ RM_MOUTH_OPEN
 } RunningManMouthTex;
@@ -39,7 +39,7 @@ s32 func_80AADA70(void);
 s32 EnMm_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx);
 void EnMm_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, void*);
 
-ActorInit En_Mm_InitVars = {
+ActorProfile En_Mm_Profile = {
     /**/ ACTOR_EN_MM,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,
@@ -53,7 +53,7 @@ ActorInit En_Mm_InitVars = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -61,11 +61,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE,
-        BUMP_NONE,
+        ATELEM_NONE,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 18, 63, 0, { 0, 0, 0 } },
@@ -115,7 +115,7 @@ static AnimationSpeedInfo sAnimationInfo[] = {
     { &gRunningManHappyAnim, 1.0f, ANIMMODE_LOOP, -12.0f },
 };
 
-typedef struct {
+typedef struct EnMmPathInfo {
     /* 0x00 */ s32 unk_00;
     /* 0x04 */ s32 unk_04;
     /* 0x08 */ s32 unk_08;
@@ -173,10 +173,10 @@ void EnMm_Init(Actor* thisx, PlayState* play) {
                      Animation_GetLastFrame(sAnimationInfo[RM_ANIM_RUN].animation), sAnimationInfo[RM_ANIM_RUN].mode,
                      sAnimationInfo[RM_ANIM_RUN].morphFrames);
 
-    this->path = this->actor.params & 0xFF;
+    this->path = PARAMS_GET_U(this->actor.params, 0, 8);
     this->unk_1F0 = 2;
     this->unk_1E8 = 0;
-    this->actor.targetMode = 2;
+    this->actor.attentionRangeType = ATTENTION_RANGE_2;
     this->actor.gravity = -1.0f;
     this->speedXZ = 3.0f;
     this->unk_204 = this->actor.objectSlot;
@@ -259,9 +259,7 @@ s32 func_80AADAA0(EnMm* this, PlayState* play) {
 
 s32 EnMm_GetTextId(EnMm* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
-    s32 textId;
-
-    textId = Text_GetFaceReaction(play, 0x1C);
+    s32 textId = MaskReaction_GetTextId(play, MASK_REACTION_SET_RUNNING_MAN);
 
     if (GET_ITEMGETINF(ITEMGETINF_3B)) {
         if (textId == 0) {
@@ -336,7 +334,7 @@ s32 func_80AADEF0(EnMm* this, PlayState* play) {
     xDiff = waypointPos.x - this->actor.world.pos.x;
     zDiff = waypointPos.z - this->actor.world.pos.z;
 
-    this->yawToWaypoint = (s32)(Math_FAtan2F(xDiff, zDiff) * (0x8000 / M_PI));
+    this->yawToWaypoint = RAD_TO_BINANG2(Math_FAtan2F(xDiff, zDiff));
     this->distToWaypoint = sqrtf(SQ(xDiff) + SQ(zDiff));
 
     while ((this->distToWaypoint <= 10.44f) && (this->unk_1E8 != 0)) {
@@ -381,7 +379,7 @@ s32 func_80AADEF0(EnMm* this, PlayState* play) {
         xDiff = waypointPos.x - this->actor.world.pos.x;
         zDiff = waypointPos.z - this->actor.world.pos.z;
 
-        this->yawToWaypoint = (s32)(Math_FAtan2F(xDiff, zDiff) * (0x8000 / M_PI));
+        this->yawToWaypoint = RAD_TO_BINANG2(Math_FAtan2F(xDiff, zDiff));
         this->distToWaypoint = sqrtf(SQ(xDiff) + SQ(zDiff));
     }
 
@@ -464,7 +462,7 @@ void func_80AAE294(EnMm* this, PlayState* play) {
             }
 
             if (this->collider.base.ocFlags2 & OC2_HIT_PLAYER) {
-                func_8002F71C(play, &this->actor, 3.0f, this->actor.yawTowardsPlayer, 4.0f);
+                Actor_SetPlayerKnockbackLargeNoDamage(play, &this->actor, 3.0f, this->actor.yawTowardsPlayer, 4.0f);
             }
         }
     }
@@ -514,8 +512,6 @@ void EnMm_Draw(Actor* thisx, PlayState* play) {
     s32 pad;
     EnMm* this = (EnMm*)thisx;
 
-    if (0) {}
-
     OPEN_DISPS(play->state.gfxCtx, "../z_en_mm.c", 1065);
 
     Gfx_SetupDL_25Opa(play->state.gfxCtx);
@@ -532,10 +528,10 @@ void EnMm_Draw(Actor* thisx, PlayState* play) {
             Vec3s earRot;
             Mtx* mtx2;
 
-            mtx = Graph_Alloc(play->state.gfxCtx, sizeof(Mtx) * 2);
+            mtx = GRAPH_ALLOC(play->state.gfxCtx, sizeof(Mtx) * 2);
 
             Matrix_Put(&this->unk_208);
-            mtx2 = Matrix_NewMtx(play->state.gfxCtx, "../z_en_mm.c", 1111);
+            mtx2 = MATRIX_FINALIZE(play->state.gfxCtx, "../z_en_mm.c", 1111);
 
             gSPSegment(POLY_OPA_DISP++, 0x06, play->objectCtx.slots[linkChildObjectSlot].segment);
             gSPSegment(POLY_OPA_DISP++, 0x0B, mtx);
@@ -548,14 +544,14 @@ void EnMm_Draw(Actor* thisx, PlayState* play) {
             earRot.y = 0xDBE;
             earRot.z = -0x348A;
             Matrix_SetTranslateRotateYXZ(97.0f, -1203.0f, -240.0f, &earRot);
-            Matrix_ToMtx(mtx++, "../z_en_mm.c", 1124);
+            MATRIX_TO_MTX(mtx++, "../z_en_mm.c", 1124);
 
             // Left ear
             earRot.x = -0x3E2;
             earRot.y = -0xDBE;
             earRot.z = -0x348A;
             Matrix_SetTranslateRotateYXZ(97.0f, -1203.0f, 240.0f, &earRot);
-            Matrix_ToMtx(mtx, "../z_en_mm.c", 1131);
+            MATRIX_TO_MTX(mtx, "../z_en_mm.c", 1131);
 
             gSPDisplayList(POLY_OPA_DISP++, gLinkChildBunnyHoodDL);
             gSPSegment(POLY_OPA_DISP++, 0x06, play->objectCtx.slots[this->actor.objectSlot].segment);

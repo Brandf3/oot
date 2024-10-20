@@ -7,7 +7,7 @@
 #include "z_en_tg.h"
 #include "assets/objects/object_mu/object_mu.h"
 
-#define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_3)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY)
 
 void EnTg_Init(Actor* thisx, PlayState* play);
 void EnTg_Destroy(Actor* thisx, PlayState* play);
@@ -18,7 +18,7 @@ void EnTg_SpinIfNotTalking(EnTg* this, PlayState* play);
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -26,11 +26,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE,
-        BUMP_NONE,
+        ATELEM_NONE,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 20, 64, 0, { 0, 0, 0 } },
@@ -38,7 +38,7 @@ static ColliderCylinderInit sCylinderInit = {
 
 static CollisionCheckInfoInit2 sColChkInfoInit = { 0, 0, 0, 0, MASS_IMMOVABLE };
 
-ActorInit En_Tg_InitVars = {
+ActorProfile En_Tg_Profile = {
     /**/ ACTOR_EN_TG,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,
@@ -52,13 +52,11 @@ ActorInit En_Tg_InitVars = {
 
 u16 EnTg_GetTextId(PlayState* play, Actor* thisx) {
     EnTg* this = (EnTg*)thisx;
-    u16 faceReaction;
+    u16 maskReactionTextId = MaskReaction_GetTextId(play, MASK_REACTION_SET_DANCING_COUPLE);
     u32 textId;
 
-    // If the player is wearing a mask, return a special reaction text
-    faceReaction = Text_GetFaceReaction(play, 0x24);
-    if (faceReaction != 0) {
-        return faceReaction;
+    if (maskReactionTextId != 0) {
+        return maskReactionTextId;
     }
     if (play->sceneId == SCENE_KAKARIKO_VILLAGE) {
         if (this->nextDialogue % 2 != 0) {
@@ -117,7 +115,7 @@ void EnTg_Init(Actor* thisx, PlayState* play) {
     Collider_InitCylinder(play, &this->collider);
     Collider_SetCylinder(play, &this->collider, &this->actor, &sCylinderInit);
     CollisionCheck_SetInfo2(&this->actor.colChkInfo, NULL, &sColChkInfoInit);
-    this->actor.targetMode = 6;
+    this->actor.attentionRangeType = ATTENTION_RANGE_6;
     Actor_SetScale(&this->actor, 0.01f);
     this->nextDialogue = play->state.frames % 2;
     this->actionFunc = EnTg_SpinIfNotTalking;
@@ -169,7 +167,7 @@ void EnTg_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, 
 }
 
 Gfx* EnTg_SetColor(GraphicsContext* gfxCtx, u8 r, u8 g, u8 b, u8 a) {
-    Gfx* displayList = Graph_Alloc(gfxCtx, 2 * sizeof(Gfx));
+    Gfx* displayList = GRAPH_ALLOC(gfxCtx, 2 * sizeof(Gfx));
 
     gDPSetEnvColor(displayList, r, g, b, a);
     gSPEndDisplayList(displayList + 1);

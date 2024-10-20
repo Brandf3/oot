@@ -2,7 +2,7 @@
 #include "quake.h"
 #include "terminal.h"
 
-typedef struct {
+typedef struct QuakeRequest {
     /* 0x00 */ s16 index;
     /* 0x02 */ s16 duration;
     /* 0x04 */ Camera* cam;
@@ -160,7 +160,7 @@ s16 Quake_GetFreeIndex(void) {
     }
 
     if (timerMin != 0x20000) {
-        osSyncPrintf(VT_COL(YELLOW, BLACK) "quake: too many request %d is changed new one !!\n" VT_RST, index);
+        PRINTF(VT_COL(YELLOW, BLACK) "quake: too many request %d is changed new one !!\n" VT_RST, index);
     }
 
     return index;
@@ -170,7 +170,7 @@ QuakeRequest* Quake_RequestImpl(Camera* camera, u32 type) {
     s16 index = Quake_GetFreeIndex();
     QuakeRequest* req = &sQuakeRequests[index];
 
-    __osMemset(req, 0, sizeof(QuakeRequest));
+    memset(req, 0, sizeof(QuakeRequest));
 
     req->cam = camera;
     req->camId = camera->camId;
@@ -411,10 +411,6 @@ s16 Quake_Update(Camera* camera, ShakeInfo* camShake) {
     zeroVec.y = 0.0f;
     zeroVec.z = 0.0f;
 
-    camShake->upPitchOffset = 0;
-    camShake->upYawOffset = 0;
-    camShake->fovOffset = 0;
-
     camShake->atOffset.x = 0.0f;
     camShake->atOffset.y = 0.0f;
     camShake->atOffset.z = 0.0f;
@@ -422,6 +418,10 @@ s16 Quake_Update(Camera* camera, ShakeInfo* camShake) {
     camShake->eyeOffset.x = 0.0f;
     camShake->eyeOffset.y = 0.0f;
     camShake->eyeOffset.z = 0.0f;
+
+    camShake->upPitchOffset = 0;
+    camShake->upYawOffset = 0;
+    camShake->fovOffset = 0;
 
     camShake->maxOffset = 0.0f;
 
@@ -437,7 +437,7 @@ s16 Quake_Update(Camera* camera, ShakeInfo* camShake) {
         }
 
         if (play->cameraPtrs[req->camId] == NULL) {
-            osSyncPrintf(VT_COL(YELLOW, BLACK) "quake: stopped! 'coz camera [%d] killed!!\n" VT_RST, req->camId);
+            PRINTF(VT_COL(YELLOW, BLACK) "quake: stopped! 'coz camera [%d] killed!!\n" VT_RST, req->camId);
             Quake_Remove(req);
             continue;
         }

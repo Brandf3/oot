@@ -1,16 +1,19 @@
 #include "global.h"
 
-typedef struct {
+typedef struct DebugCamTextBufferEntry {
     /* 0x0 */ u8 x;
     /* 0x1 */ u8 y;
     /* 0x2 */ u8 colorIndex;
     /* 0x3 */ char text[21];
 } DebugCamTextBufferEntry; // size = 0x18
 
-typedef struct {
+typedef struct InputCombo {
     /* 0x0 */ u16 hold;
     /* 0x2 */ u16 press;
 } InputCombo; // size = 0x4
+
+#pragma increment_block_number "gc-eu:192 gc-eu-mq:192 gc-jp:192 gc-jp-ce:192 gc-jp-mq:192 gc-us:192 gc-us-mq:192" \
+                               "ntsc-1.2:192 pal-1.0:192 pal-1.1:192"
 
 RegEditor* gRegEditor;
 
@@ -29,6 +32,7 @@ Color_RGBA8 sDebugCamTextColors[] = {
     { 128, 255, 32, 128 },  // DEBUG_CAM_TEXT_GREEN
 };
 
+#if OOT_DEBUG
 InputCombo sRegGroupInputCombos[REG_GROUPS] = {
     { BTN_L, BTN_CUP },        //  REG
     { BTN_L, BTN_CLEFT },      // SREG
@@ -93,11 +97,12 @@ char sRegGroupChars[REG_GROUPS] = {
     'k', // kREG
     'b', // bREG
 };
+#endif
 
 void Regs_Init(void) {
     s32 i;
 
-    gRegEditor = SystemArena_MallocDebug(sizeof(RegEditor), "../z_debug.c", 260);
+    gRegEditor = SYSTEM_ARENA_MALLOC(sizeof(RegEditor), "../z_debug.c", 260);
     gRegEditor->regPage = 0;
     gRegEditor->regGroup = 0;
     gRegEditor->regCur = 0;
@@ -153,6 +158,7 @@ void DebugCamera_DrawScreenText(GfxPrint* printer) {
     }
 }
 
+#if OOT_DEBUG
 /**
  * Updates the state of the Reg Editor according to user input.
  * Also contains a controller rumble test that can be interfaced with via related REGs.
@@ -163,7 +169,7 @@ void Regs_UpdateEditor(Input* input) {
     s32 increment;
     s32 i;
 
-    dPadInputCur = input->cur.button & (BTN_DUP | BTN_DLEFT | BTN_DRIGHT | BTN_DDOWN);
+    dPadInputCur = input->cur.button & (BTN_DUP | BTN_DDOWN | BTN_DLEFT | BTN_DRIGHT);
 
     if (CHECK_BTN_ALL(input->cur.button, BTN_L) || CHECK_BTN_ALL(input->cur.button, BTN_R) ||
         CHECK_BTN_ALL(input->cur.button, BTN_START)) {
@@ -269,6 +275,7 @@ void Regs_DrawEditor(GfxPrint* printer) {
         }
     }
 }
+#endif
 
 /**
  * Draws the Reg Editor and Debug Camera text on screen
@@ -283,7 +290,7 @@ void Debug_DrawText(GraphicsContext* gfxCtx) {
 
     GfxPrint_Init(&printer);
     opaStart = POLY_OPA_DISP;
-    gfx = Graph_GfxPlusOne(POLY_OPA_DISP);
+    gfx = Gfx_Open(POLY_OPA_DISP);
     gSPDisplayList(OVERLAY_DISP++, gfx);
     GfxPrint_Open(&printer, gfx);
 
@@ -291,18 +298,18 @@ void Debug_DrawText(GraphicsContext* gfxCtx) {
         DebugCamera_DrawScreenText(&printer);
     }
 
+#if OOT_DEBUG
     if (gRegEditor->regPage != 0) {
         Regs_DrawEditor(&printer);
     }
+#endif
 
     sDebugCamTextEntryCount = 0;
 
     gfx = GfxPrint_Close(&printer);
     gSPEndDisplayList(gfx++);
-    Graph_BranchDlist(opaStart, gfx);
+    Gfx_Close(opaStart, gfx);
     POLY_OPA_DISP = gfx;
-
-    if (1) {}
 
     CLOSE_DISPS(gfxCtx, "../z_debug.c", 664);
 

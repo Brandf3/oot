@@ -23,7 +23,7 @@ void EnTr_SetRotFromCue(EnTr* this, PlayState* play, s32 cueChannel);
 void func_80B24038(EnTr* this, PlayState* play, s32 cueChannel);
 void EnTr_SetStartPosRotFromCue(EnTr* this, PlayState* play, s32 cueChannel);
 
-ActorInit En_Tr_InitVars = {
+ActorProfile En_Tr_Profile = {
     /**/ ACTOR_EN_TR,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,
@@ -135,7 +135,7 @@ void EnTr_CrySpellcast(EnTr* this, PlayState* play) {
     } else if (this->actor.child != NULL) {
         this->actor.child = NULL;
     }
-    func_8002F974(&this->actor, NA_SE_EN_TWINROBA_FLY_DEMO - SFX_FLAG);
+    Actor_PlaySfx_Flagged(&this->actor, NA_SE_EN_TWINROBA_FLY_DEMO - SFX_FLAG);
 }
 
 void EnTr_DoNothing(EnTr* this, PlayState* play) {
@@ -170,7 +170,7 @@ void EnTr_ChooseAction2(EnTr* this, PlayState* play) {
                     EnTr_SetRotFromCue(this, play, this->cueChannel);
                     break;
             }
-            func_8002F974(&this->actor, NA_SE_EN_TWINROBA_FLY_DEMO - SFX_FLAG);
+            Actor_PlaySfx_Flagged(&this->actor, NA_SE_EN_TWINROBA_FLY_DEMO - SFX_FLAG);
         }
     }
 }
@@ -200,7 +200,7 @@ void EnTr_FlyKidnapCutscene(EnTr* this, PlayState* play) {
             }
 
             if (play->csCtx.curFrame < 670) {
-                func_8002F974(&this->actor, NA_SE_EN_TWINROBA_FLY_DEMO - SFX_FLAG);
+                Actor_PlaySfx_Flagged(&this->actor, NA_SE_EN_TWINROBA_FLY_DEMO - SFX_FLAG);
             }
         }
     }
@@ -241,6 +241,8 @@ void func_80B23254(EnTr* this, PlayState* play, s32 arg2, f32 arg3, f32 scale) {
 }
 
 void EnTr_ShrinkVanish(EnTr* this, PlayState* play) {
+    s32 temp_hi;
+
     if (this->timer >= 17) {
         this->actor.shape.rot.y = (this->actor.shape.rot.y - (this->timer * 0x28F)) + 0x3D68;
     } else {
@@ -248,7 +250,7 @@ void EnTr_ShrinkVanish(EnTr* this, PlayState* play) {
             Actor_SetScale(&this->actor, this->actor.scale.x * 0.9f);
             this->actor.shape.rot.y = (this->actor.shape.rot.y - (this->timer * 0x28F)) + 0x3D68;
         } else if (this->timer > 0) {
-            s32 temp_hi = (this->timer * 2) % 7;
+            temp_hi = (this->timer * 2) % 7;
 
             func_80B23254(this, play, temp_hi, 5.0f, 0.2f);
             func_80B23254(this, play, (temp_hi + 1) % 7, 5.0f, 0.2f);
@@ -289,7 +291,7 @@ void EnTr_Reappear(EnTr* this, PlayState* play) {
     if (this->timer > 0) {
         this->timer--;
     }
-    func_8002F974(&this->actor, NA_SE_EN_TWINROBA_FLY_DEMO - SFX_FLAG);
+    Actor_PlaySfx_Flagged(&this->actor, NA_SE_EN_TWINROBA_FLY_DEMO - SFX_FLAG);
 }
 
 void EnTr_WaitToReappear(EnTr* this, PlayState* play) {

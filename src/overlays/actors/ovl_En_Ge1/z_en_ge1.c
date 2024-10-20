@@ -8,14 +8,14 @@
 #include "terminal.h"
 #include "assets/objects/object_ge1/object_ge1.h"
 
-#define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_3)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY)
 
 #define GE1_STATE_TALKING (1 << 0)
 #define GE1_STATE_GIVE_QUIVER (1 << 1)
 #define GE1_STATE_IDLE_ANIM (1 << 2)
 #define GE1_STATE_STOP_FIDGET (1 << 3)
 
-typedef enum {
+typedef enum EnGe1Hairstyle {
     /* 00 */ GE1_HAIR_BOB,
     /* 01 */ GE1_HAIR_STRAIGHT,
     /* 02 */ GE1_HAIR_SPIKY
@@ -39,7 +39,7 @@ void EnGe1_Wait_Archery(EnGe1* this, PlayState* play);
 void EnGe1_CueUpAnimation(EnGe1* this);
 void EnGe1_StopFidget(EnGe1* this);
 
-ActorInit En_Ge1_InitVars = {
+ActorProfile En_Ge1_Profile = {
     /**/ ACTOR_EN_GE1,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,
@@ -53,7 +53,7 @@ ActorInit En_Ge1_InitVars = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_ON | AC_TYPE_ENEMY,
         OC1_ON | OC1_TYPE_ALL,
@@ -61,11 +61,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000702, 0x00, 0x00 },
-        TOUCH_NONE,
-        BUMP_ON,
+        ATELEM_NONE,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 20, 40, 0, { 0, 0, 0 } },
@@ -98,12 +98,12 @@ void EnGe1_Init(Actor* thisx, PlayState* play) {
     this->actor.colChkInfo.mass = MASS_IMMOVABLE;
     this->animation = &gGerudoWhiteIdleAnim;
     this->animFunc = EnGe1_CueUpAnimation;
-    this->actor.targetMode = 6;
+    this->actor.attentionRangeType = ATTENTION_RANGE_6;
     Actor_SetScale(&this->actor, 0.01f);
 
     this->actor.uncullZoneForward = ((play->sceneId == SCENE_GERUDO_VALLEY) ? 1000.0f : 1200.0f);
 
-    switch (this->actor.params & 0xFF) {
+    switch (PARAMS_GET_U(this->actor.params, 0, 8)) {
 
         case GE1_TYPE_GATE_GUARD:
             this->hairstyle = GE1_HAIR_SPIKY;
@@ -133,7 +133,7 @@ void EnGe1_Init(Actor* thisx, PlayState* play) {
         case GE1_TYPE_VALLEY_FLOOR:
             if (LINK_IS_ADULT) {
                 // "Valley floor Gerudo withdrawal"
-                osSyncPrintf(VT_FGCOL(CYAN) "谷底 ゲルド 撤退 \n" VT_RST);
+                PRINTF(VT_FGCOL(CYAN) "谷底 ゲルド 撤退 \n" VT_RST);
                 Actor_Kill(&this->actor);
                 return;
             }
@@ -146,10 +146,10 @@ void EnGe1_Init(Actor* thisx, PlayState* play) {
                 Actor_Kill(&this->actor);
                 return;
             }
-            this->actor.targetMode = 3;
+            this->actor.attentionRangeType = ATTENTION_RANGE_3;
             this->hairstyle = GE1_HAIR_BOB;
             // "Horseback archery Gerudo EVENT_INF(0) ="
-            osSyncPrintf(VT_FGCOL(CYAN) "やぶさめ ゲルド EVENT_INF(0) = %x\n" VT_RST, gSaveContext.eventInf[0]);
+            PRINTF(VT_FGCOL(CYAN) "やぶさめ ゲルド EVENT_INF(0) = %x\n" VT_RST, gSaveContext.eventInf[0]);
 
             if (GET_EVENTINF(EVENTINF_HORSES_08)) {
                 this->actionFunc = EnGe1_TalkAfterGame_Archery;
@@ -304,13 +304,13 @@ void EnGe1_WatchForAndSensePlayer(EnGe1* this, PlayState* play) {
 }
 
 void EnGe1_GetReaction_ValleyFloor(EnGe1* this, PlayState* play) {
-    u16 reactionText = Text_GetFaceReaction(play, 0x22);
+    u16 textId = MaskReaction_GetTextId(play, MASK_REACTION_SET_GERUDO_WHITE);
 
-    if (reactionText == 0) {
-        reactionText = 0x6019;
+    if (textId == 0) {
+        textId = 0x6019;
     }
 
-    EnGe1_SetTalkAction(this, play, reactionText, 100.0f, EnGe1_ChooseActionFromTextId);
+    EnGe1_SetTalkAction(this, play, textId, 100.0f, EnGe1_ChooseActionFromTextId);
 }
 
 // Gerudo Training Ground Guard functions
@@ -329,7 +329,7 @@ void EnGe1_WaitTillOpened_GTGGuard(EnGe1* this, PlayState* play) {
 void EnGe1_Open_GTGGuard(EnGe1* this, PlayState* play) {
     if (this->stateFlags & GE1_STATE_IDLE_ANIM) {
         this->actionFunc = EnGe1_WaitTillOpened_GTGGuard;
-        Flags_SetSwitch(play, (this->actor.params >> 8) & 0x3F);
+        Flags_SetSwitch(play, PARAMS_GET_U(this->actor.params, 8, 6));
         this->cutsceneTimer = 50;
         Message_CloseTextbox(play);
     } else if ((this->skelAnime.curFrame == 15.0f) || (this->skelAnime.curFrame == 19.0f)) {
@@ -422,7 +422,7 @@ void EnGe1_WaitUntilGateOpened_GateOp(EnGe1* this, PlayState* play) {
 void EnGe1_OpenGate_GateOp(EnGe1* this, PlayState* play) {
     if (this->stateFlags & GE1_STATE_IDLE_ANIM) {
         this->actionFunc = EnGe1_WaitUntilGateOpened_GateOp;
-        Flags_SetSwitch(play, (this->actor.params >> 8) & 0x3F);
+        Flags_SetSwitch(play, PARAMS_GET_U(this->actor.params, 8, 6));
         this->cutsceneTimer = 50;
         Message_CloseTextbox(play);
     } else if ((this->skelAnime.curFrame == 15.0f) || (this->skelAnime.curFrame == 19.0f)) {
@@ -444,7 +444,7 @@ void EnGe1_SetupOpenGate_GateOp(EnGe1* this, PlayState* play) {
 }
 
 void EnGe1_CheckGate_GateOp(EnGe1* this, PlayState* play) {
-    if (Flags_GetSwitch(play, (this->actor.params >> 8) & 0x3F)) {
+    if (Flags_GetSwitch(play, PARAMS_GET_U(this->actor.params, 8, 6))) {
         EnGe1_SetTalkAction(this, play, 0x6018, 100.0f, EnGe1_WaitGateOpen_GateOp);
     } else {
         EnGe1_SetTalkAction(this, play, 0x6017, 100.0f, EnGe1_SetupOpenGate_GateOp);
@@ -463,15 +463,13 @@ void EnGe1_Talk_GateGuard(EnGe1* this, PlayState* play) {
 }
 
 void EnGe1_GetReaction_GateGuard(EnGe1* this, PlayState* play) {
-    u16 reactionText;
+    u16 textId = MaskReaction_GetTextId(play, MASK_REACTION_SET_GERUDO_WHITE);
 
-    reactionText = Text_GetFaceReaction(play, 0x22);
-
-    if (reactionText == 0) {
-        reactionText = 0x6069;
+    if (textId == 0) {
+        textId = 0x6069;
     }
 
-    if (EnGe1_SetTalkAction(this, play, reactionText, 100.0f, EnGe1_Talk_GateGuard)) {
+    if (EnGe1_SetTalkAction(this, play, textId, 100.0f, EnGe1_Talk_GateGuard)) {
         this->animFunc = EnGe1_CueUpAnimation;
         this->animation = &gGerudoWhiteDismissiveAnim;
         Animation_Change(&this->skelAnime, &gGerudoWhiteDismissiveAnim, 1.0f, 0.0f,
@@ -520,7 +518,7 @@ void EnGe1_BeginGiveItem_Archery(EnGe1* this, PlayState* play) {
     s32 getItemId;
 
     if (Actor_TextboxIsClosing(&this->actor, play)) {
-        this->actor.flags &= ~ACTOR_FLAG_16;
+        this->actor.flags &= ~ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
         this->actionFunc = EnGe1_WaitTillItemGiven_Archery;
     }
 
@@ -547,7 +545,7 @@ void EnGe1_BeginGiveItem_Archery(EnGe1* this, PlayState* play) {
 void EnGe1_TalkWinPrize_Archery(EnGe1* this, PlayState* play) {
     if (Actor_TalkOfferAccepted(&this->actor, play)) {
         this->actionFunc = EnGe1_BeginGiveItem_Archery;
-        this->actor.flags &= ~ACTOR_FLAG_16;
+        this->actor.flags &= ~ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
     } else {
         Actor_OfferTalk(&this->actor, play, 200.0f);
     }
@@ -569,7 +567,7 @@ void EnGe1_BeginGame_Archery(EnGe1* this, PlayState* play) {
     Actor* horse;
 
     if ((Message_GetState(&play->msgCtx) == TEXT_STATE_CHOICE) && Message_ShouldAdvance(play)) {
-        this->actor.flags &= ~ACTOR_FLAG_16;
+        this->actor.flags &= ~ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
 
         switch (play->msgCtx.choiceIndex) {
             case 0:
@@ -629,7 +627,7 @@ void EnGe1_TalkAfterGame_Archery(EnGe1* this, PlayState* play) {
     // With the current `SaveContext` struct definition, the expression in the debug string is an out-of-bounds read,
     // see the other occurrence of this for more details.
     LOG_NUM("z_common_data.memory.information.room_inf[127][ 0 ]", HIGH_SCORE(HS_HBA), "../z_en_ge1.c", 1111);
-    this->actor.flags |= ACTOR_FLAG_16;
+    this->actor.flags |= ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
 
     if (HIGH_SCORE(HS_HBA) < gSaveContext.minigameScore) {
         HIGH_SCORE(HS_HBA) = gSaveContext.minigameScore;

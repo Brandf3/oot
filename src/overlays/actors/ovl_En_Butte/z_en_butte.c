@@ -27,18 +27,18 @@ void EnButte_WaitToDie(EnButte* this, PlayState* play);
 
 static ColliderJntSphElementInit sJntSphElementsInit[] = {
     { {
-          ELEMTYPE_UNK0,
+          ELEM_MATERIAL_UNK0,
           { 0x00000000, 0x00, 0x00 },
           { 0xFFCFFFFF, 0x000, 0x00 },
-          TOUCH_NONE,
-          BUMP_NONE,
+          ATELEM_NONE,
+          ACELEM_NONE,
           OCELEM_ON,
       },
       { 0, { { 0, 0, 0 }, 5 }, 100 } },
 };
 static ColliderJntSphInit sColliderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_PLAYER | OC1_TYPE_1,
@@ -49,7 +49,7 @@ static ColliderJntSphInit sColliderInit = {
     sJntSphElementsInit,
 };
 
-ActorInit En_Butte_InitVars = {
+ActorProfile En_Butte_Profile = {
     /**/ ACTOR_EN_BUTTE,
     /**/ ACTORCAT_ITEMACTION,
     /**/ FLAGS,
@@ -61,7 +61,7 @@ ActorInit En_Butte_InitVars = {
     /**/ EnButte_Draw,
 };
 
-typedef struct {
+typedef struct EnButteFlightParams {
     /* 0x00 */ s16 minTime;
     /* 0x02 */ s16 maxTime;
     /* 0x04 */ f32 speedXZTarget;
@@ -129,8 +129,7 @@ void EnButte_DrawTransformationEffect(EnButte* this, PlayState* play) {
     Matrix_SetTranslateRotateYXZ(this->actor.focus.pos.x + sp5C.x, this->actor.focus.pos.y + sp5C.y,
                                  this->actor.focus.pos.z + sp5C.z, &camDir);
     Matrix_Scale(sTransformationEffectScale, sTransformationEffectScale, sTransformationEffectScale, MTXMODE_APPLY);
-    gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_en_choo.c", 317),
-              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx, "../z_en_choo.c", 317);
     gDPSetPrimColor(POLY_XLU_DISP++, 0x80, 0x80, 200, 200, 180, alpha);
     gDPSetEnvColor(POLY_XLU_DISP++, 200, 200, 210, 255);
     gSPDisplayList(POLY_XLU_DISP++, SEGMENTED_TO_VIRTUAL(gEffFlash1DL));
@@ -154,7 +153,7 @@ void EnButte_Init(Actor* thisx, PlayState* play) {
 
     Actor_ProcessInitChain(&this->actor, sInitChain);
 
-    if ((this->actor.params & 1) == 1) {
+    if (PARAMS_GET_U(this->actor.params, 0, 1) == 1) {
         this->actor.uncullZoneScale = 200.0f;
     }
 
@@ -170,7 +169,7 @@ void EnButte_Init(Actor* thisx, PlayState* play) {
     this->actor.shape.rot.x -= 0x2320;
     this->drawSkelAnime = true;
     // "field keep butterfly"
-    osSyncPrintf("(field keep 蝶)(%x)(arg_data 0x%04x)\n", this, this->actor.params);
+    PRINTF("(field keep 蝶)(%x)(arg_data 0x%04x)\n", this, this->actor.params);
 }
 
 void EnButte_Destroy(Actor* thisx, PlayState* play2) {
@@ -268,7 +267,7 @@ void EnButte_FlyAround(EnButte* this, PlayState* play) {
         EnButte_SelectFlightParams(this, &sFlyAroundParams[this->flightParamsIdx]);
     }
 
-    if (((this->actor.params & 1) == 1) && (player->heldItemAction == PLAYER_IA_DEKU_STICK) &&
+    if ((PARAMS_GET_U(this->actor.params, 0, 1) == 1) && (player->heldItemAction == PLAYER_IA_DEKU_STICK) &&
         (this->swordDownTimer <= 0) &&
         ((Math3D_Dist2DSq(player->actor.world.pos.x, player->actor.world.pos.z, this->actor.home.pos.x,
                           this->actor.home.pos.z) < SQ(120.0f)) ||
@@ -396,7 +395,7 @@ void EnButte_Update(Actor* thisx, PlayState* play) {
     this->unk_25E += 0x1000;
     this->unk_260 += 0x600;
 
-    if ((this->actor.params & 1) == 1) {
+    if (PARAMS_GET_U(this->actor.params, 0, 1) == 1) {
         if (GET_PLAYER(play)->meleeWeaponState == 0) {
             if (this->swordDownTimer > 0) {
                 this->swordDownTimer--;
@@ -427,7 +426,7 @@ void EnButte_Draw(Actor* thisx, PlayState* play) {
         Collider_UpdateSpheres(0, &this->collider);
     }
 
-    if (((this->actor.params & 1) == 1) && (this->actionFunc == EnButte_TransformIntoFairy)) {
+    if ((PARAMS_GET_U(this->actor.params, 0, 1) == 1) && (this->actionFunc == EnButte_TransformIntoFairy)) {
         EnButte_DrawTransformationEffect(this, play);
     }
 }

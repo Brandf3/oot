@@ -20,7 +20,7 @@ void BgMoriKaitenkabe_Wait(BgMoriKaitenkabe* this, PlayState* play);
 void BgMoriKaitenkabe_SetupRotate(BgMoriKaitenkabe* this);
 void BgMoriKaitenkabe_Rotate(BgMoriKaitenkabe* this, PlayState* play);
 
-ActorInit Bg_Mori_Kaitenkabe_InitVars = {
+ActorProfile Bg_Mori_Kaitenkabe_Profile = {
     /**/ ACTOR_BG_MORI_KAITENKABE,
     /**/ ACTORCAT_BG,
     /**/ FLAGS,
@@ -51,7 +51,7 @@ void BgMoriKaitenkabe_Init(Actor* thisx, PlayState* play) {
     CollisionHeader* colHeader = NULL;
 
     // "Forest Temple object 【Rotating Wall (arg_data: 0x% 04x)】 appears"
-    osSyncPrintf("◯◯◯森の神殿オブジェクト【回転壁(arg_data : 0x%04x)】出現 \n", this->dyna.actor.params);
+    PRINTF("◯◯◯森の神殿オブジェクト【回転壁(arg_data : 0x%04x)】出現 \n", this->dyna.actor.params);
     Actor_ProcessInitChain(&this->dyna.actor, sInitChain);
     DynaPolyActor_Init(&this->dyna, 0);
     CollisionHeader_GetVirtual(&gMoriKaitenkabeCol, &colHeader);
@@ -60,7 +60,7 @@ void BgMoriKaitenkabe_Init(Actor* thisx, PlayState* play) {
     if (this->moriTexObjectSlot < 0) {
         Actor_Kill(&this->dyna.actor);
         // "【Rotating wall】 Bank danger!"
-        osSyncPrintf("【回転壁】 バンク危険！(%s %d)\n", "../z_bg_mori_kaitenkabe.c", 176);
+        PRINTF("【回転壁】 バンク危険！(%s %d)\n", "../z_bg_mori_kaitenkabe.c", 176);
     } else {
         this->actionFunc = BgMoriKaitenkabe_WaitForMoriTex;
     }
@@ -138,7 +138,7 @@ void BgMoriKaitenkabe_Rotate(BgMoriKaitenkabe* this, PlayState* play) {
         thisx->world.rot.y = thisx->shape.rot.y = thisx->home.rot.y;
         Sfx_PlaySfxCentered2(NA_SE_EV_STONEDOOR_STOP);
     } else {
-        rotY = this->rotYdeg * (0x10000 / 360.0f);
+        rotY = DEG_TO_BINANG(this->rotYdeg);
         thisx->world.rot.y = thisx->shape.rot.y = thisx->home.rot.y + rotY;
         Sfx_PlaySfxCentered2(NA_SE_EV_WALL_SLIDE - SFX_FLAG);
     }
@@ -165,8 +165,7 @@ void BgMoriKaitenkabe_Draw(Actor* thisx, PlayState* play) {
 
     gSPSegment(POLY_OPA_DISP++, 0x08, play->objectCtx.slots[this->moriTexObjectSlot].segment);
 
-    gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_bg_mori_kaitenkabe.c", 352),
-              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx, "../z_bg_mori_kaitenkabe.c", 352);
 
     gSPDisplayList(POLY_OPA_DISP++, gMoriKaitenkabeDL);
 

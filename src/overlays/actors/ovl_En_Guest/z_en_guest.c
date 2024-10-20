@@ -9,7 +9,7 @@
 #include "assets/objects/object_boj/object_boj.h"
 #include "terminal.h"
 
-#define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_3 | ACTOR_FLAG_4)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_4)
 
 void EnGuest_Init(Actor* thisx, PlayState* play);
 void EnGuest_Destroy(Actor* thisx, PlayState* play);
@@ -20,7 +20,7 @@ void func_80A50518(EnGuest* this, PlayState* play);
 void func_80A5057C(EnGuest* this, PlayState* play);
 void func_80A505CC(Actor* thisx, PlayState* play);
 
-ActorInit En_Guest_InitVars = {
+ActorProfile En_Guest_Profile = {
     /**/ ACTOR_EN_GUEST,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,
@@ -34,7 +34,7 @@ ActorInit En_Guest_InitVars = {
 
 static ColliderCylinderInitType1 sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -45,8 +45,8 @@ static ColliderCylinderInitType1 sCylinderInit = {
 };
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_U8(targetMode, 6, ICHAIN_CONTINUE),
-    ICHAIN_F32(targetArrowOffset, 500, ICHAIN_STOP),
+    ICHAIN_U8(attentionRangeType, ATTENTION_RANGE_6, ICHAIN_CONTINUE),
+    ICHAIN_F32(lockOnArrowOffset, 500, ICHAIN_STOP),
 };
 
 void EnGuest_Init(Actor* thisx, PlayState* play) {
@@ -57,10 +57,10 @@ void EnGuest_Init(Actor* thisx, PlayState* play) {
     } else {
         this->osAnimeObjectSlot = Object_GetSlot(&play->objectCtx, OBJECT_OS_ANIME);
         if (this->osAnimeObjectSlot < 0) {
-            osSyncPrintf(VT_COL(RED, WHITE));
+            PRINTF(VT_COL(RED, WHITE));
             // "No such bank!!"
-            osSyncPrintf("%s[%d] : バンクが無いよ！！\n", "../z_en_guest.c", 129);
-            osSyncPrintf(VT_RST);
+            PRINTF("%s[%d] : バンクが無いよ！！\n", "../z_en_guest.c", 129);
+            PRINTF(VT_RST);
             ASSERT(0, "0", "../z_en_guest.c", 132);
         }
     }
@@ -80,8 +80,7 @@ void EnGuest_Update(Actor* thisx, PlayState* play) {
         this->actor.flags &= ~ACTOR_FLAG_4;
         Actor_ProcessInitChain(&this->actor, sInitChain);
 
-        SkelAnime_InitFlex(play, &this->skelAnime, &object_boj_Skel_0000F0, NULL, this->jointTable, this->morphTable,
-                           16);
+        SkelAnime_InitFlex(play, &this->skelAnime, &gHylianMan2Skel, NULL, this->jointTable, this->morphTable, 16);
         gSegments[6] = VIRTUAL_TO_PHYSICAL(play->objectCtx.slots[this->osAnimeObjectSlot].segment);
         Animation_Change(&this->skelAnime, &gObjOsAnim_42AC, 1.0f, 0.0f, Animation_GetLastFrame(&gObjOsAnim_42AC),
                          ANIMMODE_LOOP, 0.0f);
@@ -172,7 +171,7 @@ void func_80A505CC(Actor* thisx, PlayState* play) {
 Gfx* func_80A50708(GraphicsContext* gfxCtx, u8 r, u8 g, u8 b, u8 a) {
     Gfx* dlist;
 
-    dlist = Graph_Alloc(gfxCtx, 2 * sizeof(Gfx));
+    dlist = GRAPH_ALLOC(gfxCtx, 2 * sizeof(Gfx));
     gDPSetEnvColor(dlist, r, g, b, a);
     gSPEndDisplayList(dlist + 1);
 
@@ -186,7 +185,7 @@ s32 EnGuest_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f*
     OPEN_DISPS(play->state.gfxCtx, "../z_en_guest.c", 352);
 
     if (limbIndex == 15) {
-        *dList = object_boj_DL_0059B0;
+        *dList = gHylianMan2BeardedHeadDL;
         Matrix_Translate(1400.0f, 0.0f, 0.0f, MTXMODE_APPLY);
         limbRot = this->interactInfo.headRot;
         Matrix_RotateX(BINANG_TO_RAD_ALT(limbRot.y), MTXMODE_APPLY);
@@ -212,9 +211,9 @@ s32 EnGuest_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f*
 
 void EnGuest_Draw(Actor* thisx, PlayState* play) {
     static void* D_80A50BA4[] = {
-        object_boj_Tex_0005FC,
-        object_boj_Tex_0006FC,
-        object_boj_Tex_0007FC,
+        gHylianMan2MustachedEyeOpenTex,
+        gHylianMan2MustachedEyeHalfTex,
+        gHylianMan2MustachedEyeClosedTex,
     };
     EnGuest* this = (EnGuest*)thisx;
     s32 pad;

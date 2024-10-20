@@ -21,7 +21,7 @@ void BgMoriIdomizu_Main(BgMoriIdomizu* this, PlayState* play);
 
 static s16 sIsSpawned = false;
 
-ActorInit Bg_Mori_Idomizu_InitVars = {
+ActorProfile Bg_Mori_Idomizu_Profile = {
     /**/ ACTOR_BG_MORI_IDOMIZU,
     /**/ ACTORCAT_BG,
     /**/ FLAGS,
@@ -58,7 +58,7 @@ void BgMoriIdomizu_Init(Actor* thisx, PlayState* play) {
     this->actor.scale.z = 1.0f;
     this->actor.world.pos.x = 119.0f;
     this->actor.world.pos.z = -1820.0f;
-    this->prevSwitchFlagSet = Flags_GetSwitch(play, this->actor.params & 0x3F);
+    this->prevSwitchFlagSet = Flags_GetSwitch(play, PARAMS_GET_U(this->actor.params, 0, 6));
     if (this->prevSwitchFlagSet != 0) {
         this->actor.world.pos.y = -282.0f;
         BgMoriIdomizu_SetWaterLevel(play, -282);
@@ -70,8 +70,7 @@ void BgMoriIdomizu_Init(Actor* thisx, PlayState* play) {
     if (this->moriTexObjectSlot < 0) {
         Actor_Kill(&this->actor);
         // "Bank danger!"
-        osSyncPrintf("Error : バンク危険！(arg_data 0x%04x)(%s %d)\n", this->actor.params, "../z_bg_mori_idomizu.c",
-                     202);
+        PRINTF("Error : バンク危険！(arg_data 0x%04x)(%s %d)\n", this->actor.params, "../z_bg_mori_idomizu.c", 202);
         return;
     }
     BgMoriIdomizu_SetupWaitForMoriTex(this);
@@ -79,7 +78,7 @@ void BgMoriIdomizu_Init(Actor* thisx, PlayState* play) {
     this->isLoaded = true;
     this->actor.room = -1;
     // "Forest Temple well water"
-    osSyncPrintf("(森の神殿 井戸水)(arg_data 0x%04x)\n", this->actor.params);
+    PRINTF("(森の神殿 井戸水)(arg_data 0x%04x)\n", this->actor.params);
 }
 
 void BgMoriIdomizu_Destroy(Actor* thisx, PlayState* play) {
@@ -112,7 +111,7 @@ void BgMoriIdomizu_Main(BgMoriIdomizu* this, PlayState* play) {
     s32 switchFlagSet;
 
     roomNum = play->roomCtx.curRoom.num;
-    switchFlagSet = Flags_GetSwitch(play, thisx->params & 0x3F);
+    switchFlagSet = Flags_GetSwitch(play, PARAMS_GET_U(thisx->params, 0, 6));
     if (switchFlagSet) {
         this->targetWaterLevel = -282.0f;
     } else {
@@ -166,8 +165,7 @@ void BgMoriIdomizu_Draw(Actor* thisx, PlayState* play) {
 
     Gfx_SetupDL_25Xlu(play->state.gfxCtx);
 
-    gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_bg_mori_idomizu.c", 360),
-              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx, "../z_bg_mori_idomizu.c", 360);
 
     gSPSegment(POLY_XLU_DISP++, 0x08, play->objectCtx.slots[this->moriTexObjectSlot].segment);
 

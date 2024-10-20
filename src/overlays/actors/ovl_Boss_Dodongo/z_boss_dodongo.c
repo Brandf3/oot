@@ -3,7 +3,7 @@
 #include "overlays/actors/ovl_Door_Warp1/z_door_warp1.h"
 #include "assets/scenes/dungeons/ddan_boss/ddan_boss_room_1.h"
 
-#define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_2 | ACTOR_FLAG_4 | ACTOR_FLAG_5)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_4 | ACTOR_FLAG_5)
 
 void BossDodongo_Init(Actor* thisx, PlayState* play);
 void BossDodongo_Destroy(Actor* thisx, PlayState* play);
@@ -33,7 +33,7 @@ f32 func_808C50A8(BossDodongo* this, PlayState* play);
 void BossDodongo_DrawEffects(PlayState* play);
 void BossDodongo_UpdateEffects(PlayState* play);
 
-ActorInit Boss_Dodongo_InitVars = {
+ActorProfile Boss_Dodongo_Profile = {
     /**/ ACTOR_EN_DODONGO,
     /**/ ACTORCAT_BOSS,
     /**/ FLAGS,
@@ -48,10 +48,10 @@ ActorInit Boss_Dodongo_InitVars = {
 #include "z_boss_dodongo_data.inc.c"
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_U8(targetMode, 5, ICHAIN_CONTINUE),
+    ICHAIN_U8(attentionRangeType, ATTENTION_RANGE_5, ICHAIN_CONTINUE),
     ICHAIN_S8(naviEnemyId, NAVI_ENEMY_KING_DODONGO, ICHAIN_CONTINUE),
     ICHAIN_F32_DIV1000(gravity, -3000.0f, ICHAIN_CONTINUE),
-    ICHAIN_F32(targetArrowOffset, 8200.0f, ICHAIN_STOP),
+    ICHAIN_F32(lockOnArrowOffset, 8200.0f, ICHAIN_STOP),
 };
 
 void func_808C1190(s16* arg0, u8* arg1, s16 arg2) {
@@ -105,27 +105,29 @@ void func_808C12C4(u8* arg1, s16 arg2) {
     func_808C1278(SEGMENTED_TO_VIRTUAL(object_kingdodongo_Tex_016E10), arg1, arg2);
 }
 
-void func_808C1554(void* arg0, void* floorTex, s32 arg2, f32 arg3) {
-    u16* temp_s3 = SEGMENTED_TO_VIRTUAL(arg0);
-    u16* temp_s1 = SEGMENTED_TO_VIRTUAL(floorTex);
+void func_808C1554(u16* arg0, u16* floorTex, s32 arg2, f32 arg3) {
+    s32 pad[2];
     s16 i;
     s16 i2;
     u16 sp54[2048];
     s16 temp;
-    s16 temp2;
+
+    arg0 = SEGMENTED_TO_VIRTUAL(arg0);
+    floorTex = SEGMENTED_TO_VIRTUAL(floorTex);
 
     for (i = 0; i < 2048; i += 32) {
         temp = sinf((((i / 32) + (s16)((arg2 * 50.0f) / 100.0f)) & 0x1F) * (M_PI / 16)) * arg3;
         for (i2 = 0; i2 < 32; i2++) {
-            sp54[i + ((temp + i2) & 0x1F)] = temp_s1[i + i2];
+            sp54[i + ((temp + i2) & 0x1F)] = floorTex[i + i2];
         }
     }
     for (i = 0; i < 32; i++) {
         temp = sinf(((i + (s16)((arg2 * 80.0f) / 100.0f)) & 0x1F) * (M_PI / 16)) * arg3;
         temp *= 32;
         for (i2 = 0; i2 < 2048; i2 += 32) {
-            temp2 = (temp + i2) & 0x7FF;
-            temp_s3[i + temp2] = sp54[i + i2];
+            s16 temp2 = (temp + i2) & 0x7FF;
+
+            arg0[i + temp2] = sp54[i + i2];
         }
     }
 }
@@ -179,9 +181,6 @@ s32 BossDodongo_AteExplosive(BossDodongo* this, PlayState* play) {
 void BossDodongo_Init(Actor* thisx, PlayState* play) {
     BossDodongo* this = (BossDodongo*)thisx;
     s16 i;
-    u16* temp_s1_3;
-    u16* temp_s2;
-    u32 temp_v0;
 
     play->specialEffects = this->effects;
     Actor_ProcessInitChain(&this->actor, sInitChain);
@@ -202,8 +201,9 @@ void BossDodongo_Init(Actor* thisx, PlayState* play) {
     Collider_SetJntSph(play, &this->collider, &this->actor, &sJntSphInit, this->items);
 
     if (Flags_GetClear(play, play->roomCtx.curRoom.num)) { // KD is dead
-        temp_s1_3 = SEGMENTED_TO_VIRTUAL(gDodongosCavernBossLavaFloorTex);
-        temp_s2 = SEGMENTED_TO_VIRTUAL(sLavaFloorRockTex);
+        u16* temp_s1_3 = SEGMENTED_TO_VIRTUAL(gDodongosCavernBossLavaFloorTex);
+        u16* temp_s2 = SEGMENTED_TO_VIRTUAL(sLavaFloorRockTex);
+        u32 temp_v0;
 
         Actor_Kill(&this->actor);
         Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, ACTOR_DOOR_WARP1, -890.0f, -1523.76f, -3304.0f, 0, 0, 0,
@@ -217,7 +217,7 @@ void BossDodongo_Init(Actor* thisx, PlayState* play) {
         }
     }
 
-    this->actor.flags &= ~ACTOR_FLAG_0;
+    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
 }
 
 void BossDodongo_Destroy(Actor* thisx, PlayState* play) {
@@ -476,7 +476,7 @@ void BossDodongo_SetupWalk(BossDodongo* this) {
     this->unk_1AA = 0;
     this->actionFunc = BossDodongo_Walk;
     this->unk_1DA = 0;
-    this->actor.flags |= ACTOR_FLAG_0;
+    this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
     this->unk_1E4 = 0.0f;
 }
 
@@ -488,8 +488,7 @@ void BossDodongo_SetupRoll(BossDodongo* this) {
 }
 
 void BossDodongo_SetupBlowFire(BossDodongo* this) {
-    this->actor.speed = 0.0f;
-    this->unk_1E4 = 0.0f;
+    this->actor.speed = this->unk_1E4 = 0.0f;
     Animation_Change(&this->skelAnime, &object_kingdodongo_Anim_0061D4, 1.0f, 0.0f,
                      Animation_GetLastFrame(&object_kingdodongo_Anim_0061D4), ANIMMODE_ONCE, 0.0f);
     this->actionFunc = BossDodongo_BlowFire;
@@ -913,8 +912,8 @@ void BossDodongo_Update(Actor* thisx, PlayState* play2) {
         Math_SmoothStepToF(&this->colorFilterMax, 1099.0f, 1, 10.0f, 0.0);
     } else {
         Math_SmoothStepToF(&this->colorFilterR, play->lightCtx.fogColor[0], 1, 5.0f, 0.0);
-        Math_SmoothStepToF(&this->colorFilterG, play->lightCtx.fogColor[1], 1.0f, 5.0f, 0.0);
-        Math_SmoothStepToF(&this->colorFilterB, play->lightCtx.fogColor[2], 1.0f, 5.0f, 0.0);
+        Math_SmoothStepToF(&this->colorFilterG, play->lightCtx.fogColor[1], 1, 5.0f, 0.0);
+        Math_SmoothStepToF(&this->colorFilterB, play->lightCtx.fogColor[2], 1, 5.0f, 0.0);
         Math_SmoothStepToF(&this->colorFilterMin, play->lightCtx.fogNear, 1.0, 5.0f, 0.0);
         Math_SmoothStepToF(&this->colorFilterMax, 1000.0f, 1, 5.0f, 0.0);
     }
@@ -992,16 +991,17 @@ void BossDodongo_Update(Actor* thisx, PlayState* play2) {
             }
         }
 
-        func_808C1554(gDodongosCavernBossLavaFloorTex, sLavaFloorLavaTex, this->unk_19E, this->unk_224);
+        func_808C1554((u16*)gDodongosCavernBossLavaFloorTex, (u16*)sLavaFloorLavaTex, this->unk_19E, this->unk_224);
     }
 
     if (this->unk_1C6 != 0) {
         u16* ptr1 = SEGMENTED_TO_VIRTUAL(sLavaFloorLavaTex);
         u16* ptr2 = SEGMENTED_TO_VIRTUAL(sLavaFloorRockTex);
         s16 i2;
+        s16 new_var;
 
         for (i2 = 0; i2 < 20; i2++) {
-            s16 new_var = this->unk_1C2 & 0x7FF;
+            new_var = this->unk_1C2 & 0x7FF;
 
             ptr1[new_var] = ptr2[new_var];
             this->unk_1C2 += 37;
@@ -1085,8 +1085,7 @@ s32 BossDodongo_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Ve
             Matrix_RotateX(-(this->unk_25C[limbIndex] * 0.115f), MTXMODE_APPLY);
         }
 
-        gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_boss_dodongo.c", 3822),
-                  G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx, "../z_boss_dodongo.c", 3822);
         gSPDisplayList(POLY_OPA_DISP++, *dList);
         Matrix_Pop();
 
@@ -1225,7 +1224,7 @@ void BossDodongo_SpawnFire(BossDodongo* this, PlayState* play, s16 params) {
 
 void BossDodongo_UpdateDamage(BossDodongo* this, PlayState* play) {
     s32 pad;
-    ColliderInfo* item;
+    ColliderElement* acHitElem;
     u8 swordDamage;
     s32 damage;
     s16 i;
@@ -1239,11 +1238,12 @@ void BossDodongo_UpdateDamage(BossDodongo* this, PlayState* play) {
     if (this->unk_1C0 == 0) {
         if (this->actionFunc == BossDodongo_Inhale) {
             for (i = 0; i < 19; i++) {
-                if (this->collider.elements[i].info.bumperFlags & BUMP_HIT) {
-                    item = this->collider.elements[i].info.acHitInfo;
+                if (this->collider.elements[i].base.acElemFlags & ACELEM_HIT) {
+                    acHitElem = this->collider.elements[i].base.acHitElem;
 
-                    if ((item->toucher.dmgFlags & DMG_BOOMERANG) || (item->toucher.dmgFlags & DMG_SLINGSHOT)) {
-                        this->collider.elements[i].info.bumperFlags &= ~BUMP_HIT;
+                    if ((acHitElem->atDmgInfo.dmgFlags & DMG_BOOMERANG) ||
+                        (acHitElem->atDmgInfo.dmgFlags & DMG_SLINGSHOT)) {
+                        this->collider.elements[i].base.acElemFlags &= ~ACELEM_HIT;
                         this->unk_1C0 = 2;
                         BossDodongo_SetupWalk(this);
                         this->unk_1DA = 0x32;
@@ -1253,11 +1253,11 @@ void BossDodongo_UpdateDamage(BossDodongo* this, PlayState* play) {
             }
         }
 
-        if (this->collider.elements->info.bumperFlags & BUMP_HIT) {
-            this->collider.elements->info.bumperFlags &= ~BUMP_HIT;
-            item = this->collider.elements[0].info.acHitInfo;
+        if (this->collider.elements[0].base.acElemFlags & ACELEM_HIT) {
+            this->collider.elements[0].base.acElemFlags &= ~ACELEM_HIT;
+            acHitElem = this->collider.elements[0].base.acHitElem;
             if ((this->actionFunc == BossDodongo_Vulnerable) || (this->actionFunc == BossDodongo_LayDown)) {
-                swordDamage = damage = CollisionCheck_GetSwordDamage(item->toucher.dmgFlags);
+                swordDamage = damage = CollisionCheck_GetSwordDamage(acHitElem->atDmgInfo.dmgFlags);
 
                 if (damage != 0) {
                     Actor_PlaySfx(&this->actor, NA_SE_EN_DODO_K_DAMAGE);
@@ -1271,15 +1271,14 @@ void BossDodongo_UpdateDamage(BossDodongo* this, PlayState* play) {
 }
 
 void BossDodongo_SetupDeathCutscene(BossDodongo* this) {
-    this->actor.speed = 0.0f;
-    this->unk_1E4 = 0.0f;
+    this->actor.speed = this->unk_1E4 = 0.0f;
     Animation_Change(&this->skelAnime, &object_kingdodongo_Anim_002D0C, 1.0f, 0.0f,
                      Animation_GetLastFrame(&object_kingdodongo_Anim_002D0C), ANIMMODE_ONCE, -5.0f);
     this->actionFunc = BossDodongo_DeathCutscene;
     Actor_PlaySfx(&this->actor, NA_SE_EN_DODO_K_DEAD);
     this->unk_1DA = 0;
     this->csState = 0;
-    this->actor.flags &= ~(ACTOR_FLAG_0 | ACTOR_FLAG_2);
+    this->actor.flags &= ~(ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE);
     this->unk_1BC = 1;
     SEQCMD_STOP_SEQUENCE(SEQ_PLAYER_BGM_MAIN, 1);
 }
@@ -1693,8 +1692,7 @@ void BossDodongo_DrawEffects(PlayState* play) {
             Matrix_Translate(eff->unk_00.x, eff->unk_00.y, eff->unk_00.z, MTXMODE_NEW);
             Matrix_ReplaceRotation(&play->billboardMtxF);
             Matrix_Scale(eff->unk_2C, eff->unk_2C, 1.0f, MTXMODE_APPLY);
-            gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(gfxCtx, "../z_boss_dodongo.c", 5253),
-                      G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, gfxCtx, "../z_boss_dodongo.c", 5253);
             gSPDisplayList(POLY_XLU_DISP++, object_kingdodongo_DL_009DD0);
         }
     }

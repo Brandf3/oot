@@ -21,7 +21,7 @@ void func_8088E760(BgHidanSima* this, PlayState* play);
 void func_8088E7A8(BgHidanSima* this, PlayState* play);
 void func_8088E90C(BgHidanSima* this);
 
-ActorInit Bg_Hidan_Sima_InitVars = {
+ActorProfile Bg_Hidan_Sima_Profile = {
     /**/ ACTOR_BG_HIDAN_SIMA,
     /**/ ACTORCAT_BG,
     /**/ FLAGS,
@@ -36,22 +36,22 @@ ActorInit Bg_Hidan_Sima_InitVars = {
 static ColliderJntSphElementInit sJntSphElementsInit[2] = {
     {
         {
-            ELEMTYPE_UNK0,
+            ELEM_MATERIAL_UNK0,
             { 0x20000000, 0x01, 0x04 },
             { 0x00000000, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NONE,
-            BUMP_NONE,
+            ATELEM_ON | ATELEM_SFX_NONE,
+            ACELEM_NONE,
             OCELEM_NONE,
         },
         { 1, { { 0, 40, 100 }, 22 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK0,
+            ELEM_MATERIAL_UNK0,
             { 0x20000000, 0x01, 0x04 },
             { 0x00000000, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NONE,
-            BUMP_NONE,
+            ATELEM_ON | ATELEM_SFX_NONE,
+            ACELEM_NONE,
             OCELEM_NONE,
         },
         { 1, { { 0, 40, 145 }, 30 }, 100 },
@@ -60,7 +60,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[2] = {
 
 static ColliderJntSphInit sJntSphInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_ON | AT_TYPE_ENEMY,
         AC_NONE,
         OC1_NONE,
@@ -188,7 +188,7 @@ void func_8088E7A8(BgHidanSima* this, PlayState* play) {
         this->timer = 20;
         this->actionFunc = func_8088E760;
     }
-    func_8002F974(&this->dyna.actor, NA_SE_EV_FIRE_PILLAR - SFX_FLAG);
+    Actor_PlaySfx_Flagged(&this->dyna.actor, NA_SE_EV_FIRE_PILLAR - SFX_FLAG);
 }
 
 void func_8088E90C(BgHidanSima* this) {
@@ -226,9 +226,9 @@ void BgHidanSima_Update(Actor* thisx, PlayState* play) {
 
 Gfx* func_8088EB54(PlayState* play, BgHidanSima* this, Gfx* gfx) {
     MtxF mtxF;
-    s32 phi_s5;
     s32 s3;
     s32 v0;
+    s32 phi_s5;
     f32 cos;
     f32 sin;
     s32 pad[2];
@@ -259,8 +259,8 @@ Gfx* func_8088EB54(PlayState* play, BgHidanSima* this, Gfx* gfx) {
 
         gSPSegment(gfx++, 0x09, SEGMENTED_TO_VIRTUAL(sFireballsTexs[(this->timer + s3) % 7]));
         gSPMatrix(gfx++,
-                  Matrix_MtxFToMtx(Matrix_CheckFloats(&mtxF, "../z_bg_hidan_sima.c", 611),
-                                   Graph_Alloc(play->state.gfxCtx, sizeof(Mtx))),
+                  Matrix_MtxFToMtx(MATRIX_CHECK_FLOATS(&mtxF, "../z_bg_hidan_sima.c", 611),
+                                   GRAPH_ALLOC(play->state.gfxCtx, sizeof(Mtx))),
                   G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
         gSPDisplayList(gfx++, gFireTempleFireballDL);
     }
@@ -268,8 +268,8 @@ Gfx* func_8088EB54(PlayState* play, BgHidanSima* this, Gfx* gfx) {
     mtxF.zw = this->dyna.actor.world.pos.z + (phi_s5 * 25 + 80) * cos;
     gSPSegment(gfx++, 0x09, SEGMENTED_TO_VIRTUAL(sFireballsTexs[(this->timer + s3) % 7]));
     gSPMatrix(gfx++,
-              Matrix_MtxFToMtx(Matrix_CheckFloats(&mtxF, "../z_bg_hidan_sima.c", 624),
-                               Graph_Alloc(play->state.gfxCtx, sizeof(Mtx))),
+              Matrix_MtxFToMtx(MATRIX_CHECK_FLOATS(&mtxF, "../z_bg_hidan_sima.c", 624),
+                               GRAPH_ALLOC(play->state.gfxCtx, sizeof(Mtx))),
               G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
     gSPDisplayList(gfx++, gFireTempleFireballDL);
     return gfx;
@@ -280,8 +280,7 @@ void BgHidanSima_Draw(Actor* thisx, PlayState* play) {
 
     OPEN_DISPS(play->state.gfxCtx, "../z_bg_hidan_sima.c", 641);
     Gfx_SetupDL_25Opa(play->state.gfxCtx);
-    gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_bg_hidan_sima.c", 645),
-              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx, "../z_bg_hidan_sima.c", 645);
     if (this->dyna.actor.params == 0) {
         gSPDisplayList(POLY_OPA_DISP++, gFireTempleStonePlatform1DL);
     } else {

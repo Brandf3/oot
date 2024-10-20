@@ -8,6 +8,11 @@
 #include "global.h"
 #include "terminal.h"
 #include "alloca.h"
+#include "z64.h"
+
+#if PLATFORM_N64
+#include "n64dd.h"
+#endif
 
 void MapSelect_LoadTitle(MapSelectState* this) {
     this->state.running = false;
@@ -15,9 +20,9 @@ void MapSelect_LoadTitle(MapSelectState* this) {
 }
 
 void MapSelect_LoadGame(MapSelectState* this, s32 entranceIndex) {
-    osSyncPrintf(VT_FGCOL(BLUE));
-    osSyncPrintf("\n\n\nＦＩＬＥ＿ＮＯ＝%x\n\n\n", gSaveContext.fileNum);
-    osSyncPrintf(VT_RST);
+    PRINTF(VT_FGCOL(BLUE));
+    PRINTF("\n\n\nＦＩＬＥ＿ＮＯ＝%x\n\n\n", gSaveContext.fileNum);
+    PRINTF(VT_RST);
     if (gSaveContext.fileNum == 0xFF) {
         Sram_InitDebugSave();
         // Set the fill target to be the saved magic amount
@@ -39,9 +44,24 @@ void MapSelect_LoadGame(MapSelectState* this, s32 entranceIndex) {
     gSaveContext.natureAmbienceId = 0xFF;
     gSaveContext.showTitleCard = true;
     gWeatherMode = WEATHER_MODE_CLEAR;
+
     this->state.running = false;
     SET_NEXT_GAMESTATE(&this->state, Play_Init, PlayState);
 }
+
+#if PLATFORM_N64
+void func_80800AD0_unknown(MapSelectState* this, s32 arg1) {
+    if (D_80121212 != 0) {
+        n64dd_SetDiskVersion(1);
+    }
+}
+
+void func_80800B08_unknown(MapSelectState* this, s32 arg1) {
+    if (D_80121212 != 0) {
+        n64dd_SetDiskVersion(0);
+    }
+}
+#endif
 
 // "Translation" (Actual name)
 static SceneSelectEntry sScenes[] = {
@@ -263,6 +283,7 @@ static SceneSelectEntry sScenes[] = {
     { "114:" GFXP_HIRAGANA "ｶｸｼﾄﾋﾞｺﾐｱﾅ 13", MapSelect_LoadGame, ENTR_GROTTOS_13 },
     // "115: Hyrule Cutscenes"
     { "115:" GFXP_KATAKANA "ﾊｲﾗﾙ ﾃﾞﾓ", MapSelect_LoadGame, ENTR_CUTSCENE_MAP_0 },
+#if OOT_DEBUG
     // "116: Special Room (Treasure Chest Warp)" (Ganondorf Test Room)
     { "116:" GFXP_HIRAGANA "ﾍﾞｯｼﾂ (ﾀｶﾗﾊﾞｺ" GFXP_KATAKANA "ﾜｰﾌﾟ)", MapSelect_LoadGame, ENTR_BESITU_0 },
     // "117: Sasaki Test" (Sasa Test)
@@ -283,8 +304,13 @@ static SceneSelectEntry sScenes[] = {
     { "124:depth" GFXP_KATAKANA "ﾃｽﾄ", MapSelect_LoadGame, ENTR_DEPTH_TEST_0 },
     // "125: Hyrule Garden Game 2" (Early Hyrule Garden Game)
     { "125:" GFXP_KATAKANA "ﾊｲﾗﾙ" GFXP_HIRAGANA "ﾆﾜ" GFXP_KATAKANA "ｹﾞｰﾑ2", MapSelect_LoadGame, ENTR_HAIRAL_NIWA2_0 },
+#endif
     // "title" (Title Screen)
     { "title", (void*)MapSelect_LoadTitle, 0 },
+#if PLATFORM_N64
+    { "64DD TEST  n64dd_SetDiskVersion(1)", (void*)func_80800AD0_unknown, 0 },
+    { "64DD TEST2 n64dd_SetDiskVersion(0)", (void*)func_80800B08_unknown, 0 },
+#endif
 };
 
 void MapSelect_UpdateMenu(MapSelectState* this) {
@@ -704,15 +730,13 @@ void MapSelect_Main(GameState* thisx) {
 }
 
 void MapSelect_Destroy(GameState* thisx) {
-    osSyncPrintf("%c", BEL);
+    PRINTF("%c", BEL);
     // "view_cleanup will hang, so it won't be called"
-    osSyncPrintf("*** view_cleanupはハングアップするので、呼ばない ***\n");
+    PRINTF("*** view_cleanupはハングアップするので、呼ばない ***\n");
 }
 
 void MapSelect_Init(GameState* thisx) {
     MapSelectState* this = (MapSelectState*)thisx;
-    u32 size;
-    s32 pad;
 
     this->state.main = MapSelect_Main;
     this->state.destroy = MapSelect_Destroy;
@@ -739,18 +763,21 @@ void MapSelect_Init(GameState* thisx) {
     this->lockDown = 0;
     this->unk_234 = 0;
 
-    size = (uintptr_t)_z_select_staticSegmentRomEnd - (uintptr_t)_z_select_staticSegmentRomStart;
-
     if ((dREG(80) >= 0) && (dREG(80) < this->count)) {
         this->currentScene = dREG(80);
         this->topDisplayedScene = dREG(81);
         this->pageDownIndex = dREG(82);
     }
+
     R_UPDATE_RATE = 1;
 
-    this->staticSegment = GameState_Alloc(&this->state, size, "../z_select.c", 1114);
-    DmaMgr_RequestSyncDebug(this->staticSegment, (uintptr_t)_z_select_staticSegmentRomStart, size, "../z_select.c",
-                            1115);
+    {
+        u32 size = (uintptr_t)_z_select_staticSegmentRomEnd - (uintptr_t)_z_select_staticSegmentRomStart;
+
+        this->staticSegment = GAME_STATE_ALLOC(&this->state, size, "../z_select.c", 1114);
+        DMA_REQUEST_SYNC(this->staticSegment, (uintptr_t)_z_select_staticSegmentRomStart, size, "../z_select.c", 1115);
+    }
+
     gSaveContext.save.cutsceneIndex = 0x8000;
     gSaveContext.save.linkAge = LINK_AGE_CHILD;
 }

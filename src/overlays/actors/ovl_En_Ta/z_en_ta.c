@@ -8,7 +8,7 @@
 #include "terminal.h"
 #include "assets/objects/object_ta/object_ta.h"
 
-#define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_3)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY)
 
 #define TALON_STATE_FLAG_TRACKING_PLAYER (1 << 0)
 #define TALON_STATE_FLAG_GIVING_MILK_REFILL (1 << 1)
@@ -21,16 +21,14 @@
 #define TALON_STATE_FLAG_RAISING_HANDS (1 << 8)
 #define TALON_STATE_FLAG_RESTORE_BGM_ON_DESTROY (1 << 9)
 
-#define TALON_FACE_REACTION_SET 24
-
-typedef enum {
+typedef enum TalonEyeIndex {
     /* 0 */ TALON_EYE_INDEX_OPEN,
     /* 1 */ TALON_EYE_INDEX_HALF,
     /* 2 */ TALON_EYE_INDEX_CLOSED,
     /* 3 */ TALON_EYE_INDEX_MAX
 } TalonEyeIndex;
 
-typedef enum {
+typedef enum TalonCanBuyMilkResult {
     /* 0 */ TALON_CANBUYMILK_NOT_ENOUGH_RUPEES,
     /* 1 */ TALON_CANBUYMILK_NO_EMPTY_BOTTLE,
     /* 2 */ TALON_CANBUYMILK_SUCCESS
@@ -59,7 +57,7 @@ void EnTa_AnimSleeping(EnTa* this);
 void EnTa_AnimSitSleeping(EnTa* this);
 void EnTa_AnimRunToEnd(EnTa* this);
 
-ActorInit En_Ta_InitVars = {
+ActorProfile En_Ta_Profile = {
     /**/ ACTOR_EN_TA,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,
@@ -73,7 +71,7 @@ ActorInit En_Ta_InitVars = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_ON | AC_TYPE_PLAYER,
         OC1_ON | OC1_TYPE_ALL,
@@ -81,11 +79,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000004, 0x00, 0x00 },
-        TOUCH_NONE,
-        BUMP_ON,
+        ATELEM_NONE,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 30, 40, 0, { 0, 0, 0 } },
@@ -97,7 +95,7 @@ void EnTa_SetupAction(EnTa* this, EnTaActionFunc actionFunc, EnTaAnimFunc animFu
 }
 
 void EnTa_SetTextForTalkInLonLonHouse(EnTa* this, PlayState* play) {
-    u16 faceReaction = Text_GetFaceReaction(play, TALON_FACE_REACTION_SET);
+    u16 maskReactionTextId = MaskReaction_GetTextId(play, MASK_REACTION_SET_TALON);
 
     // Check if cucco game was just finished
     if (GET_EVENTINF(EVENTINF_CUCCO_GAME_FINISHED)) {
@@ -115,7 +113,7 @@ void EnTa_SetTextForTalkInLonLonHouse(EnTa* this, PlayState* play) {
             this->actor.textId = 0x2085;
         }
         CLEAR_EVENTINF(EVENTINF_CUCCO_GAME_WON);
-    } else if (faceReaction == 0) {
+    } else if (maskReactionTextId == 0) {
         if (GET_INFTABLE(INFTABLE_TALKED_TO_TALON_IN_RANCH_HOUSE)) {
             if (GET_ITEMGETINF(ITEMGETINF_TALON_BOTTLE)) {
                 // Play cucco game or buy milk
@@ -129,7 +127,7 @@ void EnTa_SetTextForTalkInLonLonHouse(EnTa* this, PlayState* play) {
             this->actor.textId = 0x207E;
         }
     } else {
-        this->actor.textId = faceReaction;
+        this->actor.textId = maskReactionTextId;
     }
 }
 
@@ -150,7 +148,7 @@ void EnTa_Init(Actor* thisx, PlayState* play2) {
     this->blinkTimer = 20;
     this->blinkFunc = EnTa_BlinkWaitUntilNext;
     Actor_SetScale(&this->actor, 0.01f);
-    this->actor.targetMode = 6;
+    this->actor.attentionRangeType = ATTENTION_RANGE_6;
     this->actor.velocity.y = -4.0f;
     this->actor.minVelocityY = -4.0f;
     this->actor.gravity = -1.0f;
@@ -158,7 +156,7 @@ void EnTa_Init(Actor* thisx, PlayState* play2) {
     switch (this->actor.params) {
         case ENTA_IN_KAKARIKO:
             // "Exile Talon"
-            osSyncPrintf(VT_FGCOL(CYAN) " 追放タロン \n" VT_RST);
+            PRINTF(VT_FGCOL(CYAN) " 追放タロン \n" VT_RST);
             if (GET_EVENTCHKINF(EVENTCHKINF_TALON_RETURNED_FROM_KAKARIKO)) {
                 Actor_Kill(&this->actor);
             } else if (!LINK_IS_ADULT) {
@@ -179,14 +177,14 @@ void EnTa_Init(Actor* thisx, PlayState* play2) {
 
         case ENTA_RETURNED_FROM_KAKARIKO:
             // "Return Talon"
-            osSyncPrintf(VT_FGCOL(CYAN) " 出戻りタロン \n" VT_RST);
+            PRINTF(VT_FGCOL(CYAN) " 出戻りタロン \n" VT_RST);
             if (!GET_EVENTCHKINF(EVENTCHKINF_TALON_RETURNED_FROM_KAKARIKO)) {
                 Actor_Kill(&this->actor);
             } else if (!LINK_IS_ADULT) {
                 Actor_Kill(&this->actor);
             } else if (play->sceneId == SCENE_STABLE && !IS_DAY) {
                 Actor_Kill(&this->actor);
-                osSyncPrintf(VT_FGCOL(CYAN) " 夜はいない \n" VT_RST);
+                PRINTF(VT_FGCOL(CYAN) " 夜はいない \n" VT_RST);
             } else {
                 EnTa_SetupAction(this, EnTa_IdleAtRanch, EnTa_AnimRepeatCurrent);
                 this->eyeIndex = TALON_EYE_INDEX_OPEN;
@@ -197,7 +195,7 @@ void EnTa_Init(Actor* thisx, PlayState* play2) {
 
         default: // Child era Talon
             // "Other Talon"
-            osSyncPrintf(VT_FGCOL(CYAN) " その他のタロン \n" VT_RST);
+            PRINTF(VT_FGCOL(CYAN) " その他のタロン \n" VT_RST);
             if (play->sceneId == SCENE_HYRULE_CASTLE) {
                 if (GET_EVENTCHKINF(EVENTCHKINF_TALON_RETURNED_FROM_CASTLE)) {
                     Actor_Kill(&this->actor);
@@ -214,7 +212,7 @@ void EnTa_Init(Actor* thisx, PlayState* play2) {
                     this->actor.shape.shadowScale = 54.0f;
                 }
             } else if (play->sceneId == SCENE_LON_LON_BUILDINGS) {
-                osSyncPrintf(VT_FGCOL(CYAN) " ロンロン牧場の倉庫 の タロン\n" VT_RST);
+                PRINTF(VT_FGCOL(CYAN) " ロンロン牧場の倉庫 の タロン\n" VT_RST);
                 if (!GET_EVENTCHKINF(EVENTCHKINF_TALON_RETURNED_FROM_CASTLE)) {
                     Actor_Kill(&this->actor);
                 } else if (LINK_IS_ADULT) {
@@ -624,7 +622,7 @@ s32 EnTa_IsPlayerHoldingSuperCucco(EnTa* this, PlayState* play, s32 cuccoIdx) {
     Player* player = GET_PLAYER(play);
     Actor* interactRangeActor;
 
-    if (player->stateFlags1 & PLAYER_STATE1_11) {
+    if (player->stateFlags1 & PLAYER_STATE1_CARRYING_ACTOR) {
         interactRangeActor = player->interactRangeActor;
         if (interactRangeActor != NULL && interactRangeActor->id == ACTOR_EN_NIW &&
             interactRangeActor == &this->superCuccos[cuccoIdx]->actor) {
@@ -660,7 +658,7 @@ void EnTa_TalkFoundSuperCucco(EnTa* this, PlayState* play) {
         if (player->heldActor == &this->superCuccos[lastFoundSuperCuccoIdx]->actor) {
             player->heldActor = NULL;
         }
-        player->stateFlags1 &= ~PLAYER_STATE1_11;
+        player->stateFlags1 &= ~PLAYER_STATE1_CARRYING_ACTOR;
         this->superCuccos[lastFoundSuperCuccoIdx] = NULL;
     }
     this->stateFlags |= TALON_STATE_FLAG_TRACKING_PLAYER;
@@ -670,7 +668,7 @@ void EnTa_IdleFoundSuperCucco(EnTa* this, PlayState* play) {
     if (Actor_TalkOfferAccepted(&this->actor, play)) {
         this->actionFunc = EnTa_TalkFoundSuperCucco;
         // Unset auto-talking
-        this->actor.flags &= ~ACTOR_FLAG_16;
+        this->actor.flags &= ~ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
     } else {
         Actor_OfferTalk(&this->actor, play, 1000.0f);
     }
@@ -786,7 +784,7 @@ void EnTa_RunCuccoGame(EnTa* this, PlayState* play) {
                     this->actionFunc = EnTa_IdleFoundSuperCucco;
 
                     // Automatically talk to player
-                    this->actor.flags |= ACTOR_FLAG_16;
+                    this->actor.flags |= ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
                     Actor_OfferTalk(&this->actor, play, 1000.0f);
                     return;
                 }
@@ -1086,14 +1084,14 @@ void EnTa_TalkAfterCuccoGameWon(EnTa* this, PlayState* play) {
 }
 
 void EnTa_IdleSittingInLonLonHouse(EnTa* this, PlayState* play) {
-    u16 faceReaction = Text_GetFaceReaction(play, TALON_FACE_REACTION_SET);
+    u16 maskReactionTextId = MaskReaction_GetTextId(play, MASK_REACTION_SET_TALON);
 
     EnTa_SetTextForTalkInLonLonHouse(this, play);
 
     if (EnTa_RequestTalk(this, play, this->actor.textId)) {
         Actor_PlaySfx(&this->actor, NA_SE_VO_TA_SURPRISE);
 
-        if (faceReaction != 0) {
+        if (maskReactionTextId != 0) {
             EnTa_SetupActionWithWakeUpAnimation(this, EnTa_TalkGeneralInLonLonHouse);
         } else {
             SET_INFTABLE(INFTABLE_TALKED_TO_TALON_IN_RANCH_HOUSE);
@@ -1132,9 +1130,9 @@ void EnTa_IdleAfterCuccoGameFinished(EnTa* this, PlayState* play) {
                 this->actionFunc = EnTa_TalkAfterCuccoGameWon;
                 break;
         }
-        this->actor.flags &= ~ACTOR_FLAG_16;
+        this->actor.flags &= ~ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
     } else {
-        this->actor.flags |= ACTOR_FLAG_16;
+        this->actor.flags |= ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
         Actor_OfferTalk(&this->actor, play, 1000.0f);
     }
     this->stateFlags |= TALON_STATE_FLAG_TRACKING_PLAYER;

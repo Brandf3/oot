@@ -12,7 +12,7 @@
 #include "assets/objects/object_kusa/object_kusa.h"
 #include "terminal.h"
 
-#define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_23)
+#define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_THROW_ONLY)
 
 void EnKusa_Init(Actor* thisx, PlayState* play);
 void EnKusa_Destroy(Actor* thisx, PlayState* play2);
@@ -41,7 +41,7 @@ static s16 rotSpeedX = 0;
 static s16 rotSpeedYtarget = 0;
 static s16 rotSpeedY = 0;
 
-ActorInit En_Kusa_InitVars = {
+ActorProfile En_Kusa_Profile = {
     /**/ ACTOR_EN_KUSA,
     /**/ ACTORCAT_PROP,
     /**/ FLAGS,
@@ -57,7 +57,7 @@ static s16 sObjectIds[] = { OBJECT_GAMEPLAY_FIELD_KEEP, OBJECT_KUSA, OBJECT_KUSA
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_ON | AC_TYPE_PLAYER,
         OC1_ON | OC1_TYPE_PLAYER | OC1_TYPE_2,
@@ -65,11 +65,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0x4FC00758, 0x00, 0x00 },
-        TOUCH_NONE,
-        BUMP_ON,
+        ATELEM_NONE,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 12, 44, 0, { 0, 0, 0 } },
@@ -115,10 +115,10 @@ s32 EnKusa_SnapToFloor(EnKusa* this, PlayState* play, f32 yOffset) {
         Math_Vec3f_Copy(&this->actor.home.pos, &this->actor.world.pos);
         return true;
     } else {
-        osSyncPrintf(VT_COL(YELLOW, BLACK));
+        PRINTF(VT_COL(YELLOW, BLACK));
         // "Failure attaching to ground"
-        osSyncPrintf("地面に付着失敗(%s %d)\n", "../z_en_kusa.c", 323);
-        osSyncPrintf(VT_RST);
+        PRINTF("地面に付着失敗(%s %d)\n", "../z_en_kusa.c", 323);
+        PRINTF(VT_RST);
         return false;
     }
 }
@@ -126,10 +126,10 @@ s32 EnKusa_SnapToFloor(EnKusa* this, PlayState* play, f32 yOffset) {
 void EnKusa_DropCollectible(EnKusa* this, PlayState* play) {
     s16 dropParams;
 
-    switch (this->actor.params & 3) {
+    switch (PARAMS_GET_U(this->actor.params, 0, 2)) {
         case ENKUSA_TYPE_0:
         case ENKUSA_TYPE_2:
-            dropParams = (this->actor.params >> 8) & 0xF;
+            dropParams = PARAMS_GET_U(this->actor.params, 8, 4);
 
             if (dropParams >= 0xD) {
                 dropParams = 0;
@@ -253,11 +253,11 @@ void EnKusa_Init(Actor* thisx, PlayState* play) {
         return;
     }
 
-    this->requiredObjectSlot = Object_GetSlot(&play->objectCtx, sObjectIds[thisx->params & 3]);
+    this->requiredObjectSlot = Object_GetSlot(&play->objectCtx, sObjectIds[PARAMS_GET_U(thisx->params, 0, 2)]);
 
     if (this->requiredObjectSlot < 0) {
         // "Bank danger!"
-        osSyncPrintf("Error : バンク危険！ (arg_data 0x%04x)(%s %d)\n", thisx->params, "../z_en_kusa.c", 561);
+        PRINTF("Error : バンク危険！ (arg_data 0x%04x)(%s %d)\n", thisx->params, "../z_en_kusa.c", 561);
         Actor_Kill(&this->actor);
         return;
     }
@@ -307,11 +307,11 @@ void EnKusa_Main(EnKusa* this, PlayState* play) {
         EnKusa_DropCollectible(this, play);
         SfxSource_PlaySfxAtFixedWorldPos(play, &this->actor.world.pos, 20, NA_SE_EV_PLANT_BROKEN);
 
-        if ((this->actor.params >> 4) & 1) {
+        if (PARAMS_GET_U(this->actor.params, 4, 1)) {
             EnKusa_SpawnBugs(this, play);
         }
 
-        if ((this->actor.params & 3) == ENKUSA_TYPE_0) {
+        if (PARAMS_GET_U(this->actor.params, 0, 2) == ENKUSA_TYPE_0) {
             Actor_Kill(&this->actor);
             return;
         }
@@ -379,7 +379,7 @@ void EnKusa_Fall(EnKusa* this, PlayState* play) {
         }
         EnKusa_SpawnFragments(this, play);
         EnKusa_DropCollectible(this, play);
-        switch (this->actor.params & 3) {
+        switch (PARAMS_GET_U(this->actor.params, 0, 2)) {
             case ENKUSA_TYPE_0:
             case ENKUSA_TYPE_2:
                 Actor_Kill(&this->actor);
@@ -394,7 +394,7 @@ void EnKusa_Fall(EnKusa* this, PlayState* play) {
 
     if (this->actor.bgCheckFlags & BGCHECKFLAG_WATER_TOUCH) {
         contactPos.x = this->actor.world.pos.x;
-        contactPos.y = this->actor.world.pos.y + this->actor.yDistToWater;
+        contactPos.y = this->actor.world.pos.y + this->actor.depthInWater;
         contactPos.z = this->actor.world.pos.z;
         EffectSsGSplash_Spawn(play, &contactPos, NULL, NULL, 0, 400);
         EffectSsGRipple_Spawn(play, &contactPos, 150, 650, 0);
@@ -424,7 +424,7 @@ void EnKusa_Fall(EnKusa* this, PlayState* play) {
 }
 
 void EnKusa_SetupCut(EnKusa* this) {
-    switch (this->actor.params & 3) {
+    switch (PARAMS_GET_U(this->actor.params, 0, 2)) {
         case ENKUSA_TYPE_2:
             EnKusa_SetupAction(this, EnKusa_DoNothing);
             break;
@@ -504,6 +504,6 @@ void EnKusa_Draw(Actor* thisx, PlayState* play) {
     if (this->actor.flags & ACTOR_FLAG_ENKUSA_CUT) {
         Gfx_DrawDListOpa(play, object_kusa_DL_0002E0);
     } else {
-        Gfx_DrawDListOpa(play, dLists[thisx->params & 3]);
+        Gfx_DrawDListOpa(play, dLists[PARAMS_GET_U(thisx->params, 0, 2)]);
     }
 }

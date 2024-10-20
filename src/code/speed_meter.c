@@ -1,9 +1,12 @@
+#pragma increment_block_number "gc-eu:128 gc-eu-mq:128 gc-jp:128 gc-jp-ce:128 gc-jp-mq:128 gc-us:128 gc-us-mq:128" \
+                               "ntsc-1.2:128 pal-1.0:128 pal-1.1:128"
+
 #include "global.h"
 #include "terminal.h"
 
 /**
- * How much time the audio update on the audio thread (`func_800E4FE0`) took in total, between scheduling the last two
- * graphics tasks.
+ * How much time the audio update on the audio thread (`AudioThread_Update`) took in total, between scheduling the last
+ * two graphics tasks.
  */
 volatile OSTime gAudioThreadUpdateTimeTotalPerGfxTask;
 
@@ -56,7 +59,7 @@ volatile OSTime D_8016A578;
 // Accumulator for `gRDPTimeTotal`
 volatile OSTime gRDPTimeAcc;
 
-typedef struct {
+typedef struct SpeedMeterTimeEntry {
     /* 0x00 */ volatile OSTime* time;
     /* 0x04 */ u8 x;
     /* 0x05 */ u8 y;
@@ -74,7 +77,7 @@ SpeedMeterTimeEntry sSpeedMeterTimeEntryArray[] = {
     { &gGraphUpdatePeriod, 0, 10, GPACK_RGBA5551(255, 0, 255, 1) },
 };
 
-typedef struct {
+typedef struct SpeedMeterAllocEntry {
     /* 0x00 */ s32 maxval;
     /* 0x04 */ s32 val;
     /* 0x08 */ u16 backColor;
@@ -92,7 +95,7 @@ typedef struct {
     gDPPipeSync(gfx)
 
 void SpeedMeter_InitImpl(SpeedMeter* this, u32 x, u32 y) {
-    LogUtils_CheckNullPointer("this", this, "../speed_meter.c", 181);
+    LOG_UTILS_CHECK_NULL_POINTER("this", this, "../speed_meter.c", 181);
     this->x = x;
     this->y = y;
 }
@@ -182,9 +185,9 @@ void SpeedMeter_DrawAllocEntry(SpeedMeterAllocEntry* this, GraphicsContext* gfxC
     Gfx* gfx;
 
     if (this->maxval == 0) {
-        osSyncPrintf(VT_FGCOL(RED));
+        PRINTF(VT_FGCOL(RED));
         LOG_NUM("this->maxval", this->maxval, "../speed_meter.c", 313);
-        osSyncPrintf(VT_RST);
+        PRINTF(VT_RST);
     } else {
         OPEN_DISPS(gfxCtx, "../speed_meter.c", 318);
 

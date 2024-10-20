@@ -7,14 +7,14 @@
 #include "z_en_jsjutan.h"
 #include "overlays/actors/ovl_En_Bom/z_en_bom.h"
 
-#define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_3)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY)
 
 void EnJsjutan_Init(Actor* thisx, PlayState* play);
 void EnJsjutan_Destroy(Actor* thisx, PlayState* play);
 void EnJsjutan_Update(Actor* thisx, PlayState* play2);
 void EnJsjutan_Draw(Actor* thisx, PlayState* play2);
 
-ActorInit En_Jsjutan_InitVars = {
+ActorProfile En_Jsjutan_Profile = {
     /**/ ACTOR_EN_JSJUTAN,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,
@@ -40,7 +40,7 @@ void EnJsjutan_Init(Actor* thisx, PlayState* play) {
     s32 pad;
     CollisionHeader* header = NULL;
 
-    this->dyna.actor.flags &= ~ACTOR_FLAG_0;
+    this->dyna.actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
     DynaPolyActor_Init(&this->dyna, 0);
     CollisionHeader_GetVirtual(&sCol, &header);
     this->dyna.bgId = DynaPoly_SetBgActor(play, &play->colCtx.dyna, thisx, header);
@@ -88,8 +88,8 @@ void func_80A89A6C(EnJsjutan* this, PlayState* play) {
     Vtx* phi_s0_2;
     Vec3f sp108;
     Vec3f spFC;
-    Actor* actorProfessor;
-    Actor* actorBeanGuy;
+    f32 rotX;
+    f32 rotZ;
     f32 dxVtx;
     f32 dyVtx;
     f32 dzVtx;
@@ -148,6 +148,9 @@ void func_80A89A6C(EnJsjutan* this, PlayState* play) {
 
     // Credits scene. The magic carpet man is friends with the bean guy and the lakeside professor.
     if ((gSaveContext.save.entranceIndex == ENTR_LON_LON_RANCH_0) && (gSaveContext.sceneLayer == 8)) {
+        Actor* actorProfessor;
+        Actor* actorBeanGuy;
+
         isInCreditsScene = true;
 
         actorProfessor = play->actorCtx.actorLists[ACTORCAT_NPC].head;
@@ -320,10 +323,6 @@ void func_80A89A6C(EnJsjutan* this, PlayState* play) {
 
     // Fancy math to smooth each part of the wave considering its neighborhood.
     for (i = 0; i < ARRAY_COUNT(sCarpetOddVtx); i++, carpetVtx++) {
-        f32 rotX;
-        f32 rotZ;
-        s32 pad;
-
         // Carpet size is 12x12.
         if ((i % 12) == 11) { // Last column.
             j = i - 1;
@@ -408,8 +407,7 @@ void EnJsjutan_Draw(Actor* thisx, PlayState* play2) {
     Matrix_Translate(thisx->world.pos.x, 3.0f, thisx->world.pos.z, MTXMODE_NEW);
     Matrix_Scale(thisx->scale.x, 1.0f, thisx->scale.z, MTXMODE_APPLY);
 
-    gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_en_jsjutan.c", 782),
-              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx, "../z_en_jsjutan.c", 782);
 
     // Draws the carpet's shadow texture.
     gSPDisplayList(POLY_OPA_DISP++, sShadowMaterialDL);
@@ -427,8 +425,7 @@ void EnJsjutan_Draw(Actor* thisx, PlayState* play2) {
     Matrix_Translate(thisx->world.pos.x, this->unk_168 + 3.0f, thisx->world.pos.z, MTXMODE_NEW);
     Matrix_Scale(thisx->scale.x, thisx->scale.y, thisx->scale.z, MTXMODE_APPLY);
 
-    gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_en_jsjutan.c", 805),
-              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx, "../z_en_jsjutan.c", 805);
     // Draws the carpet's texture.
     gSPDisplayList(POLY_OPA_DISP++, sCarpetMaterialDL);
 

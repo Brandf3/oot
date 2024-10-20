@@ -1,13 +1,12 @@
 #include "global.h"
 
-u8 D_8016F0E0[0xA0]; // unused
 AudioContext gAudioCtx;
-void (*D_801755D0)(void);
+AudioCustomUpdateFunction gAudioCustomUpdateFunction;
 s32 D_801755D8[3]; // unused
 
-const s16 D_8014A6C0[] = {
-    0x1C00, // unused
-    0x0030, // gTatumsPerBeat
+const TempoData gTempoData = {
+    0x1C00,            // unk_00
+    SEQTICKS_PER_BEAT, // seqTicksPerBeat
 };
 
 // TODO: Extract from table?
@@ -19,7 +18,11 @@ const s16 D_8014A6C0[] = {
 // Sizes of everything on the init pool
 #define AI_BUFFERS_SIZE (AIBUF_SIZE * ARRAY_COUNT(gAudioCtx.aiBuffers))
 #define SOUNDFONT_LIST_SIZE (NUM_SOUNDFONTS * sizeof(SoundFont))
+#if OOT_VERSION < PAL_1_0 || PLATFORM_GC
 #define PERMANENT_POOL_SIZE (SFX_SEQ_SIZE + SFX_SOUNDFONT_1_SIZE + SFX_SOUNDFONT_2_SIZE)
+#else
+#define PERMANENT_POOL_SIZE (SFX_SEQ_SIZE + SFX_SOUNDFONT_1_SIZE + SFX_SOUNDFONT_2_SIZE + 0x10)
+#endif
 
 const AudioHeapInitSizes gAudioHeapInitSizes = {
     ALIGN16(sizeof(gAudioHeap) - 0x100),                                  // audio heap size

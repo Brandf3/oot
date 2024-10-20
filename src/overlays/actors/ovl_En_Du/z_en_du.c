@@ -2,7 +2,7 @@
 #include "assets/objects/object_du/object_du.h"
 #include "assets/scenes/overworld/spot18/spot18_scene.h"
 
-#define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_3 | ACTOR_FLAG_25)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_DURING_OCARINA)
 
 void EnDu_Init(Actor* thisx, PlayState* play);
 void EnDu_Destroy(Actor* thisx, PlayState* play);
@@ -22,7 +22,7 @@ void func_809FEC70(EnDu* this, PlayState* play);
 void func_809FECE4(EnDu* this, PlayState* play);
 void func_809FEB08(EnDu* this, PlayState* play);
 
-ActorInit En_Du_InitVars = {
+ActorProfile En_Du_Profile = {
     /**/ ACTOR_EN_DU,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,
@@ -36,7 +36,7 @@ ActorInit En_Du_InitVars = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -44,21 +44,19 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE,
-        BUMP_NONE,
+        ATELEM_NONE,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 20, 46, 0, { 0, 0, 0 } },
 };
 
-static CollisionCheckInfoInit2 sColChkInfoInit = {
-    0, 0, 0, 0, MASS_IMMOVABLE,
-};
+static CollisionCheckInfoInit2 sColChkInfoInit = { 0, 0, 0, 0, MASS_IMMOVABLE };
 
-typedef enum {
+typedef enum EnDuAnimation {
     /*  0 */ ENDU_ANIM_0,
     /*  1 */ ENDU_ANIM_1,
     /*  2 */ ENDU_ANIM_2,
@@ -99,10 +97,10 @@ void EnDu_SetupAction(EnDu* this, EnDuActionFunc actionFunc) {
 }
 
 u16 EnDu_GetTextId(PlayState* play, Actor* actor) {
-    u16 reaction = Text_GetFaceReaction(play, 0x21);
+    u16 textId = MaskReaction_GetTextId(play, MASK_REACTION_SET_DARUNIA);
 
-    if (reaction != 0) {
-        return reaction;
+    if (textId != 0) {
+        return textId;
     }
     if (CUR_UPG_VALUE(UPG_STRENGTH) != 0) {
         if (CHECK_QUEST_ITEM(QUEST_GORON_RUBY)) {
@@ -291,7 +289,7 @@ void EnDu_Init(Actor* thisx, PlayState* play) {
     }
     Animation_ChangeByInfo(&this->skelAnime, sAnimationInfo, ENDU_ANIM_0);
     Actor_SetScale(&this->actor, 0.01f);
-    this->actor.targetMode = 1;
+    this->actor.attentionRangeType = ATTENTION_RANGE_1;
     this->interactInfo.talkState = NPC_TALK_STATE_IDLE;
 
     if (gSaveContext.save.cutsceneIndex >= 0xFFF0) {
@@ -364,13 +362,15 @@ void func_809FE4A4(EnDu* this, PlayState* play) {
 void func_809FE638(EnDu* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
 
-    if (!(player->stateFlags1 & PLAYER_STATE1_29)) {
-        OnePointCutscene_Init(play, 3330, -99, &this->actor, CAM_ID_MAIN);
-        player->actor.shape.rot.y = player->actor.world.rot.y = this->actor.world.rot.y + 0x7FFF;
-        Audio_PlayFanfare(NA_BGM_APPEAR);
-        EnDu_SetupAction(this, func_809FE6CC);
-        this->unk_1E2 = 0x32;
+    if (player->stateFlags1 & PLAYER_STATE1_29) {
+        return;
     }
+
+    OnePointCutscene_Init(play, 3330, -99, &this->actor, CAM_ID_MAIN);
+    player->actor.shape.rot.y = player->actor.world.rot.y = this->actor.world.rot.y + 0x7FFF;
+    Audio_PlayFanfare(NA_BGM_APPEAR);
+    EnDu_SetupAction(this, func_809FE6CC);
+    this->unk_1E2 = 0x32;
 }
 
 void func_809FE6CC(EnDu* this, PlayState* play) {
@@ -529,11 +529,13 @@ void func_809FEC14(EnDu* this, PlayState* play) {
 }
 
 void func_809FEC70(EnDu* this, PlayState* play) {
+    f32 xzRange;
+
     if (Actor_HasParent(&this->actor, play)) {
         this->actor.parent = NULL;
         EnDu_SetupAction(this, func_809FECE4);
     } else {
-        f32 xzRange = this->actor.xzDistToPlayer + 1.0f;
+        xzRange = this->actor.xzDistToPlayer + 1.0f;
 
         Actor_OfferGetItem(&this->actor, play, GI_GORONS_BRACELET, xzRange, fabsf(this->actor.yDistToPlayer) + 1.0f);
     }

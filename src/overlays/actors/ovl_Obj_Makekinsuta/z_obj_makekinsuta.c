@@ -5,6 +5,7 @@
  */
 
 #include "z_obj_makekinsuta.h"
+#include "global.h"
 #include "terminal.h"
 
 #define FLAGS ACTOR_FLAG_4
@@ -15,7 +16,7 @@ void ObjMakekinsuta_Update(Actor* thisx, PlayState* play);
 void func_80B98320(ObjMakekinsuta* this, PlayState* play);
 void ObjMakekinsuta_DoNothing(ObjMakekinsuta* this, PlayState* play);
 
-ActorInit Obj_Makekinsuta_InitVars = {
+ActorProfile Obj_Makekinsuta_Profile = {
     /**/ ACTOR_OBJ_MAKEKINSUTA,
     /**/ ACTORCAT_ITEMACTION,
     /**/ FLAGS,
@@ -30,16 +31,16 @@ ActorInit Obj_Makekinsuta_InitVars = {
 void ObjMakekinsuta_Init(Actor* thisx, PlayState* play) {
     ObjMakekinsuta* this = (ObjMakekinsuta*)thisx;
 
-    if ((this->actor.params & 0x6000) == 0x4000) {
-        osSyncPrintf(VT_FGCOL(BLUE));
+    if (PARAMS_GET_NOSHIFT(this->actor.params, 13, 2) == 0x4000) {
+        PRINTF(VT_FGCOL(BLUE));
         // "Gold Star Enemy(arg_data %x)"
-        osSyncPrintf("金スタ発生敵(arg_data %x)\n", this->actor.params);
-        osSyncPrintf(VT_RST);
+        PRINTF("金スタ発生敵(arg_data %x)\n", this->actor.params);
+        PRINTF(VT_RST);
     } else {
-        osSyncPrintf(VT_COL(YELLOW, BLACK));
+        PRINTF(VT_COL(YELLOW, BLACK));
         // "Invalid Argument (arg_data %x)(%s %d)"
-        osSyncPrintf("引数不正 (arg_data %x)(%s %d)\n", this->actor.params, "../z_obj_makekinsuta.c", 119);
-        osSyncPrintf(VT_RST);
+        PRINTF("引数不正 (arg_data %x)(%s %d)\n", this->actor.params, "../z_obj_makekinsuta.c", 119);
+        PRINTF(VT_RST);
     }
     this->actionFunc = func_80B98320;
 }

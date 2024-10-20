@@ -1,5 +1,6 @@
 #include "global.h"
 #include "terminal.h"
+#include "versions.h"
 
 void func_80092320(PreNMIState* this) {
     this->state.running = false;
@@ -8,16 +9,21 @@ void func_80092320(PreNMIState* this) {
 }
 
 void PreNMI_Update(PreNMIState* this) {
-    osSyncPrintf(VT_COL(YELLOW, BLACK) "prenmi_move\n" VT_RST);
+    PRINTF(VT_COL(YELLOW, BLACK) "prenmi_move\n" VT_RST);
 
     // Strings existing only in rodata
     if (0) {
-        osSyncPrintf("../z_prenmi.c");
-        osSyncPrintf("(int)volume = %d\n");
+        PRINTF("../z_prenmi.c");
+        PRINTF("(int)volume = %d\n");
     }
 
     if (this->timer == 0) {
+#if OOT_VERSION < PAL_1_0
+        osViSetYScale(1.0f);
+        osViBlack(true);
+#else
         ViConfig_UpdateVi(true);
+#endif
         func_80092320(this);
         return;
     }
@@ -28,7 +34,7 @@ void PreNMI_Update(PreNMIState* this) {
 void PreNMI_Draw(PreNMIState* this) {
     GraphicsContext* gfxCtx = this->state.gfxCtx;
 
-    osSyncPrintf(VT_COL(YELLOW, BLACK) "prenmi_draw\n" VT_RST);
+    PRINTF(VT_COL(YELLOW, BLACK) "prenmi_draw\n" VT_RST);
 
     OPEN_DISPS(gfxCtx, "../z_prenmi.c", 96);
 

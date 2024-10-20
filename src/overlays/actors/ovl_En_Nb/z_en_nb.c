@@ -11,7 +11,7 @@
 
 #define FLAGS ACTOR_FLAG_4
 
-typedef enum {
+typedef enum EnNbAction {
     /* 0x00 */ NB_CHAMBER_INIT,
     /* 0x01 */ NB_CHAMBER_UNDERGROUND,
     /* 0x02 */ NB_CHAMBER_APPEAR,
@@ -45,7 +45,7 @@ typedef enum {
     /* 0x1E */ NB_ACTION_30
 } EnNbAction;
 
-typedef enum {
+typedef enum EnNbDrawMode {
     /* 0x00 */ NB_DRAW_NOTHING,
     /* 0x01 */ NB_DRAW_DEFAULT,
     /* 0x02 */ NB_DRAW_HIDE,
@@ -60,18 +60,18 @@ void EnNb_Draw(Actor* thisx, PlayState* play);
 
 static ColliderCylinderInitType1 sCylinderInit = {
     {
-        COLTYPE_HIT0,
+        COL_MATERIAL_HIT0,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_PLAYER,
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE,
-        BUMP_NONE,
+        ATELEM_NONE,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 25, 80, 0, { 0, 0, 0 } },
@@ -83,21 +83,22 @@ static void* sEyeTextures[] = {
     gNabooruEyeClosedTex,
 };
 
+#if OOT_DEBUG
 static s32 D_80AB4318 = 0;
+#endif
 
-#pragma asmproc recurse
 #include "z_en_nb_cutscene_data.inc.c"
 
 s32 EnNb_GetPath(EnNb* this) {
-    s32 path = this->actor.params >> 8;
+    s32 path = PARAMS_GET_U(this->actor.params, 8, 8);
 
-    return path & 0xFF;
+    return path;
 }
 
 s32 EnNb_GetType(EnNb* this) {
-    s32 type = this->actor.params;
+    s32 type = PARAMS_GET_U(this->actor.params, 0, 8);
 
-    return type & 0xFF;
+    return type;
 }
 
 void EnNb_UpdatePath(EnNb* this, PlayState* play) {
@@ -121,10 +122,10 @@ void EnNb_UpdatePath(EnNb* this, PlayState* play) {
         this->pathYaw =
             RAD_TO_BINANG(Math_FAtan2F(this->finalPos.x - this->initialPos.x, this->finalPos.z - this->initialPos.z));
         // "En_Nb_Get_path_info Rail Data Get! = %d!!!!!!!!!!!!!!"
-        osSyncPrintf("En_Nb_Get_path_info レールデータをゲットだぜ = %d!!!!!!!!!!!!!!\n", path);
+        PRINTF("En_Nb_Get_path_info レールデータをゲットだぜ = %d!!!!!!!!!!!!!!\n", path);
     } else {
         // "En_Nb_Get_path_info Rail Data Doesn't Exist!!!!!!!!!!!!!!!!!!!!"
-        osSyncPrintf("En_Nb_Get_path_info レールデータが無い!!!!!!!!!!!!!!!!!!!!\n");
+        PRINTF("En_Nb_Get_path_info レールデータが無い!!!!!!!!!!!!!!!!!!!!\n");
     }
 }
 
@@ -193,6 +194,7 @@ void EnNb_UpdateEyes(EnNb* this) {
     }
 }
 
+#if OOT_DEBUG
 void func_80AB11EC(EnNb* this) {
     this->action = NB_ACTION_7;
     this->drawMode = NB_DRAW_NOTHING;
@@ -220,6 +222,7 @@ void func_80AB1210(EnNb* this, PlayState* play) {
         }
     }
 }
+#endif
 
 void func_80AB1284(EnNb* this, PlayState* play) {
     Actor_UpdateBgCheckInfo(play, &this->actor, 75.0f, 30.0f, 30.0f, UPDBGCHECKINFO_FLAG_2);
@@ -231,7 +234,9 @@ s32 EnNb_UpdateSkelAnime(EnNb* this) {
 
 CsCmdActorCue* EnNb_GetCue(PlayState* play, s32 cueChannel) {
     if (play->csCtx.state != CS_STATE_IDLE) {
-        return play->csCtx.actorCues[cueChannel];
+        CsCmdActorCue* cue = play->csCtx.actorCues[cueChannel];
+
+        return cue;
     }
 
     return NULL;
@@ -528,7 +533,9 @@ void EnNb_SetupLightOrb(EnNb* this, PlayState* play) {
 
 void EnNb_Hide(EnNb* this, PlayState* play) {
     EnNb_SetupHide(this, play);
+#if OOT_DEBUG
     func_80AB1210(this, play);
+#endif
 }
 
 void EnNb_Fade(EnNb* this, PlayState* play) {
@@ -536,7 +543,9 @@ void EnNb_Fade(EnNb* this, PlayState* play) {
     EnNb_UpdateSkelAnime(this);
     EnNb_UpdateEyes(this);
     EnNb_CheckToFade(this, play);
+#if OOT_DEBUG
     func_80AB1210(this, play);
+#endif
 }
 
 void EnNb_CreateLightOrb(EnNb* this, PlayState* play) {
@@ -544,7 +553,9 @@ void EnNb_CreateLightOrb(EnNb* this, PlayState* play) {
     EnNb_UpdateSkelAnime(this);
     EnNb_UpdateEyes(this);
     EnNb_SetupLightOrb(this, play);
+#if OOT_DEBUG
     func_80AB1210(this, play);
+#endif
 }
 
 void EnNb_DrawTransparency(EnNb* this, PlayState* play) {
@@ -666,7 +677,7 @@ void EnNb_CheckKidnapCsMode(EnNb* this, PlayState* play) {
                     break;
                 default:
                     // "Operation Doesn't Exist!!!!!!!!"
-                    osSyncPrintf("En_Nb_Kidnap_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
+                    PRINTF("En_Nb_Kidnap_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
                     break;
             }
             this->cueId = nextCueId;
@@ -745,8 +756,8 @@ void EnNb_InitDemo6KInConfrontation(EnNb* this, PlayState* play) {
 }
 
 void func_80AB2688(EnNb* this, PlayState* play) {
-    this->skelAnime.moveFlags |= ANIM_FLAG_0;
-    AnimationContext_SetMoveActor(play, &this->actor, &this->skelAnime, 1.0f);
+    this->skelAnime.movementFlags |= ANIM_FLAG_UPDATE_XZ;
+    AnimTaskQueue_AddActorMovement(play, &this->actor, &this->skelAnime, 1.0f);
 }
 
 void func_80AB26C8(EnNb* this) {
@@ -885,7 +896,7 @@ void EnNb_CheckConfrontationCsMode(EnNb* this, PlayState* play) {
                     break;
                 default:
                     // "En_Nb_Confrontion_Check_DemoMode: Operation doesn't exist!!!!!!!!"
-                    osSyncPrintf("En_Nb_Confrontion_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
+                    PRINTF("En_Nb_Confrontion_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
                     break;
             }
             this->cueId = nextCueId;
@@ -1073,7 +1084,7 @@ void EnNb_CheckCreditsCsModeImpl(EnNb* this, PlayState* play) {
                     break;
                 default:
                     // "En_Nb_inEnding_Check_DemoMode: Operation doesn't exist!!!!!!!!"
-                    osSyncPrintf("En_Nb_inEnding_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
+                    PRINTF("En_Nb_inEnding_Check_DemoMode:そんな動作は無い!!!!!!!!\n");
                     break;
             }
             this->cueId = nextCueId;
@@ -1119,9 +1130,11 @@ void EnNb_CrawlspaceSpawnCheck(EnNb* this, PlayState* play) {
             this->action = NB_CROUCH_CRAWLSPACE;
             this->drawMode = NB_DRAW_DEFAULT;
         } else {
+            s32 pad;
+
             EnNb_SetCurrentAnim(this, &gNabooruStandingHandsOnHipsAnim, 0, 0.0f, 0);
             this->headTurnFlag = 1;
-            this->actor.flags |= ACTOR_FLAG_0 | ACTOR_FLAG_3;
+            this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY;
             this->actor.world.pos = this->finalPos;
             this->action = NB_IDLE_AFTER_TALK;
             this->drawMode = NB_DRAW_DEFAULT;
@@ -1201,16 +1214,18 @@ void EnNb_SetupIdleCrawlspace(EnNb* this, s32 animFinished) {
     if (animFinished) {
         EnNb_SetCurrentAnim(this, &gNabooruStandingHandsOnHipsAnim, 0, -8.0f, 0);
         this->headTurnFlag = 1;
-        this->actor.flags |= ACTOR_FLAG_0 | ACTOR_FLAG_3;
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY;
         this->action = NB_IDLE_CRAWLSPACE;
     }
 }
 
 void func_80AB3838(EnNb* this, PlayState* play) {
     if (Actor_TalkOfferAccepted(&this->actor, play)) {
+        s32 pad;
+
         this->action = NB_IN_DIALOG;
     } else {
-        this->actor.flags |= ACTOR_FLAG_0 | ACTOR_FLAG_3;
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY;
 
         if (!GET_INFTABLE(INFTABLE_16C)) {
             this->actor.textId = 0x601D;
@@ -1226,7 +1241,7 @@ void EnNb_SetupPathMovement(EnNb* this, PlayState* play) {
     EnNb_SetCurrentAnim(this, &gNabooruStandingToWalkingTransitionAnim, 2, -8.0f, 0);
     SET_EVENTCHKINF(EVENTCHKINF_94);
     this->action = NB_IN_PATH;
-    this->actor.flags &= ~(ACTOR_FLAG_0 | ACTOR_FLAG_3);
+    this->actor.flags &= ~(ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY);
 }
 
 void EnNb_SetTextIdAsChild(EnNb* this, PlayState* play) {
@@ -1246,7 +1261,7 @@ void EnNb_SetTextIdAsChild(EnNb* this, PlayState* play) {
             }
             this->action = NB_IDLE_CRAWLSPACE;
         }
-        this->actor.flags &= ~(ACTOR_FLAG_0 | ACTOR_FLAG_3);
+        this->actor.flags &= ~(ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY);
     } else if ((Message_GetState(&play->msgCtx) == TEXT_STATE_CHOICE) && Message_ShouldAdvance(play)) {
         choiceIndex = play->msgCtx.choiceIndex;
 
@@ -1300,12 +1315,14 @@ void func_80AB3A7C(EnNb* this, PlayState* play, s32 animFinished) {
 
 void func_80AB3B04(EnNb* this, PlayState* play) {
     if (Actor_TalkOfferAccepted(&this->actor, play)) {
+        s32 pad;
+
         this->action = NB_ACTION_30;
     } else {
-        this->actor.flags |= ACTOR_FLAG_0 | ACTOR_FLAG_3;
-        this->actor.textId = Text_GetFaceReaction(play, 0x23);
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY;
+        this->actor.textId = MaskReaction_GetTextId(play, MASK_REACTION_SET_NABOORU);
 
-        if ((this->actor.textId) == 0) {
+        if (this->actor.textId == 0) {
             this->actor.textId = 0x6026;
         }
 
@@ -1316,7 +1333,7 @@ void func_80AB3B04(EnNb* this, PlayState* play) {
 void func_80AB3B7C(EnNb* this, PlayState* play) {
     if (Message_GetState(&play->msgCtx) == TEXT_STATE_CLOSING) {
         this->action = NB_IDLE_AFTER_TALK;
-        this->actor.flags &= ~(ACTOR_FLAG_0 | ACTOR_FLAG_3);
+        this->actor.flags &= ~(ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY);
     }
 }
 
@@ -1426,7 +1443,7 @@ void EnNb_Update(Actor* thisx, PlayState* play) {
 
     if (this->action < 0 || this->action > 30 || sActionFuncs[this->action] == NULL) {
         // "Main mode is wrong!!!!!!!!!!!!!!!!!!!!!!!!!"
-        osSyncPrintf(VT_FGCOL(RED) "メインモードがおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
+        PRINTF(VT_FGCOL(RED) "メインモードがおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
         return;
     }
 
@@ -1470,6 +1487,8 @@ s32 EnNb_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* po
 
     if (this->headTurnFlag != 0) {
         if (limbIndex == NB_LIMB_TORSO) {
+            s32 pad;
+
             rot->x += interactInfo->torsoRot.y;
             rot->y -= interactInfo->torsoRot.x;
             ret = false;
@@ -1532,14 +1551,14 @@ void EnNb_Draw(Actor* thisx, PlayState* play) {
 
     if (this->drawMode < 0 || this->drawMode >= 5 || sDrawFuncs[this->drawMode] == NULL) {
         // "Draw mode is wrong!!!!!!!!!!!!!!!!!!!!!!!!!"
-        osSyncPrintf(VT_FGCOL(RED) "描画モードがおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
+        PRINTF(VT_FGCOL(RED) "描画モードがおかしい!!!!!!!!!!!!!!!!!!!!!!!!!\n" VT_RST);
         return;
     }
 
     sDrawFuncs[this->drawMode](this, play);
 }
 
-ActorInit En_Nb_InitVars = {
+ActorProfile En_Nb_Profile = {
     /**/ ACTOR_EN_NB,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

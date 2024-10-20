@@ -14,7 +14,7 @@ void BgGndNisekabe_Destroy(Actor* thisx, PlayState* play);
 void BgGndNisekabe_Update(Actor* thisx, PlayState* play);
 void BgGndNisekabe_Draw(Actor* thisx, PlayState* play);
 
-ActorInit Bg_Gnd_Nisekabe_InitVars = {
+ActorProfile Bg_Gnd_Nisekabe_Profile = {
     /**/ ACTOR_BG_GND_NISEKABE,
     /**/ ACTORCAT_PROP,
     /**/ FLAGS,
@@ -40,9 +40,9 @@ void BgGndNisekabe_Update(Actor* thisx, PlayState* play) {
     BgGndNisekabe* this = (BgGndNisekabe*)thisx;
 
     if (play->actorCtx.lensActive) {
-        this->actor.flags |= ACTOR_FLAG_7;
+        this->actor.flags |= ACTOR_FLAG_REACT_TO_LENS;
     } else {
-        this->actor.flags &= ~ACTOR_FLAG_7;
+        this->actor.flags &= ~ACTOR_FLAG_REACT_TO_LENS;
     }
 }
 
@@ -53,9 +53,9 @@ void BgGndNisekabe_Draw(Actor* thisx, PlayState* play) {
         gGanonsCastleScrubsFakeWallDL,
     };
     BgGndNisekabe* this = (BgGndNisekabe*)thisx;
-    u32 index = this->actor.params & 0xFF;
+    u32 index = PARAMS_GET_U(this->actor.params, 0, 8);
 
-    if (CHECK_FLAG_ALL(this->actor.flags, ACTOR_FLAG_7)) {
+    if (CHECK_FLAG_ALL(this->actor.flags, ACTOR_FLAG_REACT_TO_LENS)) {
         Gfx_DrawDListXlu(play, dLists[index]);
     } else {
         Gfx_DrawDListOpa(play, dLists[index]);

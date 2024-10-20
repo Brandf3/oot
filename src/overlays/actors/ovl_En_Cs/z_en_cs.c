@@ -2,7 +2,7 @@
 #include "assets/objects/object_cs/object_cs.h"
 #include "assets/objects/object_link_child/object_link_child.h"
 
-#define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_3)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY)
 
 void EnCs_Init(Actor* thisx, PlayState* play);
 void EnCs_Destroy(Actor* thisx, PlayState* play);
@@ -15,7 +15,7 @@ void EnCs_Wait(EnCs* this, PlayState* play);
 s32 EnCs_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx);
 void EnCs_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, void* thisx);
 
-ActorInit En_Cs_InitVars = {
+ActorProfile En_Cs_Profile = {
     /**/ ACTOR_EN_CS,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,
@@ -29,7 +29,7 @@ ActorInit En_Cs_InitVars = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -37,11 +37,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE,
-        BUMP_NONE,
+        ATELEM_NONE,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 18, 63, 0, { 0, 0, 0 } },
@@ -84,7 +84,7 @@ static DamageTable sDamageTable[] = {
     /* Unknown 2     */ DMG_ENTRY(0, 0x0),
 };
 
-typedef enum {
+typedef enum EnCsAnimation {
     /* 0 */ ENCS_ANIM_0,
     /* 1 */ ENCS_ANIM_1,
     /* 2 */ ENCS_ANIM_2,
@@ -143,8 +143,8 @@ void EnCs_Init(Actor* thisx, PlayState* play) {
                      Animation_GetLastFrame(sAnimationInfo[ENCS_ANIM_0].animation), sAnimationInfo[ENCS_ANIM_0].mode,
                      sAnimationInfo[ENCS_ANIM_0].morphFrames);
 
-    this->actor.targetMode = 6;
-    this->path = this->actor.params & 0xFF;
+    this->actor.attentionRangeType = ATTENTION_RANGE_6;
+    this->path = PARAMS_GET_U(this->actor.params, 0, 8);
     this->unk_1EC = 0; // This variable is unused anywhere else
     this->talkState = 0;
     this->currentAnimIndex = -1;
@@ -206,9 +206,9 @@ s32 EnCs_GetTalkState(EnCs* this, PlayState* play) {
     return talkState;
 }
 
-s32 EnCs_GetTextID(EnCs* this, PlayState* play) {
+s32 EnCs_GetTextId(EnCs* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
-    s32 textId = Text_GetFaceReaction(play, 15);
+    s32 textId = MaskReaction_GetTextId(play, MASK_REACTION_SET_GRAVEYARD_KID);
 
     if (GET_ITEMGETINF(ITEMGETINF_3A)) {
         if (textId == 0) {
@@ -253,8 +253,8 @@ void EnCs_HandleTalking(EnCs* this, PlayState* play) {
         Actor_GetScreenPos(play, &this->actor, &sp2A, &sp28);
 
         if ((sp2A >= 0) && (sp2A <= 320) && (sp28 >= 0) && (sp28 <= 240) &&
-            (Actor_OfferTalk(&this->actor, play, 100.0f))) {
-            this->actor.textId = EnCs_GetTextID(this, play);
+            Actor_OfferTalk(&this->actor, play, 100.0f)) {
+            this->actor.textId = EnCs_GetTextId(this, play);
         }
     }
 }
@@ -477,7 +477,7 @@ void EnCs_Draw(Actor* thisx, PlayState* play) {
             Mtx* mtx;
 
             Matrix_Put(&this->spookyMaskMtx);
-            mtx = Matrix_NewMtx(play->state.gfxCtx, "../z_en_cs.c", 1000);
+            mtx = MATRIX_FINALIZE(play->state.gfxCtx, "../z_en_cs.c", 1000);
             gSPSegment(POLY_OPA_DISP++, 0x06, play->objectCtx.slots[linkChildObjectSlot].segment);
             gSPSegment(POLY_OPA_DISP++, 0x0D, mtx - 7);
             gSPDisplayList(POLY_OPA_DISP++, gLinkChildSpookyMaskDL);

@@ -76,7 +76,7 @@ void EnHoll_VerticalBgCover(EnHoll* this, PlayState* play);
 void EnHoll_VerticalInvisible(EnHoll* this, PlayState* play);
 void EnHoll_HorizontalBgCoverSwitchFlag(EnHoll* this, PlayState* play);
 
-ActorInit En_Holl_InitVars = {
+ActorProfile En_Holl_Profile = {
     /**/ ACTOR_EN_HOLL,
     /**/ ACTORCAT_DOOR,
     /**/ FLAGS,
@@ -133,7 +133,7 @@ void EnHoll_Init(Actor* thisx, PlayState* play) {
 
 void EnHoll_Destroy(Actor* thisx, PlayState* play) {
     s32 transitionActorIndex = GET_TRANSITION_ACTOR_INDEX(thisx);
-    TransitionActorEntry* transitionEntry = &play->transiActorCtx.list[transitionActorIndex];
+    TransitionActorEntry* transitionEntry = &play->transitionActors.list[transitionActorIndex];
 
     transitionEntry->id = -transitionEntry->id;
 }
@@ -145,7 +145,7 @@ void EnHoll_SwapRooms(PlayState* play) {
     tempRoom = roomCtx->curRoom;
     roomCtx->curRoom = roomCtx->prevRoom;
     roomCtx->prevRoom = tempRoom;
-    play->roomCtx.unk_30 ^= 1;
+    play->roomCtx.activeBufPage ^= 1;
 }
 
 /**
@@ -186,7 +186,7 @@ void EnHoll_HorizontalVisibleNarrow(EnHoll* this, PlayState* play) {
     f32 orthogonalDistToPlayer;
     s32 transitionActorIndex;
 
-    func_8002DBD0(&this->actor, &relPlayerPos, &player->actor.world.pos);
+    Actor_WorldToActorCoords(&this->actor, &relPlayerPos, &player->actor.world.pos);
     this->side = (relPlayerPos.z < 0.0f) ? 0 : 1;
     orthogonalDistToPlayer = fabsf(relPlayerPos.z);
     if (relPlayerPos.y > ENHOLL_H_Y_MIN && relPlayerPos.y < ENHOLL_H_Y_MAX &&
@@ -196,14 +196,14 @@ void EnHoll_HorizontalVisibleNarrow(EnHoll* this, PlayState* play) {
         transitionActorIndex = GET_TRANSITION_ACTOR_INDEX(&this->actor);
         if (orthogonalDistToPlayer > sHorizontalVisibleNarrowTriggerDists[triggerDistsIndex][1]) {
             if (play->roomCtx.prevRoom.num >= 0 && play->roomCtx.status == 0) {
-                this->actor.room = play->transiActorCtx.list[transitionActorIndex].sides[this->side].room;
+                this->actor.room = play->transitionActors.list[transitionActorIndex].sides[this->side].room;
                 EnHoll_SwapRooms(play);
-                func_80097534(play, &play->roomCtx);
+                Room_FinishRoomChange(play, &play->roomCtx);
             }
         } else {
-            this->actor.room = play->transiActorCtx.list[transitionActorIndex].sides[this->side ^ 1].room;
+            this->actor.room = play->transitionActors.list[transitionActorIndex].sides[this->side ^ 1].room;
             if (play->roomCtx.prevRoom.num < 0) {
-                func_8009728C(play, &play->roomCtx, this->actor.room);
+                Room_RequestNewRoom(play, &play->roomCtx, this->actor.room);
             } else {
                 this->planeAlpha =
                     (255.0f / (sHorizontalVisibleNarrowTriggerDists[triggerDistsIndex][2] -
@@ -227,7 +227,7 @@ void EnHoll_HorizontalInvisible(EnHoll* this, PlayState* play) {
     f32 hollHalfWidth;
     f32 orthogonalDistToSubject;
 
-    func_8002DBD0(&this->actor, &relSubjectPos, useViewEye ? &play->view.eye : &player->actor.world.pos);
+    Actor_WorldToActorCoords(&this->actor, &relSubjectPos, useViewEye ? &play->view.eye : &player->actor.world.pos);
     hollHalfWidth =
         (ENHOLL_GET_TYPE(&this->actor) == ENHOLL_H_INVISIBLE_NARROW) ? ENHOLL_H_HALFWIDTH_NARROW : ENHOLL_H_HALFWIDTH;
 
@@ -239,14 +239,14 @@ void EnHoll_HorizontalInvisible(EnHoll* this, PlayState* play) {
                                 orthogonalDistToSubject > ENHOLL_H_INVISIBLE_LOAD_DEPTH_MIN))) {
         s32 transitionActorIndex = GET_TRANSITION_ACTOR_INDEX(&this->actor);
         s32 side = (relSubjectPos.z < 0.0f) ? 0 : 1;
-        TransitionActorEntry* transitionEntry = &play->transiActorCtx.list[transitionActorIndex];
+        TransitionActorEntry* transitionEntry = &play->transitionActors.list[transitionActorIndex];
         s32 room = transitionEntry->sides[side].room;
 
         this->actor.room = room;
         if (isKokiriLayer8) {}
         if (this->actor.room != play->roomCtx.curRoom.num) {
             if (room) {}
-            if (func_8009728C(play, &play->roomCtx, this->actor.room)) {
+            if (Room_RequestNewRoom(play, &play->roomCtx, this->actor.room)) {
                 EnHoll_SetupAction(this, EnHoll_WaitRoomLoaded);
             }
         }
@@ -256,14 +256,12 @@ void EnHoll_HorizontalInvisible(EnHoll* this, PlayState* play) {
 void EnHoll_VerticalDownBgCoverLarge(EnHoll* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
     f32 absYDistToPlayer = fabsf(this->actor.yDistToPlayer);
-    s32 transitionActorIndex;
 
     if (this->actor.xzDistToPlayer < ENHOLL_V_DOWN_RADIUS &&
         // Nothing happens if `absYDistToPlayer > ENHOLL_V_DOWN_BGCOVER_YDIST`,
         // so this check may as well compare to ENHOLL_V_DOWN_BGCOVER_YDIST
         absYDistToPlayer < (ENHOLL_V_DOWN_BGCOVER_YDIST + 95.0f)) {
-
-        transitionActorIndex = GET_TRANSITION_ACTOR_INDEX(&this->actor);
+        s32 transitionActorIndex = GET_TRANSITION_ACTOR_INDEX(&this->actor);
 
         if (absYDistToPlayer < ENHOLL_V_DOWN_LOAD_YDIST) {
             play->bgCoverAlpha = 255;
@@ -275,11 +273,11 @@ void EnHoll_VerticalDownBgCoverLarge(EnHoll* this, PlayState* play) {
         }
 
         if (absYDistToPlayer < ENHOLL_V_DOWN_LOAD_YDIST) {
-            this->actor.room = play->transiActorCtx.list[transitionActorIndex].sides[1].room;
+            this->actor.room = play->transitionActors.list[transitionActorIndex].sides[1].room;
             Math_SmoothStepToF(&player->actor.world.pos.x, this->actor.world.pos.x, 1.0f, 50.0f, 10.0f);
             Math_SmoothStepToF(&player->actor.world.pos.z, this->actor.world.pos.z, 1.0f, 50.0f, 10.0f);
             if (this->actor.room != play->roomCtx.curRoom.num &&
-                func_8009728C(play, &play->roomCtx, this->actor.room)) {
+                Room_RequestNewRoom(play, &play->roomCtx, this->actor.room)) {
                 EnHoll_SetupAction(this, EnHoll_WaitRoomLoaded);
                 this->resetBgCoverAlpha = true;
                 player->actor.speed = 0.0f;
@@ -295,8 +293,6 @@ void EnHoll_VerticalDownBgCoverLarge(EnHoll* this, PlayState* play) {
 
 void EnHoll_VerticalBgCover(EnHoll* this, PlayState* play) {
     f32 absYDistToPlayer;
-    s32 side;
-    s32 transitionActorIndex;
 
     if ((this->actor.xzDistToPlayer < ENHOLL_V_RADIUS) &&
         (absYDistToPlayer = fabsf(this->actor.yDistToPlayer), absYDistToPlayer < ENHOLL_V_BGCOVER_BGCOVER_YDIST)) {
@@ -309,11 +305,12 @@ void EnHoll_VerticalBgCover(EnHoll* this, PlayState* play) {
         }
 
         if (absYDistToPlayer > ENHOLL_V_BGCOVER_LOAD_YDIST) {
-            transitionActorIndex = GET_TRANSITION_ACTOR_INDEX(&this->actor);
-            side = (this->actor.yDistToPlayer > 0.0f) ? 0 : 1;
-            this->actor.room = play->transiActorCtx.list[transitionActorIndex].sides[side].room;
+            s32 transitionActorIndex = GET_TRANSITION_ACTOR_INDEX(&this->actor);
+            s32 side = (this->actor.yDistToPlayer > 0.0f) ? 0 : 1;
+
+            this->actor.room = play->transitionActors.list[transitionActorIndex].sides[side].room;
             if (this->actor.room != play->roomCtx.curRoom.num &&
-                func_8009728C(play, &play->roomCtx, this->actor.room)) {
+                Room_RequestNewRoom(play, &play->roomCtx, this->actor.room)) {
                 EnHoll_SetupAction(this, EnHoll_WaitRoomLoaded);
                 this->resetBgCoverAlpha = true;
             }
@@ -337,9 +334,9 @@ void EnHoll_VerticalInvisible(EnHoll* this, PlayState* play) {
             absYDistToPlayer > ENHOLL_V_INVISIBLE_LOAD_YDIST_MIN) {
             transitionActorIndex = GET_TRANSITION_ACTOR_INDEX(&this->actor);
             side = (this->actor.yDistToPlayer > 0.0f) ? 0 : 1;
-            this->actor.room = play->transiActorCtx.list[transitionActorIndex].sides[side].room;
+            this->actor.room = play->transitionActors.list[transitionActorIndex].sides[side].room;
             if (this->actor.room != play->roomCtx.curRoom.num &&
-                func_8009728C(play, &play->roomCtx, this->actor.room)) {
+                Room_RequestNewRoom(play, &play->roomCtx, this->actor.room)) {
                 EnHoll_SetupAction(this, EnHoll_WaitRoomLoaded);
             }
         }
@@ -348,10 +345,6 @@ void EnHoll_VerticalInvisible(EnHoll* this, PlayState* play) {
 
 void EnHoll_HorizontalBgCoverSwitchFlag(EnHoll* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
-    Vec3f relPlayerPos;
-    f32 orthogonalDistToPlayer;
-    s32 side;
-    s32 transitionActorIndex;
 
     if (!Flags_GetSwitch(play, ENHOLL_GET_SWITCH_FLAG(&this->actor))) {
         if (this->resetBgCoverAlpha) {
@@ -359,15 +352,17 @@ void EnHoll_HorizontalBgCoverSwitchFlag(EnHoll* this, PlayState* play) {
             this->resetBgCoverAlpha = false;
         }
     } else {
-        func_8002DBD0(&this->actor, &relPlayerPos, &player->actor.world.pos);
+        Vec3f relPlayerPos;
+        f32 orthogonalDistToPlayer;
+
+        Actor_WorldToActorCoords(&this->actor, &relPlayerPos, &player->actor.world.pos);
         orthogonalDistToPlayer = fabsf(relPlayerPos.z);
 
         if (ENHOLL_H_Y_MIN < relPlayerPos.y && relPlayerPos.y < ENHOLL_H_Y_MAX &&
             fabsf(relPlayerPos.x) < ENHOLL_H_HALFWIDTH && orthogonalDistToPlayer < ENHOLL_H_SWITCHFLAG_BGCOVER_DEPTH) {
+            s32 transitionActorIndex = GET_TRANSITION_ACTOR_INDEX(&this->actor);
 
             this->resetBgCoverAlpha = true;
-            transitionActorIndex = GET_TRANSITION_ACTOR_INDEX(&this->actor);
-
             play->bgCoverAlpha =
                 255 - (s32)((orthogonalDistToPlayer - ENHOLL_H_SWITCHFLAG_LOAD_DEPTH) *
                             (255 / (ENHOLL_H_SWITCHFLAG_BGCOVER_DEPTH - ENHOLL_H_SWITCHFLAG_LOAD_DEPTH) + 0.8f));
@@ -378,10 +373,11 @@ void EnHoll_HorizontalBgCoverSwitchFlag(EnHoll* this, PlayState* play) {
             }
 
             if (orthogonalDistToPlayer < ENHOLL_H_SWITCHFLAG_LOAD_DEPTH) {
-                side = (relPlayerPos.z < 0.0f) ? 0 : 1;
-                this->actor.room = play->transiActorCtx.list[transitionActorIndex].sides[side].room;
+                s32 side = (relPlayerPos.z < 0.0f) ? 0 : 1;
+
+                this->actor.room = play->transitionActors.list[transitionActorIndex].sides[side].room;
                 if (this->actor.room != play->roomCtx.curRoom.num &&
-                    func_8009728C(play, &play->roomCtx, this->actor.room)) {
+                    Room_RequestNewRoom(play, &play->roomCtx, this->actor.room)) {
                     EnHoll_SetupAction(this, EnHoll_WaitRoomLoaded);
                 }
             }
@@ -396,7 +392,7 @@ void EnHoll_HorizontalBgCoverSwitchFlag(EnHoll* this, PlayState* play) {
 
 void EnHoll_WaitRoomLoaded(EnHoll* this, PlayState* play) {
     if (!EnHoll_IsKokiriLayer8() && play->roomCtx.status == 0) {
-        func_80097534(play, &play->roomCtx);
+        Room_FinishRoomChange(play, &play->roomCtx);
         if (play->bgCoverAlpha == 0) {
             this->resetBgCoverAlpha = false;
         }
@@ -433,8 +429,7 @@ void EnHoll_Draw(Actor* thisx, PlayState* play) {
             Matrix_RotateY(M_PI, MTXMODE_APPLY);
         }
 
-        gSPMatrix(gfxP++, Matrix_NewMtx(play->state.gfxCtx, "../z_en_holl.c", 824),
-                  G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(gfxP++, play->state.gfxCtx, "../z_en_holl.c", 824);
         gDPSetPrimColor(gfxP++, 0, 0, 0, 0, 0, (u8)this->planeAlpha);
         gSPDisplayList(gfxP++, sPlaneDL);
 

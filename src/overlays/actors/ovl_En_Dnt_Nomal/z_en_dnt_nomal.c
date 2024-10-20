@@ -12,6 +12,7 @@
 #include "overlays/effects/ovl_Effect_Ss_Hahen/z_eff_ss_hahen.h"
 #include "assets/objects/object_hintnuts/object_hintnuts.h"
 #include "terminal.h"
+#include "versions.h"
 
 #define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
 
@@ -39,6 +40,10 @@ void EnDntNomal_TargetGivePrize(EnDntNomal* this, PlayState* play);
 void EnDntNomal_TargetReturn(EnDntNomal* this, PlayState* play);
 void EnDntNomal_TargetBurrow(EnDntNomal* this, PlayState* play);
 
+#if OOT_PAL_N64
+void EnDntNomal_DoNothing(EnDntNomal* this, PlayState* play);
+#endif
+
 void EnDntNomal_SetupStageWait(EnDntNomal* this, PlayState* play);
 void EnDntNomal_SetupStageCelebrate(EnDntNomal* this, PlayState* play);
 void EnDntNomal_SetupStageDance(EnDntNomal* this, PlayState* play);
@@ -56,7 +61,7 @@ void EnDntNomal_StageAttackHide(EnDntNomal* this, PlayState* play);
 void EnDntNomal_StageAttack(EnDntNomal* this, PlayState* play);
 void EnDntNomal_StageReturn(EnDntNomal* this, PlayState* play);
 
-ActorInit En_Dnt_Nomal_InitVars = {
+ActorProfile En_Dnt_Nomal_Profile = {
     /**/ ACTOR_EN_DNT_NOMAL,
     /**/ ACTORCAT_PROP,
     /**/ FLAGS,
@@ -70,7 +75,7 @@ ActorInit En_Dnt_Nomal_InitVars = {
 
 static ColliderCylinderInit sBodyCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -78,11 +83,11 @@ static ColliderCylinderInit sBodyCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE,
-        BUMP_NONE,
+        ATELEM_NONE,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 16, 46, 0, { 0, 0, 0 } },
@@ -90,7 +95,7 @@ static ColliderCylinderInit sBodyCylinderInit = {
 
 static ColliderQuadInit sTargetQuadInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_ON | AC_TYPE_PLAYER,
         OC1_NONE,
@@ -98,11 +103,11 @@ static ColliderQuadInit sTargetQuadInit = {
         COLSHAPE_QUAD,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0x0001F824, 0x00, 0x00 },
-        TOUCH_NONE,
-        BUMP_ON,
+        ATELEM_NONE,
+        ACELEM_ON,
         OCELEM_NONE,
     },
     { { { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } } },
@@ -122,21 +127,21 @@ void EnDntNomal_Init(Actor* thisx, PlayState* play) {
     if (this->type < ENDNTNOMAL_TARGET) {
         this->type = ENDNTNOMAL_TARGET;
     }
-    this->actor.flags &= ~ACTOR_FLAG_0;
-    this->actor.colChkInfo.mass = 0xFF;
+    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
+    this->actor.colChkInfo.mass = MASS_IMMOVABLE;
     this->objectId = -1;
     if (this->type == ENDNTNOMAL_TARGET) {
-        osSyncPrintf("\n\n");
+        PRINTF("\n\n");
         // "Deku Scrub target"
-        osSyncPrintf(VT_FGCOL(GREEN) "☆☆☆☆☆ デグナッツ的当て ☆☆☆☆☆ \n" VT_RST);
+        PRINTF(VT_FGCOL(GREEN) "☆☆☆☆☆ デグナッツ的当て ☆☆☆☆☆ \n" VT_RST);
         Collider_InitQuad(play, &this->targetQuad);
         Collider_SetQuad(play, &this->targetQuad, &this->actor, &sTargetQuadInit);
         this->actor.world.rot.y = this->actor.shape.rot.y = this->actor.yawTowardsPlayer;
         this->objectId = OBJECT_HINTNUTS;
     } else {
-        osSyncPrintf("\n\n");
+        PRINTF("\n\n");
         // "Deku Scrub mask show audience"
-        osSyncPrintf(VT_FGCOL(GREEN) "☆☆☆☆☆ デグナッツお面品評会一般人 ☆☆☆☆☆ \n" VT_RST);
+        PRINTF(VT_FGCOL(GREEN) "☆☆☆☆☆ デグナッツお面品評会一般人 ☆☆☆☆☆ \n" VT_RST);
         Collider_InitCylinder(play, &this->bodyCyl);
         Collider_SetCylinder(play, &this->bodyCyl, &this->actor, &sBodyCylinderInit);
         this->objectId = OBJECT_DNK;
@@ -146,9 +151,9 @@ void EnDntNomal_Init(Actor* thisx, PlayState* play) {
         if (this->requiredObjectSlot < 0) {
             Actor_Kill(&this->actor);
             // "What?"
-            osSyncPrintf(VT_FGCOL(MAGENTA) " なにみの？ %d\n" VT_RST "\n", this->requiredObjectSlot);
+            PRINTF(VT_FGCOL(MAGENTA) " なにみの？ %d\n" VT_RST "\n", this->requiredObjectSlot);
             // "Bank is funny"
-            osSyncPrintf(VT_FGCOL(CYAN) " バンクおかしいしぞ！%d\n" VT_RST "\n", this->actor.params);
+            PRINTF(VT_FGCOL(CYAN) " バンクおかしいしぞ！%d\n" VT_RST "\n", this->actor.params);
             return;
         }
     } else {
@@ -216,24 +221,36 @@ void EnDntNomal_TargetWait(EnDntNomal* this, PlayState* play) {
     f32 dz;
     Vec3f scoreAccel = { 0.0f, 0.0f, 0.0f };
     Vec3f scoreVel = { 0.0f, 0.0f, 0.0f };
+    s32 pad;
 
-    this->targetVtx[0].x = this->targetVtx[1].x = this->targetVtx[2].x = this->targetVtx[3].x = targetX;
+    this->targetVtx[0].x = targetX;
+    this->targetVtx[0].y = targetY - 24.0f;
+    this->targetVtx[0].z = targetZ + 24.0f;
 
-    this->targetVtx[1].y = this->targetVtx[0].y = targetY - 24.0f;
+    this->targetVtx[1].x = targetX;
+    this->targetVtx[1].y = targetY - 24.0f;
+    this->targetVtx[1].z = targetZ - 24.0f;
 
-    this->targetVtx[2].z = this->targetVtx[0].z = targetZ + 24.0f;
+    this->targetVtx[2].x = targetX;
+    this->targetVtx[2].y = targetY + 24.0f;
+    this->targetVtx[2].z = targetZ + 24.0f;
 
-    this->targetVtx[3].z = this->targetVtx[1].z = targetZ - 24.0f;
-
-    this->targetVtx[3].y = this->targetVtx[2].y = targetY + 24.0f;
+    this->targetVtx[3].x = targetX;
+    this->targetVtx[3].y = targetY + 24.0f;
+    this->targetVtx[3].z = targetZ - 24.0f;
 
     SkelAnime_Update(&this->skelAnime);
-    if ((this->targetQuad.base.acFlags & AC_HIT) || BREG(0)) {
+#if OOT_VERSION < PAL_1_0
+    if (this->targetQuad.base.acFlags & AC_HIT)
+#else
+    if ((this->targetQuad.base.acFlags & AC_HIT) || BREG(0))
+#endif
+    {
         this->targetQuad.base.acFlags &= ~AC_HIT;
 
-        dx = fabsf(targetX - this->targetQuad.info.bumper.hitPos.x);
-        dy = fabsf(targetY - this->targetQuad.info.bumper.hitPos.y);
-        dz = fabsf(targetZ - this->targetQuad.info.bumper.hitPos.z);
+        dx = fabsf(targetX - this->targetQuad.elem.acDmgInfo.hitPos.x);
+        dy = fabsf(targetY - this->targetQuad.elem.acDmgInfo.hitPos.y);
+        dz = fabsf(targetZ - this->targetQuad.elem.acDmgInfo.hitPos.z);
 
         scoreVel.y = 5.0f;
 
@@ -245,7 +262,7 @@ void EnDntNomal_TargetWait(EnDntNomal* this, PlayState* play) {
             Audio_StopSfxById(NA_SE_SY_TRE_BOX_APPEAR);
             Sfx_PlaySfxCentered(NA_SE_SY_TRE_BOX_APPEAR);
             // "Big hit"
-            osSyncPrintf(VT_FGCOL(CYAN) "☆☆☆☆☆ 大当り ☆☆☆☆☆ %d\n" VT_RST, this->hitCounter);
+            PRINTF(VT_FGCOL(CYAN) "☆☆☆☆☆ 大当り ☆☆☆☆☆ %d\n" VT_RST, this->hitCounter);
             if (!LINK_IS_ADULT && !GET_ITEMGETINF(ITEMGETINF_1D)) {
                 this->hitCounter++;
                 if (this->hitCounter >= 3) {
@@ -404,9 +421,22 @@ void EnDntNomal_TargetBurrow(EnDntNomal* this, PlayState* play) {
 
     SkelAnime_Update(&this->skelAnime);
     if (frame >= this->endFrame) {
+#if !OOT_PAL_N64
         this->actionFunc = EnDntNomal_SetupTargetWait;
+#else
+        this->hitCounter = 0;
+        this->actor.shape.rot.y = this->actor.yawTowardsPlayer;
+        this->actor.world.rot.y = this->actor.yawTowardsPlayer;
+        Math_Vec3f_Copy(&this->actor.world.pos, &this->actor.home.pos);
+        this->actionFunc = EnDntNomal_DoNothing;
+#endif
     }
 }
+
+#if OOT_PAL_N64
+void EnDntNomal_DoNothing(EnDntNomal* this, PlayState* play) {
+}
+#endif
 
 void EnDntNomal_SetupStageWait(EnDntNomal* this, PlayState* play) {
     if (this->timer3 == 0) {
@@ -646,7 +676,7 @@ void EnDntNomal_SetupStageAttack(EnDntNomal* this, PlayState* play) {
     if (this->timer3 == 0) {
         this->endFrame = (f32)Animation_GetLastFrame(&gDntStageSpitAnim);
         Animation_Change(&this->skelAnime, &gDntStageSpitAnim, 1.0f, 0.0f, this->endFrame, ANIMMODE_ONCE, -10.0f);
-        this->actor.colChkInfo.mass = 0xFF;
+        this->actor.colChkInfo.mass = MASS_IMMOVABLE;
         this->isSolid = true;
         this->timer2 = 0;
         Actor_ChangeCategory(play, &play->actorCtx, &this->actor, ACTORCAT_ENEMY);
@@ -862,8 +892,7 @@ void EnDntNomal_DrawStageScrub(Actor* thisx, PlayState* play) {
     gDPPipeSync(POLY_OPA_DISP++);
     gDPSetEnvColor(POLY_OPA_DISP++, sLeafColors[this->type - ENDNTNOMAL_STAGE].r,
                    sLeafColors[this->type - ENDNTNOMAL_STAGE].g, sLeafColors[this->type - ENDNTNOMAL_STAGE].b, 255);
-    gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_en_dnt_nomal.c", 1814),
-              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx, "../z_en_dnt_nomal.c", 1814);
     gSPDisplayList(POLY_OPA_DISP++, gDntStageFlowerDL);
     CLOSE_DISPS(play->state.gfxCtx, "../z_en_dnt_nomal.c", 1817);
     if (this->actionFunc == EnDntNomal_StageCelebrate) {
@@ -879,8 +908,7 @@ void EnDntNomal_DrawTargetScrub(Actor* thisx, PlayState* play) {
     SkelAnime_DrawOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, NULL, EnDntNomal_PostLimbDraw, this);
     Matrix_Translate(this->flowerPos.x, this->flowerPos.y, this->flowerPos.z, MTXMODE_NEW);
     Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
-    gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_en_dnt_nomal.c", 1848),
-              G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx, "../z_en_dnt_nomal.c", 1848);
     gSPDisplayList(POLY_OPA_DISP++, gHintNutsFlowerDL);
     CLOSE_DISPS(play->state.gfxCtx, "../z_en_dnt_nomal.c", 1851);
 }
