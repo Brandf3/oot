@@ -26,6 +26,7 @@ SceneCmd test_map_room_0_header00[] = {
 s16 test_map_room_0_header00_objectList[LENGTH_TEST_MAP_ROOM_0_HEADER00_OBJECTLIST] = {
     //OBJECT_MAZE,
 	OBJECT_RD,
+	//OBJECT_DH,
 };
 
 ActorEntry test_map_room_0_header00_actorList[LENGTH_TEST_MAP_ROOM_0_HEADER00_ACTORLIST] = {
@@ -40,8 +41,14 @@ ActorEntry test_map_room_0_header00_actorList[LENGTH_TEST_MAP_ROOM_0_HEADER00_AC
         /* Actor ID   */ ACTOR_EN_RD,
         /* Position   */ { 50, 0, 0 },
         /* Rotation   */ { DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000) },
-        /* Parameters */ 0x0002
+        /* Parameters */ 0x0001
     },
+	// {
+    //     /* Actor ID   */ ACTOR_EN_DHA,
+    //     /* Position   */ { 50, 0, 0 },
+    //     /* Rotation   */ { DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000) },
+    //     /* Parameters */ 0x0002
+    // },
 };
 
 RoomShapeNormal test_map_room_0_shapeHeader = {
