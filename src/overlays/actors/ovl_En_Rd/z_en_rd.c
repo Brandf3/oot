@@ -533,7 +533,7 @@ void EnRd_WalkToParent(EnRd* this, PlayState* play) {
 }
 
 void EnRd_SetupGrab(EnRd* this) {
-    Animation_PlayOnce(&this->skelAnime, &object_in_Anim_018C38);
+    Animation_PlayOnce(&this->skelAnime, &object_in_Anim_015814);
     this->timer = this->grabState = 0;
     this->grabDamageTimer = 200;
     this->action = REDEAD_ACTION_GRAB;
@@ -551,7 +551,7 @@ void EnRd_Grab(EnRd* this, PlayState* play) {
 
     switch (this->grabState) {
         case REDEAD_GRAB_INITIAL_DAMAGE:
-            Animation_PlayLoop(&this->skelAnime, &object_in_Anim_018C38);
+            Animation_PlayLoop(&this->skelAnime, &object_in_Anim_015814);
             this->grabState++;
             play->damagePlayer(play, -8);
             Rumble_Request(this->actor.xzDistToPlayer, 255, 1, 12);
