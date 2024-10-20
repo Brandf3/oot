@@ -565,13 +565,13 @@ $(BUILD_DIR)/src/overlays/%.o: CFLAGS += -fno-merge-constants -mno-explicit-relo
 endif
 
 #### Main Targets ###
-all:
-	python3 install_mod_assets.py
-	make -j16 build
+mod_assets:
+	@echo "Running install_mod_assets.py..."
+	@python3 install_mod_assets.py
 
 all: rom compress
-
-rom: $(ROM)
+  
+rom: mod_assets $(ROM)
 ifneq ($(COMPARE),0)
 	@md5sum $(ROM)
  ifneq ($(REGIONAL_CHECKSUM),0)
@@ -580,6 +580,7 @@ ifneq ($(COMPARE),0)
 	@md5sum -c $(BASEROM_DIR)/checksum.md5
  endif
 endif
+	cp $(ROM) /mnt/c/Users/brand/Documents
 
 compress: $(ROMC)
 ifneq ($(COMPARE),0)
@@ -590,7 +591,6 @@ ifneq ($(COMPARE),0)
 	@md5sum -c $(BASEROM_DIR)/checksum-compressed.md5
  endif
 endif
-	cp $(ROM) /mnt/c/Users/brand/Documents
 
 clean:
 	$(RM) -r $(BUILD_DIR)
@@ -634,7 +634,7 @@ endif
 	$(N64_EMULATOR) $<
 
 
-.PHONY: all rom compress clean assetclean distclean venv setup disasm run
+.PHONY: mod_assets all rom compress clean assetclean distclean venv setup disasm run
 .DEFAULT_GOAL := rom
 
 #### Various Recipes ####

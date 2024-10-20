@@ -19,7 +19,7 @@ u8 rand(ObjMaze* this, int offset, int range);
 u8 move(ObjMaze* this, int row, int column);
 u8 findEmptyCell(ObjMaze* this);
 
-ActorInit Obj_Maze_InitVars = {
+ActorProfile Obj_Maze_Profile = {
     /**/ ACTOR_OBJ_MAZE,
     /**/ ACTORCAT_BG,
     /**/ FLAGS,

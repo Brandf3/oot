@@ -8668,7 +8668,6 @@ beginseg
     include "$(BUILD_DIR)/assets/objects/object_rd/object_rd.o"
     include "$(BUILD_DIR)/assets/objects/object_in/object_in.o"
     number 6
-    number 6
 endseg
 
 beginseg
@@ -19508,6 +19507,20 @@ beginseg
 endseg
 #endif
 
+beginseg
+    name "test_map_scene"
+    romalign 0x1000
+    include "$(BUILD_DIR)/assets/scenes/my_scenes/test_map/test_map_scene.o"
+    number 2
+endseg
+
+beginseg
+    name "test_map_room_0"
+    romalign 0x1000
+    include "$(BUILD_DIR)/assets/scenes/my_scenes/test_map/test_map_room_0.o"
+    number 3
+endseg
+
 #endif
 
 beginseg
@@ -19606,18 +19619,4 @@ beginseg
     compress
     romalign 0x1000
     include "$(BUILD_DIR)/baserom/softsprite_matrix_static.o"
-endseg
-
-beginseg
-    name "test_map_scene"
-    romalign 0x1000
-    include "build/assets/scenes/my_scenes/test_map/test_map_scene.o"
-    number 2
-endseg
-
-beginseg
-    name "test_map_room_0"
-    romalign 0x1000
-    include "build/assets/scenes/my_scenes/test_map/test_map_room_0.o"
-    number 3
 endseg

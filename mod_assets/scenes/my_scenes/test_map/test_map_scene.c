@@ -30,7 +30,7 @@ RomFile test_map_scene_roomList[] = {
 ActorEntry test_map_scene_header00_playerEntryList[] = {
     {
         /* Actor ID   */ ACTOR_PLAYER,
-        /* Position   */ { 550, 0, 0 },
+        /* Position   */ { 0, 0, 700 },
         /* Rotation   */ { DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000) },
         /* Parameters */ 0x0FFF
     },
@@ -95,7 +95,7 @@ Vec3s test_map_camPosData[3] = {
 };
 
 BgCamInfo test_map_camData[1] = {
-	{ CAM_SET_NORMAL0, 3, &test_map_camPosData[0] },
+	{ CAM_SET_MEADOW_BIRDS_EYE, 3, &test_map_camPosData[0] },
 };
 
 SurfaceType test_map_polygonTypes[] = {
