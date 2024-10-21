@@ -53,13 +53,16 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
     // Wilson's Maze Algorithm
     int i;
     int j;
+    u8 index;
     u8 current;
     u8 direction;
     u8 mazeCount = 0;
     this->frameCount = 0;
     this->frameCount2 = 0;
-    u8 start = rand(this, (ROWS - 1) * COLUMNS + (COLUMNS / 2), COLUMNS / 2);
     u8 end = rand(this, 0, COLUMNS / 2);
+    u8 start = rand(this, end + 1, ROWS * COLUMNS - (end + 1));
+    osSyncPrintf("Start: %d\n\n", start);
+    osSyncPrintf("End: %d\n\n", end);
     for (i = 0; i < ROWS; i++) {
         for (j = 0; j < COLUMNS; j++) {
             this->maze[i][j].type = 0;
@@ -134,7 +137,7 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
             topWall = cell < 100;
             if (rightWall) 
             {
-                Actor* wall = Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x + 50, y, z, 0, DEG_TO_BINANG(90), 0, 0);
+                ObjMazeWall* wall = (ObjMazeWall*)Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x + 50, y, z, 0, DEG_TO_BINANG(90), 0, 0);
                 if (j < COLUMNS - 1) {
                     this->wallActors[wallCount] = wall;
                     this->maze[i][j].rightWallIdx = wallCount;
@@ -143,7 +146,7 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
             }
             if (topWall)
             {
-                Actor* wall = Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x, y, z - 50, 0, 0, 0, 0);
+                ObjMazeWall* wall = (ObjMazeWall*)Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x, y, z - 50, 0, 0, 0, 0);
                 if (i > 0)
                 {
                     this->wallActors[wallCount] = wall;
@@ -154,6 +157,7 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
         }
     }
 
+    start = rand(this, ROWS - 1, COLUMNS);
     for (i = 0; i < COLUMNS; i++) {
         if (i != start % COLUMNS) {
             int x = this->actor.world.pos.x + (i * CELL_SIZE) - (COLUMNS * CELL_SIZE / 2 - (CELL_SIZE / 2)); //450
@@ -170,14 +174,18 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
         Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x, y, z, 0, DEG_TO_BINANG(90), 0, 0);
     }
 
-    // this->portalOneIdx = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
-    // this->portalTwoIdx = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
-    this->wallActors[rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)))]->params = 1;
-    this->wallActors[rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)))]->params = 1;
-    this->wallActors[rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)))]->params = 1;
-    this->wallActors[rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)))]->params = 1;
-    this->wallActors[rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)))]->params = 1;
-    this->wallActors[rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)))]->params = 1;
+    for (i = 0; i < ARM_COUNT; i++)
+    {
+        index = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
+        ObjMazeWall* wall = this->wallActors[index];
+        wall->arm = Actor_Spawn(&play->actorCtx, play, ACTOR_EN_DHA, 
+            wall->dyna.actor.world.pos.x, 
+            wall->dyna.actor.world.pos.y, 
+            wall->dyna.actor.world.pos.z, 
+            0, 0, 0, 0);
+        this->armWallId[i] = index;
+    }
+    
 }
 
 void ObjMaze_Destroy(Actor* thisx, PlayState* play) {
@@ -191,13 +199,11 @@ void ObjMaze_Update(Actor* thisx, PlayState* play) {
     u8 direction;
     u8 row;
     u8 column;
+    u8 i;
+    u8 index;
 
     this->frameCount++;
-    // this->frameCount2++;
-    // if (this->teleportCooldown > 0)
-    // {
-    //     this->teleportCooldown--;
-    // }
+    this->frameCount2++;
 
     if (this->frameCount % ORIGIN_SHIFT_DELAY == 0)
     {
@@ -234,34 +240,24 @@ void ObjMaze_Update(Actor* thisx, PlayState* play) {
         }
     }
 
-    // if (this->frameCount2 % TELEPORTER_SHIFT_DELAY == 0) 
-    // {
-    //     this->frameCount2 = 0;
-    //     this->wallActors[this->portalOneIdx]->params = 0;
-    //     this->wallActors[this->portalTwoIdx]->params = 0;
-    //     this->portalOneIdx = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
-    //     this->portalTwoIdx = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
-    //     this->wallActors[this->portalOneIdx]->params = 1;
-    //     this->wallActors[this->portalTwoIdx]->params = 1;
-    // }
-
-    // if (this->teleportCooldown == 0) 
-    // {
-    //     if (this->wallActors[this->portalOneIdx]->xzDistToPlayer < 30.0f)
-    //     {
-    //         Player* player = GET_PLAYER(play);
-    //         Math_Vec3f_Copy(&player->actor.world.pos, &this->wallActors[this->portalTwoIdx]->world.pos);
-    //         Camera* camera = Play_GetCamera(play, play->activeCamId);
-    //         this->teleportCooldown = 100;
-    //     }
-    //     else if (this->wallActors[this->portalTwoIdx]->xzDistToPlayer < 30.0f)
-    //     {
-    //         Player* player = GET_PLAYER(play);
-    //         Math_Vec3f_Copy(&player->actor.world.pos, &this->wallActors[this->portalOneIdx]->world.pos);
-    //         Camera* camera = Play_GetCamera(play, play->activeCamId);
-    //         this->teleportCooldown = 100;
-    //     }
-    // }
+    if (this->frameCount2 % ARM_SHIFT_DELAY == 0) 
+    {
+        this->frameCount2 = 0;
+        for (i = 0; i < ARM_COUNT; i++)
+        {
+            ObjMazeWall* oldHome = this->wallActors[this->armWallId[i]];
+            if (oldHome->arm->xzDistToPlayer > 100.0f)
+            {
+                index = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
+                ObjMazeWall* newHome = this->wallActors[index];
+                newHome->arm = oldHome->arm;
+                oldHome->arm = NULL;
+                this->armWallId[i] = index;
+                newHome->arm->world.pos.x = newHome->dyna.actor.world.pos.x;
+                newHome->arm->world.pos.z = newHome->dyna.actor.world.pos.z;
+            }
+        }
+    }
 }
 
 void ObjMaze_Draw(Actor* thisx, PlayState* play) {
@@ -306,11 +302,11 @@ void ObjMaze_SetCellToOrigin(ObjMaze* this, u8 row, u8 column, s8 removedWallIdx
     
     if (removedWallIdx > -1)
     {
-        this->wallActors[removedWallIdx]->world.pos.x = x;
-        this->wallActors[removedWallIdx]->world.pos.y = y;
-        this->wallActors[removedWallIdx]->world.pos.z = z;
-        this->wallActors[removedWallIdx]->world.rot.y = DEG_TO_BINANG(rot);
-        this->wallActors[removedWallIdx]->shape.rot.y = this->wallActors[removedWallIdx]->world.rot.y;
+        this->wallActors[removedWallIdx]->dyna.actor.world.pos.x = x;
+        this->wallActors[removedWallIdx]->dyna.actor.world.pos.y = y;
+        this->wallActors[removedWallIdx]->dyna.actor.world.pos.z = z;
+        this->wallActors[removedWallIdx]->dyna.actor.world.rot.y = DEG_TO_BINANG(rot);
+        this->wallActors[removedWallIdx]->dyna.actor.shape.rot.y = this->wallActors[removedWallIdx]->dyna.actor.world.rot.y;
     }
 }
 

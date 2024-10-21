@@ -28,7 +28,7 @@ ActorProfile Obj_Maze_Wall_Profile = {
 
 void ObjMazeWall_Init(Actor* thisx, PlayState* play) {
     ObjMazeWall* this = (ObjMazeWall*)thisx;
-
+    this->arm = NULL;
     DynaPolyActor_Init(&this->dyna, 0);
     CollisionHeader* colHeader = NULL;
     CollisionHeader_GetVirtual(&gMazeWallDL_collisionHeader, &colHeader);
@@ -43,16 +43,7 @@ void ObjMazeWall_Destroy(Actor* thisx, PlayState* play) {
 void ObjMazeWall_Update(Actor* thisx, PlayState* play) {
     ObjMazeWall* this = (ObjMazeWall*)thisx;
 
-    if (this->dyna.actor.params == 1 && this->arm == NULL)
-    {
-        this->arm = Actor_Spawn(&play->actorCtx, play, ACTOR_EN_DHA, 
-            this->dyna.actor.world.pos.x, 
-            this->dyna.actor.world.pos.y, 
-            this->dyna.actor.world.pos.z, 
-            0, 0, 0, 0);
-    }
-
-    if (this->dyna.actor.params == 1 && this->arm != NULL)
+    if (this->arm != NULL)
     {
         this->arm->world.pos.x = this->dyna.actor.world.pos.x;
         this->arm->world.pos.z = this->dyna.actor.world.pos.z;
@@ -62,7 +53,7 @@ void ObjMazeWall_Update(Actor* thisx, PlayState* play) {
 void ObjMazeWall_Draw(Actor* thisx, PlayState* play) {
     ObjMazeWall* this = (ObjMazeWall*)thisx;
     OPEN_DISPS(play->state.gfxCtx, "../z_obj_maze_wall.c", 43);
-    if (this->dyna.actor.params == 1) {
+    if (this->arm != NULL) {
         // Set the color for deadhand walls if you want visual que
         gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 0, 0, 255);
     } else {

@@ -3,12 +3,13 @@
 
 #include "ultra64.h"
 #include "global.h"
+#include "src/overlays/actors/ovl_Obj_Maze_Wall/z_obj_maze_wall.h"
 
 #define ROWS 10
 #define COLUMNS 15
 #define ORIGIN_SHIFT_DELAY 10
-#define TELEPORTER_SHIFT_DELAY 200
-#define TELEPORTER_COOLDOWN 100
+#define ARM_COUNT 6
+#define ARM_SHIFT_DELAY 200
 #define CELL_SIZE 100
 
 typedef struct {
@@ -24,14 +25,12 @@ typedef void (*ObjMazeActionFunc)(struct ObjMaze*, PlayState*);
 typedef struct ObjMaze {
     Actor actor;
     Cell maze[ROWS][COLUMNS];
-    Actor* wallActors[((ROWS - 1) * (COLUMNS - 1))];
+    ObjMazeWall* wallActors[((ROWS - 1) * (COLUMNS - 1))];
     unsigned long int next;
     u8 originShiftPoint;
     u8 frameCount;
     u8 frameCount2;
-    u8 portalOneIdx;
-    u8 portalTwoIdx;
-    u8 teleportCooldown;
+    u8 armWallId[ARM_COUNT];
 } ObjMaze;
 
 #endif
