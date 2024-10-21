@@ -5,7 +5,7 @@
 #include "global.h"
 
 #define ROWS 10
-#define COLUMNS 20
+#define COLUMNS 15
 #define ORIGIN_SHIFT_DELAY 10
 #define TELEPORTER_SHIFT_DELAY 200
 #define TELEPORTER_COOLDOWN 100

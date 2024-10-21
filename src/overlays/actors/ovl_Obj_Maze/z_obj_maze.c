@@ -170,10 +170,14 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
         Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x, y, z, 0, DEG_TO_BINANG(90), 0, 0);
     }
 
-    this->portalOneIdx = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
-    this->portalTwoIdx = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
-    this->wallActors[this->portalOneIdx]->params = 1;
-    this->wallActors[this->portalTwoIdx]->params = 1;
+    // this->portalOneIdx = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
+    // this->portalTwoIdx = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
+    this->wallActors[rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)))]->params = 1;
+    this->wallActors[rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)))]->params = 1;
+    this->wallActors[rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)))]->params = 1;
+    this->wallActors[rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)))]->params = 1;
+    this->wallActors[rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)))]->params = 1;
+    this->wallActors[rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)))]->params = 1;
 }
 
 void ObjMaze_Destroy(Actor* thisx, PlayState* play) {
@@ -189,11 +193,11 @@ void ObjMaze_Update(Actor* thisx, PlayState* play) {
     u8 column;
 
     this->frameCount++;
-    this->frameCount2++;
-    if (this->teleportCooldown > 0)
-    {
-        this->teleportCooldown--;
-    }
+    // this->frameCount2++;
+    // if (this->teleportCooldown > 0)
+    // {
+    //     this->teleportCooldown--;
+    // }
 
     if (this->frameCount % ORIGIN_SHIFT_DELAY == 0)
     {
@@ -230,36 +234,34 @@ void ObjMaze_Update(Actor* thisx, PlayState* play) {
         }
     }
 
-    if (this->frameCount2 % TELEPORTER_SHIFT_DELAY == 0) 
-    {
-        this->frameCount2 = 0;
-        this->wallActors[this->portalOneIdx]->params = 0;
-        this->wallActors[this->portalTwoIdx]->params = 0;
-        this->portalOneIdx = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
-        this->portalTwoIdx = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
-        this->wallActors[this->portalOneIdx]->params = 1;
-        this->wallActors[this->portalTwoIdx]->params = 1;
-    }
+    // if (this->frameCount2 % TELEPORTER_SHIFT_DELAY == 0) 
+    // {
+    //     this->frameCount2 = 0;
+    //     this->wallActors[this->portalOneIdx]->params = 0;
+    //     this->wallActors[this->portalTwoIdx]->params = 0;
+    //     this->portalOneIdx = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
+    //     this->portalTwoIdx = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
+    //     this->wallActors[this->portalOneIdx]->params = 1;
+    //     this->wallActors[this->portalTwoIdx]->params = 1;
+    // }
 
-    if (this->teleportCooldown == 0) 
-    {
-        if (this->wallActors[this->portalOneIdx]->xzDistToPlayer < 30.0f)
-        {
-            Player* player = GET_PLAYER(play);
-            Math_Vec3f_Copy(&player->actor.world.pos, &this->wallActors[this->portalTwoIdx]->world.pos);
-            Camera* camera = Play_GetCamera(play, play->activeCamId);
-            //Math_Vec3f_Copy(&camera->at, &this->wallActors[this->portalOneIdx]->world.pos);
-            this->teleportCooldown = 100;
-        }
-        else if (this->wallActors[this->portalTwoIdx]->xzDistToPlayer < 30.0f)
-        {
-            Player* player = GET_PLAYER(play);
-            Math_Vec3f_Copy(&player->actor.world.pos, &this->wallActors[this->portalOneIdx]->world.pos);
-            Camera* camera = Play_GetCamera(play, play->activeCamId);
-            //Math_Vec3f_Copy(&camera->at, &this->wallActors[this->portalOneIdx]->world.pos);
-            this->teleportCooldown = 100;
-        }
-    }
+    // if (this->teleportCooldown == 0) 
+    // {
+    //     if (this->wallActors[this->portalOneIdx]->xzDistToPlayer < 30.0f)
+    //     {
+    //         Player* player = GET_PLAYER(play);
+    //         Math_Vec3f_Copy(&player->actor.world.pos, &this->wallActors[this->portalTwoIdx]->world.pos);
+    //         Camera* camera = Play_GetCamera(play, play->activeCamId);
+    //         this->teleportCooldown = 100;
+    //     }
+    //     else if (this->wallActors[this->portalTwoIdx]->xzDistToPlayer < 30.0f)
+    //     {
+    //         Player* player = GET_PLAYER(play);
+    //         Math_Vec3f_Copy(&player->actor.world.pos, &this->wallActors[this->portalOneIdx]->world.pos);
+    //         Camera* camera = Play_GetCamera(play, play->activeCamId);
+    //         this->teleportCooldown = 100;
+    //     }
+    // }
 }
 
 void ObjMaze_Draw(Actor* thisx, PlayState* play) {

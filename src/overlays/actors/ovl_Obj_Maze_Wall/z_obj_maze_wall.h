@@ -10,6 +10,7 @@ typedef void (*ObjMazeWallActionFunc)(struct ObjMazeWall*, PlayState*);
 
 typedef struct ObjMazeWall {
     DynaPolyActor dyna;
+    Actor* arm;
 } ObjMazeWall;
 
 #endif

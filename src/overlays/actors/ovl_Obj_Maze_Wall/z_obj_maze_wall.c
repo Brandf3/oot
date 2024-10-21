@@ -42,20 +42,33 @@ void ObjMazeWall_Destroy(Actor* thisx, PlayState* play) {
 
 void ObjMazeWall_Update(Actor* thisx, PlayState* play) {
     ObjMazeWall* this = (ObjMazeWall*)thisx;
+
+    if (this->dyna.actor.params == 1 && this->arm == NULL)
+    {
+        this->arm = Actor_Spawn(&play->actorCtx, play, ACTOR_EN_DHA, 
+            this->dyna.actor.world.pos.x, 
+            this->dyna.actor.world.pos.y, 
+            this->dyna.actor.world.pos.z, 
+            0, 0, 0, 0);
+    }
+
+    if (this->dyna.actor.params == 1 && this->arm != NULL)
+    {
+        this->arm->world.pos.x = this->dyna.actor.world.pos.x;
+        this->arm->world.pos.z = this->dyna.actor.world.pos.z;
+    }
 }
 
 void ObjMazeWall_Draw(Actor* thisx, PlayState* play) {
     ObjMazeWall* this = (ObjMazeWall*)thisx;
     OPEN_DISPS(play->state.gfxCtx, "../z_obj_maze_wall.c", 43);
-    //gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, "../z_obj_maze.c", 158), G_MTX_MODELVIEW | G_MTX_LOAD);
     if (this->dyna.actor.params == 1) {
-        // Set the color for the teleporter wall
+        // Set the color for deadhand walls if you want visual que
         gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 0, 0, 255);
     } else {
         // Set a default color for regular walls
         gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 0, 0, 0, 255);
     }
-    //gSPDisplayList(POLY_OPA_DISP++, gMazeWallDL);
     Gfx_DrawDListOpa(play, gMazeWallDL);
     CLOSE_DISPS(play->state.gfxCtx, "../z_obj_maze_wall.c", 47);
 }

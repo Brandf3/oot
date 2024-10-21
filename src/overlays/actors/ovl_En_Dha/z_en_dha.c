@@ -148,6 +148,10 @@ static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F_DIV1000(scale, 10, ICHAIN_STOP),
 };
 
+static InitChainEntry sInvisibleInitChain[] = {
+    ICHAIN_VEC3F_DIV1000(scale, 10, ICHAIN_STOP),
+};
+
 void EnDha_SetupAction(EnDha* this, EnDhaActionFunc actionFunc) {
     this->actionFunc = actionFunc;
 }
@@ -155,7 +159,16 @@ void EnDha_SetupAction(EnDha* this, EnDhaActionFunc actionFunc) {
 void EnDha_Init(Actor* thisx, PlayState* play) {
     EnDha* this = (EnDha*)thisx;
 
-    Actor_ProcessInitChain(&this->actor, sInitChain);
+    if (this->actor.params != 7)
+    {
+        Actor_ProcessInitChain(&this->actor, sInitChain);
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
+    }
+    else
+    {
+        Actor_ProcessInitChain(&this->actor, sInvisibleInitChain);
+    }
+    
     this->actor.colChkInfo.damageTable = &sDamageTable;
     SkelAnime_InitFlex(play, &this->skelAnime, &object_dh_Skel_000BD8, &object_dh_Anim_0015B0, this->jointTable,
                        this->morphTable, 4);
@@ -167,7 +180,6 @@ void EnDha_Init(Actor* thisx, PlayState* play) {
     this->limbAngleX[0] = -0x4000;
     Collider_InitJntSph(play, &this->collider);
     Collider_SetJntSph(play, &this->collider, &this->actor, &sJntSphInit, this->colliderItem);
-    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
 
     EnDha_SetupWait(this);
 }
@@ -475,7 +487,10 @@ void EnDha_Draw(Actor* thisx, PlayState* play) {
     s32 pad;
     EnDha* this = (EnDha*)thisx;
 
-    Gfx_SetupDL_25Opa(play->state.gfxCtx);
-    SkelAnime_DrawFlexOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,
+    if (this->actor.params != 7 || this->actor.xzDistToPlayer < 100.0f)
+    {
+        Gfx_SetupDL_25Opa(play->state.gfxCtx);
+        SkelAnime_DrawFlexOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,
                           EnDha_OverrideLimbDraw, EnDha_PostLimbDraw, this);
+    }
 }
