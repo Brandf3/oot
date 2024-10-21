@@ -59,10 +59,10 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
     u8 mazeCount = 0;
     this->frameCount = 0;
     this->frameCount2 = 0;
+
     u8 end = rand(this, 0, COLUMNS / 2);
     u8 start = rand(this, end + 1, ROWS * COLUMNS - (end + 1));
-    osSyncPrintf("Start: %d\n\n", start);
-    osSyncPrintf("End: %d\n\n", end);
+    this->originShiftPoint = end;
     for (i = 0; i < ROWS; i++) {
         for (j = 0; j < COLUMNS; j++) {
             this->maze[i][j].type = 0;
@@ -71,7 +71,6 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
         }
     }
 
-    this->originShiftPoint = end;
     this->maze[0][end].type = ORIGIN + NO_TOP_WALL;
     mazeCount++;
     while (mazeCount < ROWS * COLUMNS) {
@@ -174,15 +173,21 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
         Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x, y, z, 0, DEG_TO_BINANG(90), 0, 0);
     }
 
+    index = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
+    ObjMazeWall* wall = this->wallActors[index];
     for (i = 0; i < ARM_COUNT; i++)
     {
-        index = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
-        ObjMazeWall* wall = this->wallActors[index];
+        while (wall->arm != NULL)
+        {
+            index = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
+            wall = this->wallActors[index];
+        }
+        
         wall->arm = Actor_Spawn(&play->actorCtx, play, ACTOR_EN_DHA, 
             wall->dyna.actor.world.pos.x, 
             wall->dyna.actor.world.pos.y, 
             wall->dyna.actor.world.pos.z, 
-            0, 0, 0, 0);
+            0, 0, 0, 7);
         this->armWallId[i] = index;
     }
     
@@ -201,6 +206,7 @@ void ObjMaze_Update(Actor* thisx, PlayState* play) {
     u8 column;
     u8 i;
     u8 index;
+    ObjMazeWall* newHome;
 
     this->frameCount++;
     this->frameCount2++;
@@ -242,14 +248,20 @@ void ObjMaze_Update(Actor* thisx, PlayState* play) {
 
     if (this->frameCount2 % ARM_SHIFT_DELAY == 0) 
     {
+        index = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
+        newHome = this->wallActors[index];
         this->frameCount2 = 0;
         for (i = 0; i < ARM_COUNT; i++)
         {
-            ObjMazeWall* oldHome = this->wallActors[this->armWallId[i]];
-            if (oldHome->arm->xzDistToPlayer > 100.0f)
+            while (newHome->arm != NULL)
             {
                 index = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
-                ObjMazeWall* newHome = this->wallActors[index];
+                newHome = this->wallActors[index];
+            }
+
+            ObjMazeWall* oldHome = this->wallActors[this->armWallId[i]];
+            if (oldHome->arm != NULL && oldHome->arm->xzDistToPlayer > 100.0f)
+            {
                 newHome->arm = oldHome->arm;
                 oldHome->arm = NULL;
                 this->armWallId[i] = index;

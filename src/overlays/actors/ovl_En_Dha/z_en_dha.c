@@ -163,20 +163,21 @@ void EnDha_Init(Actor* thisx, PlayState* play) {
     {
         Actor_ProcessInitChain(&this->actor, sInitChain);
         this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
+        this->actor.colChkInfo.damageTable = &sDamageTable;
+        this->actor.colChkInfo.health = 8;
+        ActorShape_Init(&this->actor.shape, 0, ActorShadow_DrawFeet, 90.0f);
+        this->actor.focus.pos = this->actor.world.pos;
+        this->actor.focus.pos.y += 50.0f;
     }
     else
     {
         Actor_ProcessInitChain(&this->actor, sInvisibleInitChain);
+        this->actor.colChkInfo.health = 160;
     }
     
-    this->actor.colChkInfo.damageTable = &sDamageTable;
     SkelAnime_InitFlex(play, &this->skelAnime, &object_dh_Skel_000BD8, &object_dh_Anim_0015B0, this->jointTable,
                        this->morphTable, 4);
-    ActorShape_Init(&this->actor.shape, 0, ActorShadow_DrawFeet, 90.0f);
-    this->actor.focus.pos = this->actor.world.pos;
-    this->actor.focus.pos.y += 50.0f;
     this->actor.colChkInfo.mass = MASS_HEAVY;
-    this->actor.colChkInfo.health = 8;
     this->limbAngleX[0] = -0x4000;
     Collider_InitJntSph(play, &this->collider);
     Collider_SetJntSph(play, &this->collider, &this->actor, &sJntSphInit, this->colliderItem);
@@ -221,7 +222,7 @@ void EnDha_Wait(EnDha* this, PlayState* play) {
         playerPos.y += 56.0f;
     }
 
-    if (this->actor.xzDistToPlayer <= 100.0f) {
+    if ((this->actor.params != 7 && this->actor.xzDistToPlayer <= 100.0f) || (this->actor.params == 7 && this->actor.xzDistToPlayer <= 50.0f)) {
         this->handAngle.y = this->handAngle.x = this->limbAngleY = 0;
 
         if (Math_Vec3f_DistXYZ(&playerPos, &this->handPos[0]) <= 12.0f) {
@@ -433,14 +434,14 @@ void EnDha_Update(Actor* thisx, PlayState* play) {
     s32 pad;
     EnDha* this = (EnDha*)thisx;
 
-    if (this->actor.parent == NULL) {
+    if (this->actor.parent == NULL && this->actor.params != 7) {
         this->actor.parent = Actor_FindNearby(play, &this->actor, ACTOR_EN_DH, ACTORCAT_ENEMY, 10000.0f);
     }
 
     EnDha_UpdateHealth(this, play);
     this->actionFunc(this, play);
-    CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.base);
-    CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
+    //CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.base);
+    //CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
 }
 
 s32 EnDha_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx) {
@@ -487,7 +488,7 @@ void EnDha_Draw(Actor* thisx, PlayState* play) {
     s32 pad;
     EnDha* this = (EnDha*)thisx;
 
-    if (this->actor.params != 7 || this->actor.xzDistToPlayer < 100.0f)
+    if (this->actor.params != 7 || this->actor.xzDistToPlayer < 50.0f)
     {
         Gfx_SetupDL_25Opa(play->state.gfxCtx);
         SkelAnime_DrawFlexOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,

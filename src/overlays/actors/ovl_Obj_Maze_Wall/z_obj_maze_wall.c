@@ -55,7 +55,7 @@ void ObjMazeWall_Draw(Actor* thisx, PlayState* play) {
     OPEN_DISPS(play->state.gfxCtx, "../z_obj_maze_wall.c", 43);
     if (this->arm != NULL) {
         // Set the color for deadhand walls if you want visual que
-        gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 0, 0, 255);
+        gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 0, 0, 0, 255);
     } else {
         // Set a default color for regular walls
         gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 0, 0, 0, 255);
