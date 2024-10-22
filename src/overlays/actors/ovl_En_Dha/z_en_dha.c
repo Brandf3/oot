@@ -172,6 +172,7 @@ void EnDha_Init(Actor* thisx, PlayState* play) {
     else
     {
         Actor_ProcessInitChain(&this->actor, sInvisibleInitChain);
+        this->actor.flags = 0;
         this->actor.colChkInfo.health = 160;
     }
     
@@ -440,8 +441,12 @@ void EnDha_Update(Actor* thisx, PlayState* play) {
 
     EnDha_UpdateHealth(this, play);
     this->actionFunc(this, play);
-    //CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.base);
-    //CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
+
+    if (this->actor.params != 7)
+    {
+        CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.base);
+        CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
+    }
 }
 
 s32 EnDha_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, void* thisx) {

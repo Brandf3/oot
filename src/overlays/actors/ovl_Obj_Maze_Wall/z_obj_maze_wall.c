@@ -31,8 +31,8 @@ void ObjMazeWall_Init(Actor* thisx, PlayState* play) {
     this->arm = NULL;
     DynaPolyActor_Init(&this->dyna, 0);
     CollisionHeader* colHeader = NULL;
-    CollisionHeader_GetVirtual(&gMazeWallDL_collisionHeader, &colHeader);
-    this->dyna.bgId = DynaPoly_SetBgActor(play, &play->colCtx.dyna, &this->dyna.actor, colHeader);
+    //CollisionHeader_GetVirtual(&gMazeWallDL_collisionHeader, &colHeader);
+    //this->dyna.bgId = DynaPoly_SetBgActor(play, &play->colCtx.dyna, &this->dyna.actor, colHeader);
 }
 
 void ObjMazeWall_Destroy(Actor* thisx, PlayState* play) {
@@ -53,13 +53,7 @@ void ObjMazeWall_Update(Actor* thisx, PlayState* play) {
 void ObjMazeWall_Draw(Actor* thisx, PlayState* play) {
     ObjMazeWall* this = (ObjMazeWall*)thisx;
     OPEN_DISPS(play->state.gfxCtx, "../z_obj_maze_wall.c", 43);
-    if (this->arm != NULL) {
-        // Set the color for deadhand walls if you want visual que
-        gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 0, 0, 0, 255);
-    } else {
-        // Set a default color for regular walls
-        gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 0, 0, 0, 255);
-    }
+    gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 0, 0, 0, 255);
     Gfx_DrawDListOpa(play, gMazeWallDL);
     CLOSE_DISPS(play->state.gfxCtx, "../z_obj_maze_wall.c", 47);
 }
