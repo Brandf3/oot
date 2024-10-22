@@ -31,8 +31,8 @@ void ObjMazeWall_Init(Actor* thisx, PlayState* play) {
     this->arm = NULL;
     DynaPolyActor_Init(&this->dyna, 0);
     CollisionHeader* colHeader = NULL;
-    //CollisionHeader_GetVirtual(&gMazeWallDL_collisionHeader, &colHeader);
-    //this->dyna.bgId = DynaPoly_SetBgActor(play, &play->colCtx.dyna, &this->dyna.actor, colHeader);
+    CollisionHeader_GetVirtual(&gMazeWallDL_collisionHeader, &colHeader);
+    this->dyna.bgId = DynaPoly_SetBgActor(play, &play->colCtx.dyna, &this->dyna.actor, colHeader);
 }
 
 void ObjMazeWall_Destroy(Actor* thisx, PlayState* play) {

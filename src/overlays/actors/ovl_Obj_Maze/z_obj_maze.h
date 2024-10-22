@@ -6,7 +6,7 @@
 #include "src/overlays/actors/ovl_Obj_Maze_Wall/z_obj_maze_wall.h"
 
 #define ROWS 10
-#define COLUMNS 20
+#define COLUMNS 15
 #define ORIGIN_SHIFT_DELAY 4
 #define ARM_COUNT 6
 #define ARM_SHIFT_DELAY 200

@@ -15,7 +15,6 @@ void ObjMaze_Update(Actor* thisx, PlayState* play);
 void ObjMaze_Draw(Actor* thisx, PlayState* play);
 
 void ObjMaze_SetCellToOrigin(ObjMaze* this, u8 row, u8 column, s8 removedWallIdx);
-u8 rand(ObjMaze* this, int offset, int range);
 u8 move(ObjMaze* this, int row, int column);
 u8 findEmptyCell(ObjMaze* this);
 void printMaze(ObjMaze* this);
@@ -61,8 +60,8 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
     this->frameCount = 0;
     this->frameCount2 = 0;
 
-    u8 end = rand(this, 0, COLUMNS / 3);
-    u8 start = rand(this, end + 1, ROWS * COLUMNS - (end + 1));
+    u8 end = Rand_S16Offset(0, COLUMNS / 3);
+    u8 start = Rand_S16Offset(end + 1, ROWS * COLUMNS - (end + 1));
     this->originShiftPoint = end;
     for (i = 0; i < ROWS; i++) {
         for (j = 0; j < COLUMNS; j++) {
@@ -158,7 +157,7 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
     }
 
     u8 offset = (COLUMNS / 3) * 2;
-    start = rand(this, offset, COLUMNS - offset);
+    start = Rand_S16Offset(offset, COLUMNS - offset);
     for (i = 0; i < COLUMNS; i++) {
         if (i != start % COLUMNS) {
             int x = this->actor.world.pos.x + (i * CELL_SIZE) - ((COLUMNS * CELL_SIZE) / 2 - (CELL_SIZE / 2)); //450
@@ -175,13 +174,13 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
         Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x, y, z, 0, DEG_TO_BINANG(90), 0, 0);
     }
 
-    index = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
+    index = Rand_S16Offset(0, ((ROWS - 1) * (COLUMNS - 1)));
     ObjMazeWall* wall = this->wallActors[index];
     for (i = 0; i < ARM_COUNT; i++)
     {
         while (wall->arm != NULL)
         {
-            index = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
+            index = Rand_S16Offset(0, ((ROWS - 1) * (COLUMNS - 1)));
             wall = this->wallActors[index];
         }
         
@@ -293,14 +292,14 @@ void ObjMaze_Update(Actor* thisx, PlayState* play) {
 
     if (this->frameCount2 % ARM_SHIFT_DELAY == 0) 
     {
-        index = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
+        index = Rand_S16Offset(0, ((ROWS - 1) * (COLUMNS - 1)));
         newHome = this->wallActors[index];
         this->frameCount2 = 0;
         for (i = 0; i < ARM_COUNT; i++)
         {
             while (newHome->arm != NULL)
             {
-                index = rand(this, 0, ((ROWS - 1) * (COLUMNS - 1)));
+                index = Rand_S16Offset(0, ((ROWS - 1) * (COLUMNS - 1)));
                 newHome = this->wallActors[index];
             }
 
@@ -367,13 +366,8 @@ void ObjMaze_SetCellToOrigin(ObjMaze* this, u8 row, u8 column, s8 removedWallIdx
     // }
 }
 
-u8 rand(ObjMaze* this, int offset, int range) {
-    this->next = this->next * 1103515245 + 12345;
-    return (unsigned int)(this->next/65536) % range + offset;
-}
-
 u8 move(ObjMaze* this, int row, int column) {
-    u8 choice = rand(this, 0, 4);
+    u8 choice = Rand_S16Offset(0, 4);
     while (true) {
         if (choice == 0 && row > 0) {
             return UP;
@@ -384,7 +378,7 @@ u8 move(ObjMaze* this, int row, int column) {
         } else if (choice == 3 && column > 0) {
             return LEFT;
         }
-        choice += rand(this, 1, 3);
+        choice += Rand_S16Offset(1, 3);
     }
 }
 
