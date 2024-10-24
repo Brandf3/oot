@@ -95,7 +95,7 @@ Vec3s test_map_camPosData[3] = {
 };
 
 BgCamInfo test_map_camData[1] = {
-	{ CAM_SET_MEADOW_BIRDS_EYE, 3, &test_map_camPosData[0] },
+	{ CAM_SET_NORMAL0, 3, &test_map_camPosData[0] },
 };
 
 SurfaceType test_map_polygonTypes[] = {

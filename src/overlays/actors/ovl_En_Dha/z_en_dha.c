@@ -148,6 +148,31 @@ static InitChainEntry sInitChain[] = {
     ICHAIN_VEC3F_DIV1000(scale, 10, ICHAIN_STOP),
 };
 
+// StandardLimb object_dh_Limb_000BA82 = { 
+//     { 0, 0, 0 }, 0x01, LIMB_DONE,
+//     object_dh_DL_000760
+// };
+
+// StandardLimb object_dh_Limb_000BB42 = { 
+//     { 5250, 0, 0 }, 0x02, LIMB_DONE,
+//     object_dh_DL_000808
+// };
+
+// StandardLimb object_dh_Limb_000BC02 = { 
+//     { 4425, 0, 0 }, LIMB_DONE, LIMB_DONE,
+//     gIngoChildEraHeadDL
+// };
+
+// void* object_dh_Skel_000BD82Limbs[] = {
+//     &object_dh_Limb_000BA82,
+//     &object_dh_Limb_000BB42,
+//     &object_dh_Limb_000BC02,
+// };
+
+// FlexSkeletonHeader object_dh_Skel_000BD82 = { 
+//     { object_dh_Skel_000BD82Limbs, ARRAY_COUNT(object_dh_Skel_000BD82Limbs) }, 3
+// };
+
 static InitChainEntry sInvisibleInitChain[] = {
     ICHAIN_VEC3F_DIV1000(scale, 10, ICHAIN_STOP),
 };
