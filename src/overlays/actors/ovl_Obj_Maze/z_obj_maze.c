@@ -14,7 +14,7 @@ void ObjMaze_Destroy(Actor* thisx, PlayState* play);
 void ObjMaze_Update(Actor* thisx, PlayState* play);
 void ObjMaze_Draw(Actor* thisx, PlayState* play);
 
-void ObjMaze_SetCellToOrigin(ObjMaze* this, u8 row, u8 column, s8 removedWallIdx);
+void ObjMaze_SetCellToOrigin(ObjMaze* this, u8 row, u8 column);
 u8 move(ObjMaze* this, int row, int column);
 u8 findEmptyCell(ObjMaze* this);
 void printMaze(ObjMaze* this);
@@ -65,19 +65,17 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
     this->originShiftPoint = end;
     for (i = 0; i < ROWS; i++) {
         for (j = 0; j < COLUMNS; j++) {
-            this->maze[i][j].type = 0;
-            this->maze[i][j].topWallIdx = -1;
-            this->maze[i][j].rightWallIdx = -1;
+            this->maze[i][j] = 0;
         }
     }
 
-    this->maze[0][end].type = ORIGIN + NO_TOP_WALL;
+    this->maze[0][end] = ORIGIN + NO_TOP_WALL;
     mazeCount++;
     while (mazeCount < ROWS * COLUMNS) {
         current = start;
-        while (this->maze[current / COLUMNS][current % COLUMNS].type < MAZE_UP) {
+        while (this->maze[current / COLUMNS][current % COLUMNS] < MAZE_UP) {
             direction = move(this, current / COLUMNS, current % COLUMNS);
-            this->maze[current / COLUMNS][current % COLUMNS].type = direction;
+            this->maze[current / COLUMNS][current % COLUMNS] = direction;
 
             switch (direction) {
                 case UP:
@@ -96,25 +94,25 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
         }
 
         current = start;
-        while (this->maze[current / COLUMNS][current % COLUMNS].type % 10 < MAZE_UP) {
-            this->maze[current / COLUMNS][current % COLUMNS].type += 4;
+        while (this->maze[current / COLUMNS][current % COLUMNS] % 10 < MAZE_UP) {
+            this->maze[current / COLUMNS][current % COLUMNS] += 4;
             mazeCount++;
-            switch (this->maze[current / COLUMNS][current % COLUMNS].type % 10) {
+            switch (this->maze[current / COLUMNS][current % COLUMNS] % 10) {
                 case MAZE_UP:
-                    this->maze[current / COLUMNS][current % COLUMNS].type += NO_TOP_WALL;
+                    this->maze[current / COLUMNS][current % COLUMNS] += NO_TOP_WALL;
                     current -= COLUMNS;
                     break;
                 case MAZE_DOWN:
                     current += COLUMNS;
-                    this->maze[current / COLUMNS][current % COLUMNS].type += NO_TOP_WALL;
+                    this->maze[current / COLUMNS][current % COLUMNS] += NO_TOP_WALL;
                     break;
                 case MAZE_RIGHT:
-                    this->maze[current / COLUMNS][current % COLUMNS].type += NO_RIGHT_WALL;
+                    this->maze[current / COLUMNS][current % COLUMNS] += NO_RIGHT_WALL;
                     current += 1;
                     break;
                 case MAZE_LEFT:
                     current -= 1;
-                    this->maze[current / COLUMNS][current % COLUMNS].type += NO_RIGHT_WALL;
+                    this->maze[current / COLUMNS][current % COLUMNS] += NO_RIGHT_WALL;
                     break;
             }
         }
@@ -127,7 +125,7 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
     bool topWall;
     for (i = 0; i < ROWS; i++) {
         for (j = 0; j < COLUMNS; j++) {
-            int cell = this->maze[i][j].type;
+            int cell = this->maze[i][j];
             int x = this->actor.world.pos.x + (j * CELL_SIZE) - ((COLUMNS * CELL_SIZE) / 2 - (CELL_SIZE / 2));  //450
             int y = this->actor.world.pos.y + 2.5;
             int z = this->actor.world.pos.z + (i * CELL_SIZE) - ((ROWS * CELL_SIZE) / 2 - (CELL_SIZE / 2)); //450
@@ -139,8 +137,7 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
                 ObjMazeWall* wall = (ObjMazeWall*)Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x + 50, y, z, 0, DEG_TO_BINANG(90), 0, 0);
                 if (j < COLUMNS - 1) {
                     this->wallActors[wallCount] = wall;
-                    this->maze[i][j].rightWallIdx = wallCount;
-                    wallCount += 1;
+                    wallCount++;
                 }
             }
             if (topWall)
@@ -149,8 +146,7 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
                 if (i > 0)
                 {
                     this->wallActors[wallCount] = wall;
-                    this->maze[i][j].topWallIdx = wallCount;
-                    wallCount += 1;
+                    wallCount++;
                 }
             }
         }
@@ -229,30 +225,26 @@ void ObjMaze_Update(Actor* thisx, PlayState* play) {
         row = this->originShiftPoint / COLUMNS;
         column = this->originShiftPoint % COLUMNS;
         direction = move(this, row, column);
-        this->maze[row][column].type += direction + LEFT - ORIGIN; // Change the ones place to the new direction
-        switch (this->maze[row][column].type % 10) {
+        this->maze[row][column] += direction + LEFT - ORIGIN; // Change the ones place to the new direction
+        switch (this->maze[row][column] % 10) {
             case MAZE_UP: // If this cell now points up, remove its top wall and set the above cell to origin
-                ObjMaze_SetCellToOrigin(this, row - 1, column, this->maze[row][column].topWallIdx);
-                this->maze[row][column].type += NO_TOP_WALL;
-                this->maze[row][column].topWallIdx = -1;
+                ObjMaze_SetCellToOrigin(this, row - 1, column);
+                this->maze[row][column] += NO_TOP_WALL;
                 this->originShiftPoint -= COLUMNS;
                 break;
             case MAZE_DOWN: // If this cell now points down, remove the top wall of the cell below and set it to origin
-                ObjMaze_SetCellToOrigin(this, row + 1, column, this->maze[row + 1][column].topWallIdx);
-                this->maze[row + 1][column].type += NO_TOP_WALL;
-                this->maze[row + 1][column].topWallIdx = -1;
+                ObjMaze_SetCellToOrigin(this, row + 1, column);
+                this->maze[row + 1][column] += NO_TOP_WALL;
                 this->originShiftPoint += COLUMNS;
                 break;
             case MAZE_RIGHT: // If this cell now points right, remove its right wall and set the right cell to origin
-                ObjMaze_SetCellToOrigin(this, row, column + 1, this->maze[row][column].rightWallIdx);
-                this->maze[row][column].type += NO_RIGHT_WALL;
-                this->maze[row][column].rightWallIdx = -1;
+                ObjMaze_SetCellToOrigin(this, row, column + 1);
+                this->maze[row][column] += NO_RIGHT_WALL;
                 this->originShiftPoint += 1;
                 break;
             case MAZE_LEFT: // If this cell now points left, remove the right wall of the cell to the left and set it to origin
-                ObjMaze_SetCellToOrigin(this, row, column - 1, this->maze[row][column - 1].rightWallIdx);
-                this->maze[row][column - 1].type += NO_RIGHT_WALL;
-                this->maze[row][column - 1].rightWallIdx = -1;
+                ObjMaze_SetCellToOrigin(this, row, column - 1);
+                this->maze[row][column - 1] += NO_RIGHT_WALL;
                 this->originShiftPoint -= 1;
                 break;
         }
@@ -262,7 +254,7 @@ void ObjMaze_Update(Actor* thisx, PlayState* play) {
         bool topWall;
         for (i = 0; i < ROWS; i++) {
             for (j = 0; j < COLUMNS; j++) {
-                int cell = this->maze[i][j].type;
+                int cell = this->maze[i][j];
                 int x = this->actor.world.pos.x + (j * CELL_SIZE) - ((COLUMNS * CELL_SIZE) / 2 - (CELL_SIZE / 2));  //450    1000 - (500 - 50) -> 1000 - 450 = 550
                 int y = this->actor.world.pos.y + 2.5;
                 int z = this->actor.world.pos.z + (i * CELL_SIZE) - ((ROWS * CELL_SIZE) / 2 - (CELL_SIZE / 2)); //450
@@ -271,7 +263,6 @@ void ObjMaze_Update(Actor* thisx, PlayState* play) {
                 topWall = cell < NO_TOP_WALL;
                 if (rightWall) 
                 {
-                    //(ObjMazeWall*)Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x + 50, y, z, 0, DEG_TO_BINANG(90), 0, 0);
                     if (j < COLUMNS - 1) {
                         ObjMazeWall* wall = this->wallActors[wallCount];
                         wall->dyna.actor.world.pos.x = x + 50;
@@ -284,7 +275,6 @@ void ObjMaze_Update(Actor* thisx, PlayState* play) {
                 }
                 if (topWall)
                 {
-                    //(ObjMazeWall*)Actor_Spawn(&play->actorCtx, play, ACTOR_OBJ_MAZE_WALL, x, y, z - 50, 0, 0, 0, 0);
                     if (i > 0)
                     {
                         ObjMazeWall* wall = this->wallActors[wallCount];
@@ -331,49 +321,25 @@ void ObjMaze_Draw(Actor* thisx, PlayState* play) {
 }
 
 // Add wall back in and remove direction from cell
-void ObjMaze_SetCellToOrigin(ObjMaze* this, u8 row, u8 column, s8 removedWallIdx) {
-
-    int x = this->actor.world.pos.x + (column * CELL_SIZE) - (COLUMNS * CELL_SIZE / 2 - (CELL_SIZE / 2)); // 450
-    int y = this->actor.world.pos.y + 2.5;
-    int z = this->actor.world.pos.z + (row * CELL_SIZE) - (ROWS * CELL_SIZE / 2 - (CELL_SIZE / 2)); // 450
-    u8 rot = 0;
-    switch (this->maze[row][column].type % 10) {
+void ObjMaze_SetCellToOrigin(ObjMaze* this, u8 row, u8 column) {
+    switch (this->maze[row][column] % 10) {
         case MAZE_UP:
-            this->maze[row][column].type -= NO_TOP_WALL;
-            this->maze[row][column].type += ORIGIN - MAZE_UP;
-            //this->maze[row][column].topWallIdx = removedWallIdx;
-            z -= (CELL_SIZE / 2);
+            this->maze[row][column] -= NO_TOP_WALL;
+            this->maze[row][column] += ORIGIN - MAZE_UP;
             break;
         case MAZE_DOWN:
-            this->maze[row + 1][column].type -= NO_TOP_WALL;
-            this->maze[row][column].type += ORIGIN - MAZE_DOWN;
-            //this->maze[row + 1][column].topWallIdx = removedWallIdx;
-            z += (CELL_SIZE / 2);
+            this->maze[row + 1][column] -= NO_TOP_WALL;
+            this->maze[row][column] += ORIGIN - MAZE_DOWN;
             break;
         case MAZE_RIGHT:
-            this->maze[row][column].type -= NO_RIGHT_WALL;
-            this->maze[row][column].type += ORIGIN - MAZE_RIGHT;
-            //this->maze[row][column].rightWallIdx = removedWallIdx;
-            rot = 90;
-            x += (CELL_SIZE / 2);
+            this->maze[row][column] -= NO_RIGHT_WALL;
+            this->maze[row][column] += ORIGIN - MAZE_RIGHT;
             break;
         case MAZE_LEFT:
-            this->maze[row][column - 1].type -= NO_RIGHT_WALL;
-            this->maze[row][column].type += ORIGIN - MAZE_LEFT;
-            //this->maze[row][column - 1].rightWallIdx = removedWallIdx;
-            rot = 90;
-            x -= (CELL_SIZE / 2);
+            this->maze[row][column - 1] -= NO_RIGHT_WALL;
+            this->maze[row][column] += ORIGIN - MAZE_LEFT;
             break;
     }
-    
-    // if (removedWallIdx > -1)
-    // {
-    //     this->wallActors[removedWallIdx]->dyna.actor.world.pos.x = x;
-    //     this->wallActors[removedWallIdx]->dyna.actor.world.pos.y = y;
-    //     this->wallActors[removedWallIdx]->dyna.actor.world.pos.z = z;
-    //     this->wallActors[removedWallIdx]->dyna.actor.world.rot.y = DEG_TO_BINANG(rot);
-    //     this->wallActors[removedWallIdx]->dyna.actor.shape.rot.y = this->wallActors[removedWallIdx]->dyna.actor.world.rot.y;
-    // }
 }
 
 u8 move(ObjMaze* this, int row, int column) {
@@ -397,7 +363,7 @@ u8 findEmptyCell(ObjMaze* this) {
     u8 j;
     for (i = 0; i < ROWS; i++) {
         for (j = 0; j < COLUMNS; j++) {
-            if (this->maze[i][j].type < MAZE_UP) {
+            if (this->maze[i][j] < MAZE_UP) {
                 return (i * COLUMNS) + j;
             }
         }
@@ -414,7 +380,7 @@ void printMaze(ObjMaze* this)
     {
         for (j = 0; j < COLUMNS; j++)
         {
-            osSyncPrintf("%d\t", this->maze[i][j].type);
+            osSyncPrintf("%d\t", this->maze[i][j]);
         }
         osSyncPrintf("\n");
     }

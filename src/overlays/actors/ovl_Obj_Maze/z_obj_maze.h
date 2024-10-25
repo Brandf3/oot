@@ -13,19 +13,13 @@
 #define KEESE_COUNT 5
 #define CELL_SIZE 100
 
-typedef struct {
-    u8 type;           // Cell type (e.g., MAZE_UP, MAZE_DOWN, etc.)
-    s8 rightWallIdx;   // Index in the wallActors array for the right wall (-1 if no right wall)
-    s8 topWallIdx;     // Index in the wallActors array for the top wall (-1 if no top wall)
-} Cell;
-
 struct ObjMaze;
 
 typedef void (*ObjMazeActionFunc)(struct ObjMaze*, PlayState*);
 
 typedef struct ObjMaze {
     Actor actor;
-    Cell maze[ROWS][COLUMNS];
+    u8 maze[ROWS][COLUMNS];
     ObjMazeWall* wallActors[((ROWS - 1) * (COLUMNS - 1))];
     unsigned long int next;
     u8 originShiftPoint;
