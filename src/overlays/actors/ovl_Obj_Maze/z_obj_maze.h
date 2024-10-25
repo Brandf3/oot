@@ -10,6 +10,7 @@
 #define ORIGIN_SHIFT_DELAY 4
 #define ARM_COUNT 6
 #define ARM_SHIFT_DELAY 200
+#define KEESE_COUNT 5
 #define CELL_SIZE 100
 
 typedef struct {

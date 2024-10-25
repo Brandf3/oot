@@ -191,6 +191,16 @@ void ObjMaze_Init(Actor* thisx, PlayState* play) {
             0, 0, 0, 7);
         this->armWallId[i] = index;
     }
+
+    for (i = 0; i < KEESE_COUNT; i++)
+    {
+        index = Rand_S16Offset(0, ROWS * COLUMNS);
+        Actor_Spawn(&play->actorCtx, play, ACTOR_EN_FIREFLY, 
+                    this->actor.world.pos.x + ((index % COLUMNS) * CELL_SIZE) - ((COLUMNS * CELL_SIZE) / 2 - (CELL_SIZE / 2)),
+                    this->actor.world.pos.y + 2.5,
+                    this->actor.world.pos.z + ((index / COLUMNS) * CELL_SIZE) - ((ROWS * CELL_SIZE) / 2 - (CELL_SIZE / 2)),
+                    0, 0, 0, 2); 
+    }
     
 }
 
