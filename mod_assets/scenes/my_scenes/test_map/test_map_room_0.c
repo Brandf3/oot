@@ -10,7 +10,7 @@
 /**
  * Header Child Day (Default)
 */
-#define LENGTH_TEST_MAP_ROOM_0_HEADER00_OBJECTLIST 4
+#define LENGTH_TEST_MAP_ROOM_0_HEADER00_OBJECTLIST 5
 #define LENGTH_TEST_MAP_ROOM_0_HEADER00_ACTORLIST 1
 SceneCmd test_map_room_0_header00[] = {
     SCENE_CMD_ECHO_SETTINGS(0x00),
@@ -27,17 +27,18 @@ s16 test_map_room_0_header00_objectList[LENGTH_TEST_MAP_ROOM_0_HEADER00_OBJECTLI
     OBJECT_MAZE,
 	OBJECT_RD,
 	OBJECT_DH,
-	OBJECT_FIREFLY
+	OBJECT_FIREFLY,
+	OBJECT_VM
 };
 
 ActorEntry test_map_room_0_header00_actorList[LENGTH_TEST_MAP_ROOM_0_HEADER00_ACTORLIST] = {
     // Custom Actor
-    {
-        /* Actor ID   */ ACTOR_OBJ_MAZE,
-        /* Position   */ { 0, 0, 0 },
-        /* Rotation   */ { DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000) },
-        /* Parameters */ 0x0000
-    },
+    // {
+    //     /* Actor ID   */ ACTOR_OBJ_MAZE,
+    //     /* Position   */ { 0, 0, 0 },
+    //     /* Rotation   */ { DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000) },
+    //     /* Parameters */ 0x0000
+    // },
 	// {
     //     /* Actor ID   */ ACTOR_EN_RD,
     //     /* Position   */ { 50, 0, 0 },
@@ -56,6 +57,12 @@ ActorEntry test_map_room_0_header00_actorList[LENGTH_TEST_MAP_ROOM_0_HEADER00_AC
     //     /* Rotation   */ { DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000) },
     //     /* Parameters */ 0x0002
     // },
+	{
+        /* Actor ID   */ ACTOR_EN_VM,
+        /* Position   */ { 50, 0, 0 },
+        /* Rotation   */ { DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000), DEG_TO_BINANG(0.000) },
+        /* Parameters */ 0x0401
+    },
 };
 
 RoomShapeNormal test_map_room_0_shapeHeader = {

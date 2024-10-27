@@ -540,12 +540,20 @@ void EnVm_Draw(Actor* thisx, PlayState* play2) {
         gSPSegment(POLY_XLU_DISP++, 0x08, SEGMENTED_TO_VIRTUAL(D_80B2EB88[(play->gameplayFrames + 4) % 8]));
         gSPDisplayList(POLY_XLU_DISP++, gEffEnemyDeathFlameDL);
     }
+
     gSPSegment(POLY_OPA_DISP++, 0x08, func_80094E78(play->state.gfxCtx, 0, this->beamTexScroll));
     Matrix_Translate(this->beamPos1.x, this->beamPos1.y, this->beamPos1.z, MTXMODE_NEW);
     Matrix_RotateZYX(this->beamRot.x, this->beamRot.y, this->beamRot.z, MTXMODE_APPLY);
     Matrix_Scale(this->beamScale.x * 0.1f, this->beamScale.x * 0.1f, this->beamScale.z * 0.0015f, MTXMODE_APPLY);
     MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx, "../z_en_vm.c", 1063);
     gSPDisplayList(POLY_OPA_DISP++, gBeamosLaserDL);
+
+    Matrix_Translate(this->actor.world.pos.x, this->actor.world.pos.y + 50.0f, this->actor.world.pos.z, MTXMODE_NEW);
+    Matrix_RotateY(BINANG_TO_RAD(this->actor.shape.rot.y + this->headRotY) + DEG_TO_RAD(90), MTXMODE_APPLY);
+    Matrix_RotateZ(DEG_TO_RAD(90.0f) + BINANG_TO_RAD(this->beamRot.x), MTXMODE_APPLY);
+    Matrix_Scale(0.01f, 0.01f, 0.01f, MTXMODE_APPLY);
+    MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx, "../z_en_vm.c", __LINE__);
+    gSPDisplayList(POLY_OPA_DISP++, gIngoChildEraHeadDL5);
 
     CLOSE_DISPS(play->state.gfxCtx, "../z_en_vm.c", 1068);
 }
